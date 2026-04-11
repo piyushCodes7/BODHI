@@ -66,3 +66,27 @@ venv.bak/
 .env
 .env.local
 .env.*
+
+# Aaradhya backend
+Aaradhya/.venv/
+Aaradhya/backend/.venv/
+Aaradhya/backend/.pytest_cache/
+Aaradhya/backend/.mypy_cache/
+Aaradhya/backend/.ruff_cache/
+Aaradhya/backend/htmlcov/
+Aaradhya/backend/.coverage
+Aaradhya/backend/.coverage.*
+Aaradhya/backend/*.db
+
+# Aaradhya frontend
+Aaradhya/frontend/node_modules/
+Aaradhya/frontend/.expo/
+Aaradhya/frontend/.expo-shared/
+Aaradhya/frontend/.env
+Aaradhya/frontend/.env.*
+Aaradhya/frontend/.parcel-cache/
+Aaradhya/frontend/.cache/
+Aaradhya/frontend/dist/
+Aaradhya/frontend/build/
+Aaradhya/frontend/web-build/
+Aaradhya/frontend/coverage/
