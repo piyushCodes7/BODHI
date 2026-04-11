@@ -1,13 +1,12 @@
-// ─────────────────────────────────────────────────────────────
-//  VaultScreen.tsx — Main Dashboard  (light mode)
-// ─────────────────────────────────────────────────────────────
-
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Dimensions, FlatList,
+  StyleSheet, Dimensions, FlatList, ActivityIndicator, RefreshControl
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { apiClient } from '../api/client'; // 🔒 Our secure API client
 import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 import { GradientCard } from '../components/GradientCard';
 import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
@@ -15,6 +14,7 @@ import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
 const { width: W } = Dimensions.get('window');
 const S = Spacing;
 
+// Keep your beautiful AI insights and Actions static for now
 const AI_INSIGHTS = [
   { id:'1', label:'You saved\n₹2,300', tag:'SAVINGS', border: Colors.neonLime,       bg:['#d1fc00','#dcc9ff'] },
   { id:'2', label:'Unused\nSub',        tag:'ALERT',   border: Colors.hotPink,        bg:['#f74b6d','#ff81f5'] },
@@ -29,13 +29,58 @@ const ACTIONS = [
   { id:'voice',  icon:'🎙', label:'Voice',  sub:'AI COMMAND',    color: Colors.neonLime },
 ];
 
-const ACTIVITY = [
-  { id:'1', logo:'🎬', name:'Netflix Subscription', sub:'Recurring payment', amount:'-₹799',  date:'TODAY',     neg:true },
-  { id:'2', logo:'✨', name:'Stake Reward',          sub:'Solana Pool 04',   amount:'+₹1,240', date:'YESTERDAY', neg:false },
-];
+// Helper to format currency safely
+const fmt = (n: number | undefined) => 
+  n !== undefined ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '₹0.00';
 
 export function VaultScreen() {
   const headerH = useHeaderHeight();
+  
+  // ── Portfolio State ──
+  const [portfolio, setPortfolio] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPortfolio = async () => {
+    try {
+      const res = await apiClient.get('/trade/portfolio');
+      setPortfolio(res.data);
+    } catch (error) {
+      console.error("Failed to fetch portfolio:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Refresh data every time the user navigates to this tab
+  useFocusEffect(
+    useCallback(() => {
+      fetchPortfolio();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPortfolio();
+  };
+
+  if (loading && !portfolio) {
+    return (
+      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.electricViolet} />
+      </View>
+    );
+  }
+
+  // Safely split the balance into whole numbers and decimals for your UI
+  const totalValueRaw = portfolio?.total_value || 100000;
+  const totalValueParts = totalValueRaw.toFixed(2).split('.');
+  const wholeValue = Number(totalValueParts[0]).toLocaleString('en-IN');
+  const decimalValue = totalValueParts[1];
+
+  const totalPnl = portfolio?.total_pnl || 0;
+  const pnlIsPositive = totalPnl >= 0;
 
   return (
     <View style={styles.root}>
@@ -43,42 +88,46 @@ export function VaultScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: headerH + 16 }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.electricViolet} />}
       >
-        {/* Greeting */}
+        {/* Greeting (Dynamic Username) */}
         <View style={styles.greet}>
-          <Text style={styles.greetName}>Hello, James</Text>
-          <Text style={styles.greetSub}>YOUR DAILY FINANCIAL PULSE</Text>
+          <Text style={styles.greetName}>Hello, {portfolio?.username || 'Investor'}</Text>
+          <Text style={styles.greetSub}>YOUR LIVE PAPER PORTFOLIO</Text>
         </View>
 
-        {/* Hero balance card */}
+        {/* Hero balance card (Dynamic API Data) */}
         <GradientCard style={styles.balanceCard}>
           <View style={styles.balanceInner}>
             <View style={styles.balanceTop}>
               <Text style={styles.balanceLabel}>TOTAL VAULT BALANCE</Text>
               <View style={styles.walletIconWrap}>
-                <Text style={{ fontSize: 18 }}>💳</Text>
+                <Text style={{ fontSize: 18 }}>📈</Text>
               </View>
             </View>
+            
             <Text style={styles.balanceAmount}>
-              ₹4,82,930<Text style={styles.balanceCents}>.45</Text>
+              ₹{wholeValue}<Text style={styles.balanceCents}>.{decimalValue}</Text>
             </Text>
+            
             <View style={styles.balanceBottom}>
               <View style={styles.tokenRow}>
-                {['BTC','ETH','USDT'].map(t => (
-                  <View key={t} style={styles.tokenPill}>
-                    <Text style={styles.tokenText}>{t}</Text>
-                  </View>
-                ))}
+                {/* Replaced Crypto with available Cash indicator */}
+                <View style={[styles.tokenPill, { width: 'auto', paddingHorizontal: 12 }]}>
+                  <Text style={styles.tokenText}>CASH: {fmt(portfolio?.cash)}</Text>
+                </View>
               </View>
               <View>
-                <Text style={styles.changeLabel}>24H CHANGE</Text>
-                <Text style={styles.changeValue}>+8.4%</Text>
+                <Text style={styles.changeLabel}>TOTAL RETURN</Text>
+                <Text style={[styles.changeValue, { color: pnlIsPositive ? Colors.neonLime : Colors.hotPink }]}>
+                  {pnlIsPositive ? '+' : ''}{fmt(totalPnl)}
+                </Text>
               </View>
             </View>
           </View>
         </GradientCard>
 
-        {/* AI Insights */}
+        {/* AI Insights (Static for now) */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>AI Insights</Text>
           <TouchableOpacity><Text style={styles.viewAll}>VIEW ALL</Text></TouchableOpacity>
@@ -104,7 +153,7 @@ export function VaultScreen() {
           )}
         />
 
-        {/* Quick Actions 2×2 */}
+        {/* Quick Actions */}
         <View style={styles.actionsGrid}>
           {ACTIONS.map(a => (
             <TouchableOpacity key={a.id} activeOpacity={0.8} style={styles.actionCard}>
@@ -117,32 +166,42 @@ export function VaultScreen() {
           ))}
         </View>
 
-        {/* Recent Activity */}
-        <Text style={[styles.sectionTitle, { marginBottom: S.lg }]}>Recent Activity</Text>
+        {/* Real Live Stock Holdings */}
+        <Text style={[styles.sectionTitle, { marginBottom: S.lg }]}>Your Holdings</Text>
         <View style={styles.activityList}>
-          {ACTIVITY.map(item => (
-            <View key={item.id} style={styles.activityRow}>
-              <View style={styles.activityLogo}>
-                <Text style={{ fontSize: 20 }}>{item.logo}</Text>
-              </View>
-              <View style={styles.activityMeta}>
-                <Text style={styles.activityName}>{item.name}</Text>
-                <Text style={styles.activitySub}>{item.sub}</Text>
-              </View>
-              <View style={styles.activityRight}>
-                <Text style={[styles.activityAmount, { color: item.neg ? Colors.errorRed : '#16a34a' }]}>
-                  {item.amount}
-                </Text>
-                <Text style={styles.activityDate}>{item.date}</Text>
-              </View>
-            </View>
-          ))}
+          {portfolio?.holdings?.length === 0 ? (
+            <Text style={{ fontFamily: Fonts.body, color: Colors.textMuted, textAlign: 'center', marginTop: 20 }}>
+              Your portfolio is empty. Go to the Market to buy some stocks!
+            </Text>
+          ) : (
+            portfolio?.holdings?.map((holding: any, index: number) => {
+              const isProfit = holding.pnl >= 0;
+              return (
+                <View key={index} style={styles.activityRow}>
+                  <View style={styles.activityLogo}>
+                    <Text style={{ fontSize: 20 }}>{isProfit ? '🚀' : '📉'}</Text>
+                  </View>
+                  <View style={styles.activityMeta}>
+                    <Text style={styles.activityName}>{holding.symbol}</Text>
+                    <Text style={styles.activitySub}>{holding.qty} shares @ ₹{holding.avg_price}</Text>
+                  </View>
+                  <View style={styles.activityRight}>
+                    <Text style={styles.activityAmount}>{fmt(holding.current_value)}</Text>
+                    <Text style={[styles.activityDate, { color: isProfit ? '#16a34a' : Colors.errorRed, fontSize: 11 }]}>
+                      {isProfit ? '+' : ''}{fmt(holding.pnl)} ({holding.pnl_pct}%)
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
         </View>
       </ScrollView>
     </View>
   );
 }
 
+// ... (Keep all your existing StyleSheet logic exactly as it was) ...
 const styles = StyleSheet.create({
   root:   { flex:1, backgroundColor: Colors.surface },
   scroll: { paddingBottom:120, paddingHorizontal: S.xxl },
@@ -160,10 +219,10 @@ const styles = StyleSheet.create({
   balanceCents:   { fontSize:20, fontWeight:'500', letterSpacing:0 },
   balanceBottom:  { flexDirection:'row', justifyContent:'space-between', alignItems:'flex-end' },
   tokenRow:       { flexDirection:'row' },
-  tokenPill:      { width:38, height:38, borderRadius:19, borderWidth:2, borderColor: Colors.electricViolet, backgroundColor: Colors.surfaceHighest, alignItems:'center', justifyContent:'center', marginRight:-8 },
+  tokenPill:      { height:38, borderRadius:19, borderWidth:2, borderColor: Colors.electricViolet, backgroundColor: Colors.surfaceHighest, alignItems:'center', justifyContent:'center', marginRight:-8 },
   tokenText:      { fontFamily: Fonts.label, fontSize:9, fontWeight:'700', color: Colors.electricViolet },
   changeLabel:    { fontFamily: Fonts.label, fontSize:9, fontWeight:'700', color:'rgba(255,255,255,0.7)', letterSpacing:1.2, textAlign:'right' },
-  changeValue:    { fontFamily: Fonts.headline, fontSize:20, fontWeight:'700', color: Colors.neonLime },
+  changeValue:    { fontFamily: Fonts.headline, fontSize:20, fontWeight:'700' },
 
   sectionHeader:  { flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom: S.lg },
   sectionTitle:   { fontFamily: Fonts.headline, fontSize:20, fontWeight:'700', color: Colors.textPrimary },
@@ -188,6 +247,6 @@ const styles = StyleSheet.create({
   activityName:   { fontFamily: Fonts.body, fontSize:14, fontWeight:'600', color: Colors.textPrimary },
   activitySub:    { fontFamily: Fonts.label, fontSize:11, color: Colors.textSecondary, marginTop:2 },
   activityRight:  { alignItems:'flex-end' },
-  activityAmount: { fontFamily: Fonts.headline, fontSize:15, fontWeight:'700' },
+  activityAmount: { fontFamily: Fonts.headline, fontSize:15, fontWeight:'700', color: Colors.textPrimary },
   activityDate:   { fontFamily: Fonts.label, fontSize:9, fontWeight:'700', color: Colors.textSecondary, letterSpacing:0.8, marginTop:2 },
 });

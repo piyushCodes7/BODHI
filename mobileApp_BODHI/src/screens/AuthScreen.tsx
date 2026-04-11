@@ -1,15 +1,17 @@
 // ─────────────────────────────────────────────────────────────
 //  AuthScreen.tsx — Login + Signup
-//  Dark-to-light hybrid | Not in Stitch (designed from DESIGN.md)
+//  Dark-to-light hybrid | Integrated with BODHI Backend
 // ─────────────────────────────────────────────────────────────
 
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Dimensions, KeyboardAvoidingView,
-  Platform, ScrollView,
+  Platform, ScrollView, ActivityIndicator
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from '../api/client';
 import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -23,8 +25,48 @@ export function AuthScreen({ navigation }: any) {
   const [name, setName]         = useState('');
   const [phone, setPhone]       = useState('');
 
-  const proceed = () => {
-    navigation?.replace('Main');
+  // Network States
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg]   = useState('');
+
+  const proceed = async () => {
+    if (!email || !password) {
+      setErrorMsg("Email and password are required.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      const cleanEmail = email.toLowerCase().trim();
+
+      // 1. If Signup, hit the register endpoint first
+      if (mode === 'signup') {
+        await apiClient.post('/auth/register', {
+          username: cleanEmail,
+          password: password,
+        });
+      }
+
+      // 2. Hit the login endpoint
+      // FastAPI's OAuth2 expects x-www-form-urlencoded data
+      const formData = `username=${encodeURIComponent(cleanEmail)}&password=${encodeURIComponent(password)}`;
+
+      const loginRes = await apiClient.post('/auth/login', formData, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      // 3. Save token and navigate to the Vault/Main tabs
+      await AsyncStorage.setItem('bodhi_jwt', loginRes.data.access_token);
+      navigation?.replace('Main');
+
+    } catch (err: any) {
+      const detail = err.response?.data?.detail;
+      setErrorMsg(typeof detail === 'string' ? detail : 'Authentication failed. Check your connection.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,7 +103,10 @@ export function AuthScreen({ navigation }: any) {
               {(['login', 'signup'] as AuthMode[]).map(m => (
                 <TouchableOpacity
                   key={m}
-                  onPress={() => setMode(m)}
+                  onPress={() => {
+                    setMode(m);
+                    setErrorMsg(''); // Clear errors when switching modes
+                  }}
                   style={[styles.modeBtn, mode === m && styles.modeBtnActive]}
                 >
                   <Text style={[styles.modeBtnText, mode === m && styles.modeBtnTextActive]}>
@@ -101,7 +146,7 @@ export function AuthScreen({ navigation }: any) {
               )}
 
               <View style={styles.fieldWrap}>
-                <Text style={styles.fieldLabel}>EMAIL</Text>
+                <Text style={styles.fieldLabel}>EMAIL (USERNAME)</Text>
                 <TextInput
                   value={email}
                   onChangeText={setEmail}
@@ -132,11 +177,27 @@ export function AuthScreen({ navigation }: any) {
               </TouchableOpacity>
             )}
 
-            {/* Primary CTA */}
-            <TouchableOpacity style={styles.ctaBtn} onPress={proceed} activeOpacity={0.88}>
-              <Text style={styles.ctaText}>
-                {mode === 'login' ? 'Login to BODHI' : 'Create Account'}
+            {/* Error Message Display */}
+            {errorMsg ? (
+              <Text style={{ color: Colors.magenta, fontFamily: Fonts.label, textAlign: 'center' }}>
+                {errorMsg}
               </Text>
+            ) : null}
+
+            {/* Primary CTA */}
+            <TouchableOpacity 
+              style={[styles.ctaBtn, isLoading && { opacity: 0.7 }]} 
+              onPress={proceed} 
+              activeOpacity={0.88}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                 <ActivityIndicator color={Colors.neonLimeDark} />
+              ) : (
+                <Text style={styles.ctaText}>
+                  {mode === 'login' ? 'Login to BODHI' : 'Create Account'}
+                </Text>
+              )}
             </TouchableOpacity>
 
             {/* Divider */}
@@ -162,7 +223,10 @@ export function AuthScreen({ navigation }: any) {
               <Text style={styles.switchText}>
                 {mode === 'login' ? "Don't have an account? " : 'Already have one? '}
               </Text>
-              <TouchableOpacity onPress={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+              <TouchableOpacity onPress={() => {
+                setMode(mode === 'login' ? 'signup' : 'login');
+                setErrorMsg('');
+              }}>
                 <Text style={styles.switchLink}>
                   {mode === 'login' ? 'Sign Up' : 'Login'}
                 </Text>
@@ -294,7 +358,6 @@ const styles = StyleSheet.create({
     fontFamily:       Fonts.body,
     fontSize:         16,
     color:            Colors.textPrimary,
-    // On focus: neonLime ghost border (use onFocus state for production)
   },
 
   forgotWrap: { alignSelf: 'flex-end' },
