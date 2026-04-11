@@ -1,26 +1,26 @@
 // src/services/api.ts
 import { Platform } from 'react-native';
 
-const API_ROOT = process.env.EXPO_PUBLIC_API_URL
+const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+
+const API_ROOT = env?.EXPO_PUBLIC_API_URL
   ?? (Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000');
 
 const BASE_URL = API_ROOT.endsWith('/api/v1')
   ? API_ROOT
   : `${API_ROOT.replace(/\/$/, '')}/api/v1`;
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Network error' }));
-    const detail = typeof err.detail === 'string'
-      ? err.detail
-      : Array.isArray(err.detail)
+    const detail =
+      typeof err.detail === 'string'
+        ? err.detail
+        : Array.isArray(err.detail)
         ? err.detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join(', ')
         : null;
     throw new Error(detail ?? `HTTP ${res.status}`);
@@ -28,7 +28,7 @@ async function request<T>(
   return res.json() as Promise<T>;
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface TripWallet {
   id: string;
@@ -121,6 +121,25 @@ export interface DemoBootstrapResponse {
   group_id: string;
 }
 
+// ── Payment types ─────────────────────────────────────────────────────────────
+
+export interface PaymentIntentCreate {
+  user_id: string;
+  amount: number;      // paise (1 INR = 100 paise)
+  currency: string;    // e.g. "INR"
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PaymentIntentResponse {
+  payment_id: string;
+  razorpay_order_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  key_id: string;
+}
+
 // ─── Trip Wallet API ──────────────────────────────────────────────────────────
 
 export const TripAPI = {
@@ -135,8 +154,7 @@ export const TripAPI = {
       body: JSON.stringify({ requested_by }),
     }),
 
-  close: (id: string) =>
-    request(`/wallets/trips/${id}/close`, { method: 'POST' }),
+  close: (id: string) => request(`/wallets/trips/${id}/close`, { method: 'POST' }),
 
   members: (id: string) => request<TripMember[]>(`/wallets/trips/${id}/members`),
 
@@ -154,7 +172,10 @@ export const TripAPI = {
 
   expenses: (id: string) => request<TripExpense[]>(`/wallets/trips/${id}/expenses`),
 
-  addExpense: (id: string, body: { recorded_by: string; amount: number; description: string; category?: string }) =>
+  addExpense: (
+    id: string,
+    body: { recorded_by: string; amount: number; description: string; category?: string },
+  ) =>
     request<TripExpense>(`/wallets/trips/${id}/expenses`, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -166,8 +187,12 @@ export const TripAPI = {
 export const GroupAPI = {
   get: (id: string) => request<GroupWallet>(`/wallets/groups/${id}`),
 
-  create: (body: { name: string; currency: string; created_by: string; target_amount?: number }) =>
-    request<GroupWallet>('/wallets/groups', { method: 'POST', body: JSON.stringify(body) }),
+  create: (body: {
+    name: string;
+    currency: string;
+    created_by: string;
+    target_amount?: number;
+  }) => request<GroupWallet>('/wallets/groups', { method: 'POST', body: JSON.stringify(body) }),
 
   members: (id: string) => request<GroupMember[]>(`/wallets/groups/${id}/members`),
 
@@ -184,9 +209,28 @@ export const GroupAPI = {
     }),
 };
 
+// ─── Payment API ──────────────────────────────────────────────────────────────
+
+export const PaymentAPI = {
+  /**
+   * Create a Razorpay payment intent (PENDING order).
+   * Amount must be in paise (₹1 = 100 paise).
+   */
+  createIntent: (body: PaymentIntentCreate) =>
+    request<PaymentIntentResponse>('/payments/intent', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+};
+
 // ─── Insurance RAG API ────────────────────────────────────────────────────────
 
 export const InsuranceAPI = {
+  /**
+   * Upload a PDF and ingest it into the RAG pipeline.
+   * pdfUri  — local file URI from expo-document-picker / expo-image-picker
+   * fileName — display name for the file
+   */
   ingest: async (pdfUri: string, fileName: string): Promise<RAGIngestResponse> => {
     const formData = new FormData();
     formData.append('file', {
@@ -199,19 +243,29 @@ export const InsuranceAPI = {
       method: 'POST',
       body: formData,
     });
-    if (!res.ok) throw new Error('Upload failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as any).detail ?? `HTTP ${res.status}`);
+    }
     return res.json();
   },
 
+  /**
+   * Query an ingested document (or ask a general question if document_id is omitted).
+   */
   query: (question: string, document_id?: string): Promise<RAGQueryResponse> =>
     request<RAGQueryResponse>('/insurance/query', {
       method: 'POST',
       body: JSON.stringify({ question, document_id }),
     }),
 
+  /** List all previously ingested documents. */
   listDocuments: () => request<RAGIngestResponse[]>('/insurance/documents'),
 };
 
+// ─── Bootstrap API ────────────────────────────────────────────────────────────
+
 export const BootstrapAPI = {
-  ensureDemoData: () => request<DemoBootstrapResponse>('/bootstrap/demo', { method: 'POST' }),
+  ensureDemoData: () =>
+    request<DemoBootstrapResponse>('/bootstrap/demo', { method: 'POST' }),
 };

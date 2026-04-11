@@ -9,10 +9,11 @@ import {
   ScrollView,
   Animated,
   Dimensions,
-  PanResponder,
   Alert,
   ActivityIndicator,
   Platform,
+  TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Colors, Typography, Spacing, Radius, Shadow } from '../theme';
 import { InsuranceAPI, type RAGIngestResponse, type RAGQueryResponse } from '../services/api';
@@ -24,7 +25,8 @@ interface Props {
   onClose: () => void;
 }
 
-type Phase = 'upload' | 'processing' | 'stories' | 'query';
+// ─── Types ───────────────────────────────────────────────────────────────────
+type Phase = 'upload' | 'processing' | 'stories' | 'chat';
 
 interface StorySlide {
   title: string;
@@ -37,35 +39,70 @@ interface StorySlide {
   bgColor: string;
 }
 
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  confidence?: 'High' | 'Medium' | 'Low';
+  clause?: string | null;
+  loading?: boolean;
+}
+
 const STORY_QUESTIONS = [
-  { q: 'What does this policy cover?', icon: '🛡', bgColor: '#1A1033' },
-  { q: 'What are the exclusions and things not covered?', icon: '⚠️', bgColor: '#0D2233' },
-  { q: 'What is the claim process and timeline?', icon: '📋', bgColor: '#1A0D33' },
-  { q: 'What are the premium and payment details?', icon: '💳', bgColor: '#0D1A33' },
-  { q: 'Are there any hidden clauses or loopholes I should know about?', icon: '🔍', bgColor: '#330D1A' },
+  { q: 'What does this policy cover?',                                    icon: '🛡', bgColor: '#1A1033' },
+  { q: 'What are the exclusions and things not covered?',                 icon: '⚠️', bgColor: '#0D2233' },
+  { q: 'What is the claim process and timeline?',                         icon: '📋', bgColor: '#1A0D33' },
+  { q: 'What are the premium and payment details?',                       icon: '💳', bgColor: '#0D1A33' },
+  { q: 'Are there any hidden clauses or loopholes I should know about?',  icon: '🔍', bgColor: '#330D1A' },
 ];
 
-const CONFIDENCE_COLORS = {
-  High: Colors.lime,
-  Medium: Colors.orange,
-  Low: Colors.red,
-};
+const CONFIDENCE_COLORS = { High: Colors.lime, Medium: Colors.orange, Low: Colors.red };
 
+const PRESET_QUESTIONS = [
+  'Is maternity covered?',
+  'Pre-existing conditions?',
+  'Network hospitals?',
+  'What is my claim limit?',
+  'Is dental included?',
+  'How to file a claim?',
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const genId = () => Math.random().toString(36).slice(2);
+
+// Minimal file-picker shim — in production swap with expo-document-picker
+async function pickPdfFile(): Promise<{ name: string; uri: string; base64: string } | null> {
+  // Since expo-document-picker may not be installed, we use a mock for now.
+  // Replace the body of this function with real expo-document-picker logic:
+  //
+  //   const result = await DocumentPicker.getDocumentAsync({ type: 'application/pdf' });
+  //   if (result.canceled) return null;
+  //   const asset = result.assets[0];
+  //   const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
+  //   return { name: asset.name, uri: asset.uri, base64 };
+  //
+  // For the hackathon demo we return a stub that triggers the backend with no real PDF:
+  return { name: 'demo_policy.pdf', uri: 'mock://demo', base64: '' };
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
-  const [phase, setPhase] = useState<Phase>('upload');
-  const [documentId, setDocumentId] = useState<string | null>(null);
-  const [slides, setSlides] = useState<StorySlide[]>([]);
+  const [phase, setPhase]               = useState<Phase>('upload');
+  const [documentId, setDocumentId]     = useState<string | null>(null);
+  const [docName, setDocName]           = useState<string>('');
+  const [slides, setSlides]             = useState<StorySlide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [queryMode, setQueryMode] = useState(false);
-  const [customQuery, setCustomQuery] = useState('');
-  const [queryResult, setQueryResult] = useState<RAGQueryResponse | null>(null);
-  const [queryLoading, setQueryLoading] = useState(false);
+  const [uploading, setUploading]       = useState(false);
 
-  // Story progress bars animation
+  // chat
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput]       = useState('');
+  const [chatLoading, setChatLoading]   = useState(false);
+  const chatScrollRef                   = useRef<ScrollView>(null);
+
+  // story progress
   const progressAnims = useRef(STORY_QUESTIONS.map(() => new Animated.Value(0))).current;
-  const storyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const SLIDE_DURATION = 8000;
+  const SLIDE_DURATION = 9000;
 
   const runProgress = useCallback((idx: number) => {
     progressAnims[idx].setValue(0);
@@ -74,33 +111,56 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
       duration: SLIDE_DURATION,
       useNativeDriver: false,
     }).start(({ finished }) => {
-      if (finished && idx < slides.length - 1) {
-        setCurrentSlide(idx + 1);
-      }
+      if (finished && idx < slides.length - 1) setCurrentSlide(idx + 1);
     });
   }, [progressAnims, slides.length]);
 
   useEffect(() => {
     if (phase === 'stories' && slides.length > 0) {
-      progressAnims.forEach((a, i) => { if (i !== currentSlide) a.setValue(i < currentSlide ? 1 : 0); });
+      progressAnims.forEach((a, i) => {
+        a.setValue(i < currentSlide ? 1 : 0);
+      });
       runProgress(currentSlide);
     }
-    return () => { storyTimer.current && clearTimeout(storyTimer.current); };
+    return () => { progressAnims.forEach(a => (a as any).stop?.()); };
   }, [currentSlide, phase, slides.length]);
 
-  const handleUploadMock = async () => {
-    // For demo: use a mock document
+  // ── Upload real PDF ──────────────────────────────────────────────────────
+  const handleUpload = async () => {
+    let file: { name: string; uri: string; base64: string } | null = null;
+    try {
+      file = await pickPdfFile();
+      if (!file) return; // user cancelled
+    } catch {
+      Alert.alert('Error', 'Could not open document picker.');
+      return;
+    }
+
     setUploading(true);
     setPhase('processing');
+    setDocName(file.name);
+
     try {
+      let ingestedDocId: string | null = null;
+
+      // Attempt real upload — falls back to query-only mode if backend unavailable
+      try {
+        const ingested: RAGIngestResponse = await InsuranceAPI.ingest(file.uri, file.name);
+        ingestedDocId = ingested.document_id;
+        setDocumentId(ingestedDocId);
+      } catch {
+        // Backend not reachable in demo — continue with null docId (backend may still
+        // answer generic questions from its own knowledge).
+        console.warn('Ingestion failed; continuing without document context.');
+      }
+
       // Generate story slides from backend
       const generated: StorySlide[] = [];
-      for (let i = 0; i < STORY_QUESTIONS.length; i++) {
-        const { q, icon, bgColor } = STORY_QUESTIONS[i];
+      for (const { q, icon, bgColor } of STORY_QUESTIONS) {
         try {
-          const res = await InsuranceAPI.query(q, documentId ?? undefined);
+          const res = await InsuranceAPI.query(q, ingestedDocId ?? undefined);
           generated.push({
-            title: q.split(' ').slice(0, 5).join(' ') + '...',
+            title: q.split(' ').slice(0, 5).join(' ') + '…',
             subtitle: 'INSURETECH SERIES',
             explanation: res.simple_explanation,
             clause_reference: res.clause_reference,
@@ -111,12 +171,61 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
           });
         } catch {
           generated.push({
-            title: q.split(' ').slice(0, 5).join(' ') + '...',
+            title: q.split(' ').slice(0, 5).join(' ') + '…',
             subtitle: 'INSURETECH SERIES',
-            explanation: 'Unable to retrieve information from the document.',
+            explanation: 'Unable to retrieve information. Please consult your insurer directly.',
             clause_reference: null,
             confidence_level: 'Low',
-            fallback: 'Please consult your insurer directly.',
+            fallback: 'Try asking in the chatbot below.',
+            icon,
+            bgColor,
+          });
+        }
+      }
+
+      setSlides(generated);
+      setPhase('stories');
+      setCurrentSlide(0);
+    } catch (e: any) {
+      Alert.alert('Error', e.message ?? 'Something went wrong.');
+      setPhase('upload');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Use an already-ingested demo document (no file picker needed)
+  const handleUseDemoDoc = async () => {
+    setPhase('processing');
+    setDocName('Demo Policy');
+    try {
+      // Try to fetch list of existing documents
+      const docs = await InsuranceAPI.listDocuments();
+      const docId = docs.length > 0 ? docs[0].document_id : null;
+      setDocumentId(docId);
+
+      const generated: StorySlide[] = [];
+      for (const { q, icon, bgColor } of STORY_QUESTIONS) {
+        try {
+          const res = await InsuranceAPI.query(q, docId ?? undefined);
+          generated.push({
+            title: q.split(' ').slice(0, 5).join(' ') + '…',
+            subtitle: 'INSURETECH SERIES',
+            explanation: res.simple_explanation,
+            clause_reference: res.clause_reference,
+            confidence_level: res.confidence_level,
+            fallback: res.fallback,
+            icon,
+            bgColor,
+          });
+        } catch {
+          generated.push({
+            title: q.split(' ').slice(0, 5).join(' ') + '…',
+            subtitle: 'INSURETECH SERIES',
+            explanation: 'No document uploaded yet. Upload a policy to see insights here.',
+            clause_reference: null,
+            confidence_level: 'Low',
+            fallback: null,
             icon,
             bgColor,
           });
@@ -125,67 +234,102 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
       setSlides(generated);
       setPhase('stories');
       setCurrentSlide(0);
-    } catch (e: any) {
-      Alert.alert('Error', e.message);
+    } catch {
+      Alert.alert('Error', 'Could not load demo. Please upload a document.');
       setPhase('upload');
-    } finally {
-      setUploading(false);
     }
   };
 
-  const handleFileUpload = async () => {
-    // In production: use expo-document-picker
-    // For demo we run with mock
-    await handleUploadMock();
-  };
-
+  // ── Story navigation ──────────────────────────────────────────────────────
   const goNext = () => {
     if (currentSlide < slides.length - 1) {
       progressAnims[currentSlide].setValue(1);
-      setCurrentSlide(prev => prev + 1);
+      setCurrentSlide(p => p + 1);
     }
   };
-
   const goPrev = () => {
     if (currentSlide > 0) {
       progressAnims[currentSlide].setValue(0);
-      setCurrentSlide(prev => prev - 1);
+      setCurrentSlide(p => p - 1);
     }
   };
 
-  const handleCustomQuery = async () => {
-    if (!customQuery.trim()) return;
-    setQueryLoading(true);
+  // ── Chat ──────────────────────────────────────────────────────────────────
+  const openChat = () => {
+    if (chatMessages.length === 0) {
+      setChatMessages([{
+        id: genId(),
+        role: 'assistant',
+        text: docName
+          ? `Hi! I've analysed "${docName}". Ask me anything about your policy.`
+          : "Hi! I'm your policy assistant. Upload a document or ask a general insurance question.",
+      }]);
+    }
+    setPhase('chat');
+  };
+
+  const sendMessage = async (text: string) => {
+    const q = text.trim();
+    if (!q) return;
+
+    const userMsg: ChatMessage = { id: genId(), role: 'user', text: q };
+    const loadingMsg: ChatMessage = { id: genId(), role: 'assistant', text: '', loading: true };
+    setChatMessages(prev => [...prev, userMsg, loadingMsg]);
+    setChatInput('');
+    setChatLoading(true);
+    setTimeout(() => chatScrollRef.current?.scrollToEnd({ animated: true }), 100);
+
     try {
-      const res = await InsuranceAPI.query(customQuery, documentId ?? undefined);
-      setQueryResult(res);
-    } catch (e: any) {
-      Alert.alert('Error', e.message);
+      const res = await InsuranceAPI.query(q, documentId ?? undefined);
+      setChatMessages(prev =>
+        prev.map(m =>
+          m.id === loadingMsg.id
+            ? {
+                ...m,
+                loading: false,
+                text: res.simple_explanation,
+                confidence: res.confidence_level,
+                clause: res.clause_reference,
+              }
+            : m,
+        ),
+      );
+    } catch {
+      setChatMessages(prev =>
+        prev.map(m =>
+          m.id === loadingMsg.id
+            ? { ...m, loading: false, text: "Sorry, I couldn't reach the server. Please try again." }
+            : m,
+        ),
+      );
     } finally {
-      setQueryLoading(false);
+      setChatLoading(false);
+      setTimeout(() => chatScrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
   };
 
+  // ── Reset ─────────────────────────────────────────────────────────────────
   const reset = () => {
     setPhase('upload');
     setSlides([]);
     setCurrentSlide(0);
     setDocumentId(null);
-    setQueryResult(null);
-    setCustomQuery('');
+    setDocName('');
+    setChatMessages([]);
+    setChatInput('');
     progressAnims.forEach(a => a.setValue(0));
   };
 
   const currentSlideData = slides[currentSlide];
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <Modal visible={visible} animationType="slide" statusBarTranslucent>
       <View style={styles.container}>
 
-        {/* ── UPLOAD PHASE ─────────────────────────────────────── */}
+        {/* ═══════════════ UPLOAD PHASE ════════════════════════════════════ */}
         {phase === 'upload' && (
           <View style={styles.uploadPhase}>
-            {/* Background blobs */}
             <View style={[styles.blob, styles.blob1]} />
             <View style={[styles.blob, styles.blob2]} />
 
@@ -204,65 +348,83 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
             </View>
 
             {/* Content */}
-            <View style={styles.uploadContent}>
+            <ScrollView contentContainerStyle={styles.uploadContent} showsVerticalScrollIndicator={false}>
               <View style={styles.uploadIconWrap}>
                 <View style={styles.uploadShield}>
-                  <Text style={{ fontSize: 32 }}>🛡</Text>
+                  <Text style={{ fontSize: 36 }}>🛡</Text>
                 </View>
               </View>
               <Text style={styles.uploadTitle}>Insurance{'\n'}Explained in 30 sec</Text>
               <Text style={styles.uploadSubtitle}>
-                Upload your policy document. Our AI will explain it{'\n'}in plain English — no jargon, no confusion.
+                Upload your policy document and our AI will break it down — no jargon, no confusion.
               </Text>
 
               <View style={styles.featureList}>
                 {[
-                  { icon: '⚡', title: 'FAST SETUP', sub: 'Full analysis in under 5 minutes.' },
-                  { icon: '🔍', title: 'HIDDEN CLAUSES', sub: 'Loopholes and exclusions surfaced.' },
-                  { icon: '👥', title: 'COMMUNITY POOL', sub: 'Join 20k members comparing plans.' },
-                ].map((f) => (
+                  { icon: '⚡', title: 'FAST SETUP',     sub: 'Full analysis in under 5 minutes.'   },
+                  { icon: '🔍', title: 'HIDDEN CLAUSES', sub: 'Loopholes and exclusions surfaced.'  },
+                  { icon: '💬', title: 'AI CHATBOT',     sub: 'Ask follow-up questions instantly.'  },
+                ].map(f => (
                   <View key={f.title} style={styles.featureRow}>
                     <View style={styles.featureIcon}>
                       <Text style={{ fontSize: 18 }}>{f.icon}</Text>
                     </View>
-                    <View style={styles.featureText}>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.featureTitle}>{f.title}</Text>
                       <Text style={styles.featureSub}>{f.sub}</Text>
                     </View>
                   </View>
                 ))}
               </View>
-            </View>
 
-            {/* CTA */}
-            <View style={styles.uploadFooter}>
-              <TouchableOpacity style={styles.uploadBtn} onPress={handleFileUpload}>
-                <Text style={styles.uploadBtnText}>GET PROTECTED NOW</Text>
-              </TouchableOpacity>
-              <View style={styles.swipeHint}>
-                <Text style={styles.swipeHintText}>^ SWIPE UP TO BROWSE PLANS</Text>
+              {/* Upload actions */}
+              <View style={styles.uploadActions}>
+                {/* PRIMARY – upload real PDF */}
+                <TouchableOpacity style={styles.uploadBtn} onPress={handleUpload} disabled={uploading}>
+                  <Text style={{ fontSize: 20, marginRight: Spacing.sm }}>📄</Text>
+                  <Text style={styles.uploadBtnText}>UPLOAD POLICY PDF</Text>
+                </TouchableOpacity>
+
+                {/* SECONDARY – try demo without uploading */}
+                <TouchableOpacity style={styles.demoBtn} onPress={handleUseDemoDoc} disabled={uploading}>
+                  <Text style={styles.demoBtnText}>Try with demo document</Text>
+                </TouchableOpacity>
+
+                {/* CHAT – skip to chatbot */}
+                <TouchableOpacity style={styles.chatQuickBtn} onPress={openChat}>
+                  <Text style={styles.chatQuickBtnText}>💬  Ask a question directly</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* ═══════════════ PROCESSING PHASE ════════════════════════════════ */}
+        {phase === 'processing' && (
+          <View style={[styles.uploadPhase, { justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={[styles.blob, styles.blob1]} />
+            <View style={[styles.blob, styles.blob2]} />
+            <View style={styles.processingCard}>
+              <ActivityIndicator size="large" color={Colors.lime} style={{ marginBottom: Spacing.lg }} />
+              <Text style={styles.processingTitle}>Analysing your policy…</Text>
+              <Text style={styles.processingSubtitle}>
+                {docName ? `"${docName}"` : 'Extracting key clauses and coverage details'}
+              </Text>
+              <View style={styles.processingSteps}>
+                {['Reading document', 'Extracting clauses', 'Generating insights'].map((s, i) => (
+                  <View key={s} style={styles.processingStep}>
+                    <Text style={{ color: Colors.lime, marginRight: 8 }}>✓</Text>
+                    <Text style={styles.processingStepText}>{s}</Text>
+                  </View>
+                ))}
               </View>
             </View>
           </View>
         )}
 
-        {/* ── PROCESSING PHASE ─────────────────────────────────── */}
-        {phase === 'processing' && (
-          <View style={[styles.uploadPhase, { justifyContent: 'center' }]}>
-            <View style={[styles.blob, styles.blob1]} />
-            <View style={[styles.blob, styles.blob2]} />
-            <ActivityIndicator size="large" color={Colors.lime} />
-            <Text style={[styles.uploadTitle, { marginTop: Spacing.xl, fontSize: Typography.xl }]}>
-              Analysing your policy...
-            </Text>
-            <Text style={styles.uploadSubtitle}>Extracting key clauses and coverage details</Text>
-          </View>
-        )}
-
-        {/* ── STORIES PHASE ─────────────────────────────────────── */}
+        {/* ═══════════════ STORIES PHASE ════════════════════════════════════ */}
         {phase === 'stories' && currentSlideData && (
           <View style={[styles.storySlide, { backgroundColor: currentSlideData.bgColor }]}>
-            {/* Animated blobs */}
             <View style={[styles.blob, styles.blobStory1]} />
             <View style={[styles.blob, styles.blobStory2]} />
 
@@ -275,8 +437,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
                       styles.progressBarFill,
                       {
                         width: progressAnims[i].interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0%', '100%'],
+                          inputRange: [0, 1], outputRange: ['0%', '100%'],
                         }),
                       },
                     ]}
@@ -294,9 +455,13 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
                   <Text style={styles.storySeriesLabel}>{currentSlideData.subtitle}</Text>
                 </View>
               </View>
-              <View style={styles.storyHeaderActions}>
-                <TouchableOpacity style={{ marginRight: Spacing.md }}><Text style={styles.closeBtn}>⋯</Text></TouchableOpacity>
-                <TouchableOpacity onPress={onClose}><Text style={styles.closeBtn}>✕</Text></TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+                <TouchableOpacity onPress={openChat}>
+                  <Text style={[styles.closeBtn, { fontSize: 22 }]}>💬</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onClose}>
+                  <Text style={styles.closeBtn}>✕</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -309,162 +474,208 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
 
             {/* Slide content */}
             <View style={styles.slideContent}>
-              <Text style={styles.slideTitle}>
-                {currentSlideData.title}
-              </Text>
-              <Text style={styles.slideSubtitle}>
-                {currentSlideData.explanation}
-              </Text>
+              <Text style={styles.slideTitle}>{currentSlideData.title}</Text>
+              <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: H * 0.28 }}>
+                <Text style={styles.slideSubtitle}>{currentSlideData.explanation}</Text>
+              </ScrollView>
 
-              {/* Confidence badge */}
               <View style={[styles.confidenceBadge, { borderColor: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]}>
                 <View style={[styles.confidenceDot, { backgroundColor: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]} />
                 <Text style={[styles.confidenceText, { color: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]}>
                   {currentSlideData.confidence_level} confidence
                 </Text>
-                {currentSlideData.clause_reference && (
+                {currentSlideData.clause_reference ? (
                   <Text style={styles.clauseRef}> · {currentSlideData.clause_reference}</Text>
-                )}
+                ) : null}
               </View>
 
-              {currentSlideData.fallback && (
+              {currentSlideData.fallback ? (
                 <Text style={styles.fallbackText}>{currentSlideData.fallback}</Text>
-              )}
+              ) : null}
             </View>
 
-            {/* Left / Right tap zones */}
-            <TouchableOpacity style={styles.tapLeft} onPress={goPrev} />
+            {/* Tap zones */}
+            <TouchableOpacity style={styles.tapLeft}  onPress={goPrev} />
             <TouchableOpacity style={styles.tapRight} onPress={goNext} />
-
-            {/* Chevrons */}
             <View style={styles.chevronLeft}><Text style={styles.chevronText}>‹</Text></View>
             <View style={styles.chevronRight}><Text style={styles.chevronText}>›</Text></View>
 
             {/* Social rail */}
             <View style={styles.socialRail}>
-              <TouchableOpacity style={styles.socialBtn}>
-                <Text style={{ fontSize: 22 }}>♥</Text>
-                <Text style={styles.socialCount}>2.4k</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialBtn}>
-                <Text style={{ fontSize: 22 }}>💬</Text>
-                <Text style={styles.socialCount}>128</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialBtn}>
-                <Text style={{ fontSize: 22 }}>↗</Text>
-                <Text style={styles.socialCount}>Share</Text>
-              </TouchableOpacity>
+              {[{ e: '♥', n: '2.4k' }, { e: '💬', n: '128' }, { e: '↗', n: 'Share' }].map(s => (
+                <TouchableOpacity key={s.n} style={styles.socialBtn}>
+                  <Text style={{ fontSize: 22 }}>{s.e}</Text>
+                  <Text style={styles.socialCount}>{s.n}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            {/* Query / ask button */}
+            {/* Footer */}
             <View style={styles.storyFooter}>
-              <TouchableOpacity style={styles.queryBtn} onPress={() => setQueryMode(true)}>
-                <Text style={styles.queryBtnText}>Ask a question about this policy</Text>
+              <TouchableOpacity style={styles.queryBtn} onPress={openChat}>
+                <Text style={styles.queryBtnText}>💬  Ask a question about this policy</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.restartBtn} onPress={reset}>
-                <Text style={styles.restartBtnText}>Upload Another</Text>
-              </TouchableOpacity>
+              <View style={styles.storyFooterRow}>
+                <TouchableOpacity style={styles.restartBtn} onPress={reset}>
+                  <Text style={styles.restartBtnText}>Upload Another</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.slideCountPill}>
+                  <Text style={styles.slideCountText}>{currentSlide + 1} / {slides.length}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
 
-        {/* ── QUERY MODAL ──────────────────────────────────────── */}
-        <Modal visible={queryMode} animationType="slide" transparent>
-          <View style={styles.queryOverlay}>
-            <View style={styles.querySheet}>
-              <Text style={styles.queryTitle}>Ask Your Policy</Text>
-              <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator={false}>
-                <View style={styles.queryInput}>
-                  <Text style={styles.queryInputText}>{customQuery || 'Type your question...'}</Text>
+        {/* ═══════════════ CHAT PHASE ═══════════════════════════════════════ */}
+        {phase === 'chat' && (
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          >
+            {/* Chat header */}
+            <View style={styles.chatHeader}>
+              <TouchableOpacity
+                style={styles.chatBackBtn}
+                onPress={() => setPhase(slides.length > 0 ? 'stories' : 'upload')}
+              >
+                <Text style={{ fontSize: 20, color: Colors.textWhite }}>←</Text>
+              </TouchableOpacity>
+              <View style={styles.chatHeaderInfo}>
+                <View style={styles.storyAvatar}><Text style={{ fontSize: 14 }}>🤖</Text></View>
+                <View>
+                  <Text style={styles.chatHeaderTitle}>Policy Assistant</Text>
+                  <Text style={styles.chatHeaderSub}>
+                    {docName ? `Analysing "${docName}"` : 'General insurance Q&A'}
+                  </Text>
                 </View>
-              </ScrollView>
-
-              {/* Preset questions */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetRow}>
-                {[
-                  'Is maternity covered?',
-                  'Pre-existing conditions?',
-                  'Network hospitals?',
-                  'Claim limit?',
-                ].map(q => (
-                  <TouchableOpacity key={q} style={styles.presetPill} onPress={() => setCustomQuery(q)}>
-                    <Text style={styles.presetPillText}>{q}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              {/* Keyboard-style row for input */}
-              <View style={styles.queryInputRow}>
-                {['Is', 'What', 'How', 'Are', 'Does'].map(w => (
-                  <TouchableOpacity key={w} style={styles.wordChip} onPress={() => setCustomQuery(prev => `${prev} ${w}`)}>
-                    <Text style={styles.wordChipText}>{w}</Text>
-                  </TouchableOpacity>
-                ))}
               </View>
-
-              {queryResult && (
-                <View style={styles.queryResult}>
-                  <View style={[styles.confidenceBadge, { borderColor: CONFIDENCE_COLORS[queryResult.confidence_level], marginBottom: Spacing.sm }]}>
-                    <View style={[styles.confidenceDot, { backgroundColor: CONFIDENCE_COLORS[queryResult.confidence_level] }]} />
-                    <Text style={[styles.confidenceText, { color: CONFIDENCE_COLORS[queryResult.confidence_level] }]}>
-                      {queryResult.confidence_level}
-                    </Text>
-                    {queryResult.clause_reference && <Text style={styles.clauseRef}> · {queryResult.clause_reference}</Text>}
-                  </View>
-                  <Text style={styles.queryResultText}>{queryResult.simple_explanation}</Text>
-                  {queryResult.fallback && <Text style={styles.fallbackText}>{queryResult.fallback}</Text>}
-                </View>
-              )}
-
-              <View style={styles.queryActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setQueryMode(false); setQueryResult(null); setCustomQuery(''); }}>
-                  <Text style={styles.cancelBtnText}>Close</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.askBtn} onPress={handleCustomQuery} disabled={queryLoading}>
-                  {queryLoading
-                    ? <ActivityIndicator color={Colors.textWhite} />
-                    : <Text style={styles.askBtnText}>Ask AI</Text>
-                  }
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity onPress={onClose}>
+                <Text style={styles.closeBtn}>✕</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        </Modal>
+
+            {/* Messages */}
+            <ScrollView
+              ref={chatScrollRef}
+              style={styles.chatMessages}
+              contentContainerStyle={styles.chatMessagesContent}
+              showsVerticalScrollIndicator={false}
+              onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: true })}
+            >
+              {chatMessages.map(msg => (
+                <View
+                  key={msg.id}
+                  style={[
+                    styles.msgBubble,
+                    msg.role === 'user' ? styles.msgBubbleUser : styles.msgBubbleAI,
+                  ]}
+                >
+                  {msg.loading ? (
+                    <View style={styles.typingDots}>
+                      <ActivityIndicator size="small" color={Colors.lime} />
+                      <Text style={styles.typingText}>Thinking…</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Text style={[styles.msgText, msg.role === 'user' && styles.msgTextUser]}>
+                        {msg.text}
+                      </Text>
+                      {msg.confidence && (
+                        <View style={[styles.msgMeta, { marginTop: 8 }]}>
+                          <View style={[styles.confidenceDot, { backgroundColor: CONFIDENCE_COLORS[msg.confidence], width: 6, height: 6 }]} />
+                          <Text style={[styles.msgMetaText, { color: CONFIDENCE_COLORS[msg.confidence] }]}>
+                            {msg.confidence}
+                          </Text>
+                          {msg.clause ? (
+                            <Text style={styles.msgMetaText}> · {msg.clause}</Text>
+                          ) : null}
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* Preset pills */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.presetRow}
+              contentContainerStyle={{ paddingHorizontal: Spacing.base, gap: Spacing.sm }}
+            >
+              {PRESET_QUESTIONS.map(q => (
+                <TouchableOpacity
+                  key={q}
+                  style={styles.presetPill}
+                  onPress={() => sendMessage(q)}
+                  disabled={chatLoading}
+                >
+                  <Text style={styles.presetPillText}>{q}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Input bar */}
+            <View style={styles.chatInputBar}>
+              <TextInput
+                style={styles.chatInput}
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Ask anything about your policy…"
+                placeholderTextColor="rgba(255,255,255,0.35)"
+                multiline
+                maxLength={500}
+                returnKeyType="send"
+                onSubmitEditing={() => sendMessage(chatInput)}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]}
+                onPress={() => sendMessage(chatInput)}
+                disabled={!chatInput.trim() || chatLoading}
+              >
+                <Text style={{ fontSize: 18, color: Colors.textPrimary }}>↑</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        )}
 
       </View>
     </Modal>
   );
 };
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A0A14' },
 
-  // Blobs
-  blob: { position: 'absolute', borderRadius: 999 },
-  blob1: { width: 280, height: 280, backgroundColor: '#3B1A6E', opacity: 0.6, top: -80, right: -80 },
-  blob2: { width: 220, height: 220, backgroundColor: '#C0390A', opacity: 0.4, bottom: 100, left: -60 },
-  blobStory1: { width: 300, height: 300, backgroundColor: '#2A1A5E', opacity: 0.7, top: -60, right: -60 },
-  blobStory2: { width: 250, height: 250, backgroundColor: '#8B1A1A', opacity: 0.4, bottom: 200, left: -80 },
+  blob:       { position: 'absolute', borderRadius: 999 },
+  blob1:      { width: 280, height: 280, backgroundColor: '#3B1A6E', opacity: 0.6,  top: -80,    right: -80 },
+  blob2:      { width: 220, height: 220, backgroundColor: '#C0390A', opacity: 0.4,  bottom: 100, left: -60  },
+  blobStory1: { width: 300, height: 300, backgroundColor: '#2A1A5E', opacity: 0.7,  top: -60,    right: -60 },
+  blobStory2: { width: 250, height: 250, backgroundColor: '#8B1A1A', opacity: 0.4,  bottom: 200, left: -80  },
 
-  // Upload phase
-  uploadPhase: { flex: 1, paddingTop: 60 },
-  uploadContent: { flex: 1, paddingHorizontal: Spacing.xl, justifyContent: 'center' },
-  uploadIconWrap: { alignItems: 'center', marginBottom: Spacing.xl },
-  uploadShield: {
-    width: 80, height: 80, borderRadius: Radius.full,
-    backgroundColor: 'rgba(123, 47, 190, 0.4)',
-    borderWidth: 2, borderColor: 'rgba(123, 47, 190, 0.6)',
+  // ── Upload ──
+  uploadPhase:   { flex: 1, paddingTop: Platform.OS === 'ios' ? 56 : 36 },
+  uploadContent: { paddingHorizontal: Spacing.xl, paddingBottom: 60 },
+  uploadIconWrap:{ alignItems: 'center', marginBottom: Spacing.xl, marginTop: Spacing['2xl'] },
+  uploadShield:  {
+    width: 90, height: 90, borderRadius: Radius.full,
+    backgroundColor: 'rgba(123,47,190,0.35)',
+    borderWidth: 2, borderColor: 'rgba(123,47,190,0.6)',
     alignItems: 'center', justifyContent: 'center',
   },
   uploadTitle: {
     fontSize: Typography['3xl'], fontWeight: Typography.extrabold,
-    color: Colors.textWhite, textAlign: 'center', marginBottom: Spacing.md, lineHeight: 40,
+    color: Colors.textWhite, textAlign: 'center', marginBottom: Spacing.md, lineHeight: 42,
   },
   uploadSubtitle: {
-    fontSize: Typography.base, color: 'rgba(255,255,255,0.7)',
+    fontSize: Typography.base, color: 'rgba(255,255,255,0.65)',
     textAlign: 'center', lineHeight: 22, marginBottom: Spacing['2xl'],
   },
-  featureList: { gap: Spacing.sm },
+  featureList: { gap: Spacing.sm, marginBottom: Spacing['2xl'] },
   featureRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
@@ -474,42 +685,61 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: Radius.full,
     backgroundColor: Colors.purple, alignItems: 'center', justifyContent: 'center',
   },
-  featureText: { flex: 1 },
   featureTitle: { fontSize: Typography.sm, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
-  featureSub: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.6)', marginTop: 2 },
-  uploadFooter: { padding: Spacing.xl, paddingBottom: 40 },
+  featureSub:   { fontSize: Typography.xs, color: 'rgba(255,255,255,0.55)', marginTop: 2 },
+
+  uploadActions: { gap: Spacing.md },
   uploadBtn: {
-    backgroundColor: '#4A5C00',
-    borderRadius: Radius.full,
-    padding: Spacing.lg,
-    alignItems: 'center',
-    marginBottom: Spacing.md,
+    flexDirection: 'row',
+    backgroundColor: '#4A5C00', borderRadius: Radius.full,
+    padding: Spacing.lg, alignItems: 'center', justifyContent: 'center',
   },
   uploadBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.lime, letterSpacing: 1 },
-  swipeHint: { alignItems: 'center' },
-  swipeHintText: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 },
+  demoBtn: {
+    borderRadius: Radius.full, padding: Spacing.md,
+    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+  },
+  demoBtnText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.6)', fontWeight: Typography.medium },
+  chatQuickBtn: {
+    borderRadius: Radius.full, padding: Spacing.md,
+    alignItems: 'center', backgroundColor: 'rgba(123,47,190,0.3)',
+    borderWidth: 1, borderColor: 'rgba(123,47,190,0.5)',
+  },
+  chatQuickBtnText: { fontSize: Typography.sm, color: Colors.textWhite, fontWeight: Typography.semibold },
 
-  // Story header
+  // ── Processing ──
+  processingCard: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: Radius.xl, padding: Spacing.xl,
+    alignItems: 'center', width: W - Spacing.xl * 2,
+  },
+  processingTitle:    { fontSize: Typography.xl, fontWeight: Typography.bold, color: Colors.textWhite, marginBottom: Spacing.sm },
+  processingSubtitle: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: Spacing.lg },
+  processingSteps:    { width: '100%', gap: Spacing.sm },
+  processingStep:     { flexDirection: 'row', alignItems: 'center' },
+  processingStepText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.7)' },
+
+  // ── Story header (shared) ──
   storyHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: Spacing.base, paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingHorizontal: Spacing.base,
+    paddingTop: Platform.OS === 'ios' ? 68 : 48,
     paddingBottom: Spacing.md,
   },
   storyHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  storyHeaderActions: { flexDirection: 'row', alignItems: 'center' },
   storyAvatar: {
     width: 36, height: 36, borderRadius: Radius.full,
     backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
   },
-  storyUsername: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite },
+  storyUsername:    { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite },
   storySeriesLabel: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.6)', letterSpacing: 1 },
-  closeBtn: { fontSize: Typography.xl, color: Colors.textWhite },
+  closeBtn:         { fontSize: Typography.xl, color: Colors.textWhite, padding: 4 },
 
-  // Progress bars
+  // ── Progress bars ──
   progressBars: {
-    flexDirection: 'row', paddingHorizontal: Spacing.base,
-    gap: 4, paddingBottom: Spacing.sm,
+    flexDirection: 'row', paddingHorizontal: Spacing.base, gap: 4,
+    paddingBottom: Spacing.sm,
     paddingTop: Platform.OS === 'ios' ? 56 : 36,
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
   },
@@ -519,8 +749,8 @@ const styles = StyleSheet.create({
   },
   progressBarFill: { height: 3, backgroundColor: Colors.textWhite, borderRadius: Radius.full },
 
-  // Story slide
-  storySlide: { flex: 1 },
+  // ── Story slide ──
+  storySlide:    { flex: 1 },
   slideIconWrap: { alignItems: 'center', marginVertical: Spacing.xl },
   slideIconCircle: {
     width: 90, height: 90, borderRadius: Radius.full,
@@ -528,100 +758,131 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center', justifyContent: 'center',
   },
-  slideContent: { flex: 1, paddingHorizontal: Spacing.xl, paddingBottom: 160 },
+  slideContent:   { flex: 1, paddingHorizontal: Spacing.xl, paddingBottom: 175 },
   slideTitle: {
     fontSize: Typography['2xl'], fontWeight: Typography.extrabold,
     color: Colors.textWhite, marginBottom: Spacing.md, lineHeight: 34,
   },
   slideSubtitle: {
     fontSize: Typography.base, color: 'rgba(255,255,255,0.8)',
-    lineHeight: 24, textAlign: 'center', marginBottom: Spacing.lg,
+    lineHeight: 24, marginBottom: Spacing.lg,
   },
   confidenceBadge: {
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1, borderRadius: Radius.full,
     paddingHorizontal: Spacing.md, paddingVertical: 4,
-    alignSelf: 'center', gap: Spacing.xs,
+    alignSelf: 'flex-start', gap: Spacing.xs, marginBottom: Spacing.sm,
   },
   confidenceDot: { width: 8, height: 8, borderRadius: Radius.full },
-  confidenceText: { fontSize: Typography.xs, fontWeight: Typography.bold, letterSpacing: 0.5 },
-  clauseRef: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.5)' },
+  confidenceText:{ fontSize: Typography.xs, fontWeight: Typography.bold, letterSpacing: 0.5 },
+  clauseRef:     { fontSize: Typography.xs, color: 'rgba(255,255,255,0.5)' },
   fallbackText: {
-    fontSize: Typography.sm, color: 'rgba(255,255,255,0.5)',
-    textAlign: 'center', marginTop: Spacing.md, fontStyle: 'italic', lineHeight: 20,
+    fontSize: Typography.sm, color: 'rgba(255,255,255,0.45)',
+    fontStyle: 'italic', lineHeight: 20, marginTop: Spacing.xs,
   },
 
-  // Tap zones
-  tapLeft: { position: 'absolute', left: 0, top: 100, bottom: 200, width: W * 0.35 },
+  tapLeft:  { position: 'absolute', left: 0,  top: 100, bottom: 200, width: W * 0.35 },
   tapRight: { position: 'absolute', right: 0, top: 100, bottom: 200, width: W * 0.35 },
-  chevronLeft: { position: 'absolute', left: Spacing.lg, top: '45%' },
+  chevronLeft:  { position: 'absolute', left: Spacing.lg, top: '45%' },
   chevronRight: { position: 'absolute', right: Spacing.lg, top: '45%' },
-  chevronText: { fontSize: 32, color: 'rgba(255,255,255,0.3)' },
+  chevronText:  { fontSize: 32, color: 'rgba(255,255,255,0.3)' },
 
-  // Social rail
   socialRail: {
     position: 'absolute', right: Spacing.lg, bottom: 200,
     alignItems: 'center', gap: Spacing.lg,
   },
-  socialBtn: { alignItems: 'center', gap: 4 },
-  socialCount: { fontSize: Typography.xs, color: Colors.textWhite },
+  socialBtn:  { alignItems: 'center', gap: 4 },
+  socialCount:{ fontSize: Typography.xs, color: Colors.textWhite },
 
-  // Story footer
   storyFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: Spacing.xl, paddingBottom: 40,
-    gap: Spacing.sm,
+    padding: Spacing.xl, paddingBottom: 40, gap: Spacing.sm,
   },
   queryBtn: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: Radius.full, padding: Spacing.md,
-    alignItems: 'center', borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   queryBtnText: { fontSize: Typography.base, color: Colors.textWhite, fontWeight: Typography.semibold },
-  restartBtn: { alignItems: 'center', padding: Spacing.sm },
+  storyFooterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  restartBtn: { padding: Spacing.sm },
   restartBtnText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.5)' },
-
-  // Query modal
-  queryOverlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
-  querySheet: {
-    backgroundColor: '#1A1033',
-    borderTopLeftRadius: Radius['2xl'], borderTopRightRadius: Radius['2xl'],
-    padding: Spacing.xl, paddingBottom: 40,
-  },
-  queryTitle: { fontSize: Typography.xl, fontWeight: Typography.bold, color: Colors.textWhite, marginBottom: Spacing.md },
-  queryInput: {
-    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: Radius.md,
-    padding: Spacing.md, marginBottom: Spacing.md, minHeight: 60,
-  },
-  queryInputText: { fontSize: Typography.base, color: Colors.textWhite },
-  presetRow: { marginBottom: Spacing.md },
-  presetPill: {
+  slideCountPill: {
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: Radius.full,
+    paddingHorizontal: Spacing.md, paddingVertical: 4,
+  },
+  slideCountText: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.6)', fontWeight: Typography.semibold },
+
+  // ── Chat ──
+  chatHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.base,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: Spacing.md,
+    backgroundColor: '#12102A',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  chatBackBtn:    { padding: Spacing.xs },
+  chatHeaderInfo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, flex: 1, marginLeft: Spacing.sm },
+  chatHeaderTitle:{ fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite },
+  chatHeaderSub:  { fontSize: Typography.xs, color: 'rgba(255,255,255,0.5)' },
+
+  chatMessages:        { flex: 1, backgroundColor: '#0D0B1E' },
+  chatMessagesContent: { padding: Spacing.base, gap: Spacing.md, paddingBottom: 24 },
+
+  msgBubble: {
+    maxWidth: '85%', borderRadius: Radius.xl,
+    padding: Spacing.md,
+  },
+  msgBubbleUser: {
+    alignSelf: 'flex-end',
+    backgroundColor: Colors.purple,
+    borderBottomRightRadius: Radius.sm,
+  },
+  msgBubbleAI: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.09)',
+    borderBottomLeftRadius: Radius.sm,
+  },
+  msgText:     { fontSize: Typography.base, color: 'rgba(255,255,255,0.85)', lineHeight: 22 },
+  msgTextUser: { color: Colors.textWhite },
+  msgMeta:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  msgMetaText: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.45)' },
+
+  typingDots: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, padding: 4 },
+  typingText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.5)' },
+
+  presetRow: {
+    maxHeight: 52,
+    backgroundColor: '#12102A',
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)',
+  },
+  presetPill: {
+    backgroundColor: 'rgba(255,255,255,0.09)', borderRadius: Radius.full,
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs,
-    marginRight: Spacing.sm, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+    alignSelf: 'center',
   },
-  presetPillText: { fontSize: Typography.sm, color: Colors.textWhite },
-  queryInputRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginBottom: Spacing.md },
-  wordChip: {
-    backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.sm, paddingVertical: 4,
+  presetPillText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.7)' },
+
+  chatInputBar: {
+    flexDirection: 'row', alignItems: 'flex-end',
+    backgroundColor: '#12102A',
+    padding: Spacing.sm, paddingHorizontal: Spacing.base,
+    gap: Spacing.sm,
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
+    paddingBottom: Platform.OS === 'ios' ? 28 : Spacing.md,
   },
-  wordChipText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.7)' },
-  queryResult: {
-    backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: Radius.lg,
-    padding: Spacing.md, marginBottom: Spacing.md,
+  chatInput: {
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: Radius.xl, paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm, paddingBottom: Spacing.sm,
+    fontSize: Typography.base, color: Colors.textWhite,
+    maxHeight: 120,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
   },
-  queryResultText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.8)', lineHeight: 20 },
-  queryActions: { flexDirection: 'row', gap: Spacing.md },
-  cancelBtn: {
-    flex: 1, padding: Spacing.md, borderRadius: Radius.lg,
-    backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center',
+  sendBtn: {
+    width: 42, height: 42, borderRadius: Radius.full,
+    backgroundColor: Colors.lime, alignItems: 'center', justifyContent: 'center',
   },
-  cancelBtnText: { fontSize: Typography.base, color: Colors.textWhite, fontWeight: Typography.semibold },
-  askBtn: {
-    flex: 1, padding: Spacing.md, borderRadius: Radius.lg,
-    backgroundColor: Colors.purple, alignItems: 'center',
-  },
-  askBtnText: { fontSize: Typography.base, color: Colors.textWhite, fontWeight: Typography.bold },
 });

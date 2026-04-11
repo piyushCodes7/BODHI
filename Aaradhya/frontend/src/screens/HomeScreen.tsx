@@ -24,6 +24,7 @@ interface Props {
   onInsurancePress: () => void;
   onSocialPress: () => void;
   onTripPress: () => void;
+  onPayPress: () => void;
 }
 
 const INSIGHTS = [
@@ -46,7 +47,7 @@ const ACTIVITY = [
 ];
 
 export const HomeScreen: React.FC<Props> = ({
-  onNavigate, activeTab, onInsurancePress, onSocialPress, onTripPress,
+  onNavigate, activeTab, onInsurancePress, onSocialPress, onTripPress, onPayPress,
 }) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = useCallback(() => {
@@ -117,7 +118,7 @@ export const HomeScreen: React.FC<Props> = ({
             <TouchableOpacity
               key={a.label}
               style={styles.actionCard}
-              onPress={a.label === 'Split' ? onTripPress : a.onPress}
+              onPress={a.label === 'Split' ? onTripPress : a.label === 'Pay' ? onPayPress : a.onPress}
             >
               <View style={[styles.actionIcon, { backgroundColor: a.color }]}>
                 <Text style={{ fontSize: 22 }}>{a.icon}</Text>
