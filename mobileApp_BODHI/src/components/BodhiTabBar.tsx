@@ -1,11 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  BodhiTabBar.tsx — Custom floating bottom navigation
-//  Matches Stitch design exactly:
-//    • 5 tabs: Vault | Social | AI (elevated pill) | Market | Me
-//    • AI tab = neon lime circle elevated -24px from bar
-//    • Glass/frosted bar on light screens, dark on dark screens
-//    • Active non-AI tabs: violet icon + label
-//    • Inactive: slate-400
+//  Updated: Supports 6 tabs (Vault | Social | AI | Trade | Market | Me)
 // ─────────────────────────────────────────────────────────────
 
 import React from 'react';
@@ -20,26 +15,23 @@ import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadow } from '../theme/tokens';
 
-// ── Icons (simple SVG-style via Unicode Material Symbols — swap
-//    for react-native-vector-icons or @expo/vector-icons in Xcode) ──
-
 type TabConfig = {
   key: string;
   label: string;
-  icon: string;       // fallback text icon key
-  isDark?: boolean;   // whether the screen this tab leads to is dark
+  icon: string;
 };
 
-const TAB_CONFIG: TabConfig[] = [
-  { key: 'Vault',   label: 'VAULT',  icon: '💳' },
-  { key: 'Social',  label: 'SOCIAL', icon: '👥' },
-  { key: 'AI',      label: 'AI',     icon: '🎙' },
-  { key: 'Market',  label: 'MARKET', icon: '📈' },
-  { key: 'Me',      label: 'ME',     icon: '👤' },
-];
+// Map icons directly to the Route Names defined in AppNavigator
+const TAB_CONFIG: Record<string, TabConfig> = {
+  Vault:  { key: 'Vault',  label: 'VAULT',  icon: '💳' },
+  Social: { key: 'Social', label: 'SOCIAL', icon: '👥' },
+  AI:     { key: 'AI',     label: 'AI',     icon: '🎙' },
+  Trade:  { key: 'Trade',  label: 'TRADE',  icon: '💹' }, // New Trade Icon
+  Market: { key: 'Market', label: 'MARKET', icon: '📈' },
+  Me:     { key: 'Me',     label: 'ME',     icon: '👤' },
+};
 
 interface BodhiTabBarProps extends BottomTabBarProps {
-  /** Pass true from screens that have a dark background (#0c0e12) */
   isDarkScreen?: boolean;
 }
 
@@ -54,7 +46,6 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom || 16 }]}>
-      {/* Blur backdrop */}
       <BlurView
         style={StyleSheet.absoluteFill}
         blurType={dark ? 'dark' : 'light'}
@@ -62,18 +53,18 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
         reducedTransparencyFallbackColor={dark ? '#0c0e12' : '#f6f6fb'}
       />
 
-      {/* Tinted overlay */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: barBg }]} />
 
-      {/* Top hairline */}
       <View style={[styles.hairline, { backgroundColor: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }]} />
 
       <View style={styles.row}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          const tab = TAB_CONFIG[index];
-          const isAI = tab.key === 'AI';
+          
+          // Lookup config by route name (More robust than index)
+          const tab = TAB_CONFIG[route.name] || { label: route.name, icon: '⚪️' };
+          const isAI = route.name === 'AI';
 
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -91,10 +82,10 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
                     isFocused ? Shadow.neonLime : {},
                   ]}
                 >
-                  <Text style={styles.aiIcon}>🎙</Text>
+                  <Text style={styles.aiIcon}>{tab.icon}</Text>
                 </TouchableOpacity>
                 <Text style={[styles.aiLabel, { color: isFocused ? Colors.neonLimeDark : labelCol }]}>
-                  AI
+                  {tab.label}
                 </Text>
               </View>
             );
@@ -142,11 +133,9 @@ const styles = StyleSheet.create({
     flexDirection:  'row',
     alignItems:     'flex-end',
     justifyContent: 'space-around',
-    paddingHorizontal: 8,
+    paddingHorizontal: 4, // Tightened for 6 tabs
     paddingTop:     8,
   },
-
-  // ── Regular tab ─────────────────────────────────────────────
   tab: {
     flex:           1,
     alignItems:     'center',
@@ -154,33 +143,30 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   tabIcon: {
-    fontSize: 20,
+    fontSize: 18, // Slightly smaller for 6-tab fit
     marginBottom: 2,
   },
   tabLabel: {
     fontFamily:    Fonts.label,
-    fontSize:      9,
+    fontSize:      8, // Slightly smaller for 6-tab fit
     fontWeight:    '700',
-    letterSpacing: 1.2,
+    letterSpacing: 0.5,
   },
   tabLabelActive: {
     fontWeight: '800',
   },
-
-  // ── AI elevated pill ─────────────────────────────────────────
   aiWrapper: {
-    flex:       1,
+    flex:       1.2, // Give the elevated button slightly more room
     alignItems: 'center',
-    marginTop:  -28,            // lifts the pill up above bar
+    marginTop:  -32, 
   },
   aiButton: {
-    width:           56,
-    height:          56,
-    borderRadius:    28,
+    width:           52,
+    height:          52,
+    borderRadius:    26,
     backgroundColor: Colors.neonLime,
     alignItems:      'center',
     justifyContent:  'center',
-    // Neon glow from Stitch: shadow-[0_0_20px_rgba(209,252,0,0.5)]
     shadowColor:    '#d1fc00',
     shadowOffset:   { width: 0, height: 0 },
     shadowOpacity:  0.55,

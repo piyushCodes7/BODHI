@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-//  AppNavigator.tsx — Full navigation wiring
-// ─────────────────────────────────────────────────────────────
-
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer }           from '@react-navigation/native';
@@ -9,30 +5,27 @@ import { createNativeStackNavigator }    from '@react-navigation/native-stack';
 import { createBottomTabNavigator }      from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider }              from 'react-native-safe-area-context';
 
-import { BodhiTabBar }                                          from '../components/BodhiTabBar';
-import { AuthScreen }                                           from '../screens/AuthScreen';
-import { VaultScreen }                                          from '../screens/VaultScreen';
-import { SocialScreen }                                         from '../screens/SocialScreen';
-import { AIVoiceScreen }                                        from '../screens/AIVoiceScreen';
-import { MarketScreen }                                         from '../screens/MarketScreen';
-import { InsuranceStoriesScreen }                               from '../screens/InsuranceStoriesScreen';
-import { GroupTripWalletScreen, ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
-import { Colors, Fonts }                                        from '../theme/tokens';
+import { BodhiTabBar }                   from '../components/BodhiTabBar';
+import { AuthScreen }                    from '../screens/AuthScreen';
+import { VaultScreen }                   from '../screens/VaultScreen';
+import { SocialScreen }                  from '../screens/SocialScreen';
+import { AIVoiceScreen }                 from '../screens/AIVoiceScreen';
+import { MarketScreen }                  from '../screens/MarketScreen';
+import { PaperTradingScreen }            from '../screens/PaperTradingScreen'; // New
+import { InsuranceStoriesScreen }        from '../screens/InsuranceStoriesScreen';
+import { GroupTripWalletScreen, ImmuneSystemAlertScreen } from '../screens/TripAndAlertScreens';
+import { Colors, Fonts }                 from '../theme/tokens';
 
-// ── Me placeholder ────────────────────────────────────────────
+// ── Me Screen Placeholder ─────────────────────────────────────
 function MeScreen({ navigation }: any) {
   return (
     <View style={ph.root}>
       <Text style={ph.title}>Profile</Text>
-      {/* Quick links to modal screens for testing */}
       <TouchableOpacity style={ph.btn} onPress={() => navigation.navigate('InsuranceStories')}>
         <Text style={ph.btnText}>→ Insurance Stories</Text>
       </TouchableOpacity>
       <TouchableOpacity style={ph.btn} onPress={() => navigation.navigate('TripWallet')}>
         <Text style={ph.btnText}>→ Trip Wallet</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={ph.btn} onPress={() => navigation.navigate('ImmuneAlert')}>
-        <Text style={ph.btnText}>→ Immune Alert</Text>
       </TouchableOpacity>
     </View>
   );
@@ -59,6 +52,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Vault"  component={VaultScreen}   />
       <Tab.Screen name="Social" component={SocialScreen}  />
       <Tab.Screen name="AI"     component={AIVoiceScreen} />
+      <Tab.Screen name="Trade"  component={PaperTradingScreen} /> 
       <Tab.Screen name="Market" component={MarketScreen}  />
       <Tab.Screen name="Me"     component={MeScreen}      />
     </Tab.Navigator>
