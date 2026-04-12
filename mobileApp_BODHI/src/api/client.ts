@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Android emulators use 10.0.2.2 to point to the host machine's localhost.
 // iOS simulators use localhost directly.
-const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
+const BASE_URL = 'http://10.50.8.101:8000';
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
