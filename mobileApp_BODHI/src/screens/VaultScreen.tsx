@@ -6,15 +6,17 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { apiClient } from '../api/client'; // 🔒 Our secure API client
+import { apiClient } from '../api/client'; 
 import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 import { GradientCard } from '../components/GradientCard';
 import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
 
+// 1. ── IMPORT THE INSURANCE SCREEN ──
+import { InsuranceScreen } from './InsuranceScreen';
+
 const { width: W } = Dimensions.get('window');
 const S = Spacing;
 
-// Keep your beautiful AI insights and Actions static for now
 const AI_INSIGHTS = [
   { id:'1', label:'You saved\n₹2,300', tag:'SAVINGS', border: Colors.neonLime,       bg:['#d1fc00','#dcc9ff'] },
   { id:'2', label:'Unused\nSub',        tag:'ALERT',   border: Colors.hotPink,        bg:['#f74b6d','#ff81f5'] },
@@ -29,14 +31,16 @@ const ACTIONS = [
   { id:'voice',  icon:'🎙', label:'Voice',  sub:'AI COMMAND',    color: Colors.neonLime },
 ];
 
-// Helper to format currency safely
 const fmt = (n: number | undefined) => 
   n !== undefined ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '₹0.00';
 
-export function VaultScreen() {
+// 2. ── ADD 'navigation' TO PROPS ──
+export function VaultScreen({ navigation }: any) {
   const headerH = useHeaderHeight();
   
-  // ── Portfolio State ──
+  // 3. ── ADD MODAL STATE ──
+  const [showInsurance, setShowInsurance] = useState(false);
+  
   const [portfolio, setPortfolio] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +57,6 @@ export function VaultScreen() {
     }
   };
 
-  // Refresh data every time the user navigates to this tab
   useFocusEffect(
     useCallback(() => {
       fetchPortfolio();
@@ -73,7 +76,6 @@ export function VaultScreen() {
     );
   }
 
-  // Safely split the balance into whole numbers and decimals for your UI
   const totalValueRaw = portfolio?.total_value || 100000;
   const totalValueParts = totalValueRaw.toFixed(2).split('.');
   const wholeValue = Number(totalValueParts[0]).toLocaleString('en-IN');
@@ -84,19 +86,19 @@ export function VaultScreen() {
 
   return (
     <View style={styles.root}>
-      <BodhiHeader />
+      {/* 4. ── WIRE THE SHIELD BUTTON IN HEADER ── */}
+      <BodhiHeader onInsurancePress={() => setShowInsurance(true)} />
+      
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: headerH + 16 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.electricViolet} />}
       >
-        {/* Greeting (Dynamic Username) */}
         <View style={styles.greet}>
           <Text style={styles.greetName}>Hello, {portfolio?.username || 'Investor'}</Text>
           <Text style={styles.greetSub}>YOUR LIVE PAPER PORTFOLIO</Text>
         </View>
 
-        {/* Hero balance card (Dynamic API Data) */}
         <GradientCard style={styles.balanceCard}>
           <View style={styles.balanceInner}>
             <View style={styles.balanceTop}>
@@ -112,7 +114,6 @@ export function VaultScreen() {
             
             <View style={styles.balanceBottom}>
               <View style={styles.tokenRow}>
-                {/* Replaced Crypto with available Cash indicator */}
                 <View style={[styles.tokenPill, { width: 'auto', paddingHorizontal: 12 }]}>
                   <Text style={styles.tokenText}>CASH: {fmt(portfolio?.cash)}</Text>
                 </View>
@@ -127,7 +128,6 @@ export function VaultScreen() {
           </View>
         </GradientCard>
 
-        {/* AI Insights (Static for now) */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>AI Insights</Text>
           <TouchableOpacity><Text style={styles.viewAll}>VIEW ALL</Text></TouchableOpacity>
@@ -153,10 +153,21 @@ export function VaultScreen() {
           )}
         />
 
-        {/* Quick Actions */}
         <View style={styles.actionsGrid}>
           {ACTIONS.map(a => (
-            <TouchableOpacity key={a.id} activeOpacity={0.8} style={styles.actionCard}>
+            <TouchableOpacity 
+              key={a.id} 
+              activeOpacity={0.8} 
+              style={styles.actionCard}
+              // 5. ── WIRE THE PAY BUTTON ──
+              onPress={() => {
+                if (a.id === 'pay') {
+                  navigation.navigate('PaymentScreen');
+                } else if (a.id === 'split') {
+                  navigation.navigate('TripWallet');
+                }
+              }}
+            >
               <View style={[styles.actionIcon, { backgroundColor: a.color }]}>
                 <Text style={{ fontSize: 18 }}>{a.icon}</Text>
               </View>
@@ -166,7 +177,6 @@ export function VaultScreen() {
           ))}
         </View>
 
-        {/* Real Live Stock Holdings */}
         <Text style={[styles.sectionTitle, { marginBottom: S.lg }]}>Your Holdings</Text>
         <View style={styles.activityList}>
           {portfolio?.holdings?.length === 0 ? (
@@ -197,11 +207,16 @@ export function VaultScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* 6. ── DROP IN THE INSURANCE MODAL ── */}
+      <InsuranceScreen 
+        visible={showInsurance} 
+        onClose={() => setShowInsurance(false)} 
+      />
     </View>
   );
 }
 
-// ... (Keep all your existing StyleSheet logic exactly as it was) ...
 const styles = StyleSheet.create({
   root:   { flex:1, backgroundColor: Colors.surface },
   scroll: { paddingBottom:120, paddingHorizontal: S.xxl },

@@ -23,3 +23,38 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+export const PaymentAPI = {
+  createIntent: async (data: { user_id: number; amount: number; currency: string; description: string }) => {
+    // Assuming 'apiClient' is your Axios instance
+    const res = await apiClient.post('/payments/intent', data);
+    return res.data;
+  }
+};
+
+export const InsuranceAPI = {
+  ingest: async (uri: string, name: string) => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: uri,
+      name: name,
+      type: 'application/pdf'
+    } as any);
+
+    const res = await apiClient.post('/insurance/documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return res.data;
+  },
+  query: async (question: string, documentId?: string) => {
+    const res = await apiClient.post('/insurance/query', {
+      question,
+      document_id: documentId
+    });
+    return res.data;
+  },
+  listDocuments: async () => {
+    const res = await apiClient.get('/insurance/documents');
+    return res.data;
+  }
+};

@@ -20,6 +20,7 @@ interface BodhiHeaderProps {
   showSearch?: boolean;
   showMore?: boolean;
   onClose?: () => void;
+  onInsurancePress?: () => void; // 1. Added the prop definition here
   avatarInitial?: string;
   avatarUri?: string;
 }
@@ -30,6 +31,7 @@ export function BodhiHeader({
   showSearch = false,
   showMore = false,
   onClose,
+  onInsurancePress, // 2. Destructured the prop here
   avatarInitial = 'J',
 }: BodhiHeaderProps) {
   const insets = useSafeAreaInsets();
@@ -71,9 +73,12 @@ export function BodhiHeader({
               <Text style={[styles.iconText, { color: tintColor }]}>🔍</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
+          
+          {/* 3. Wired the onPress event to the Shield Icon */}
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={onInsurancePress}>
             <Text style={styles.iconText}>🛡</Text>
           </TouchableOpacity>
+          
           {showMore && (
             <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
               <Text style={[styles.iconText, { color: tintColor }]}>⋯</Text>

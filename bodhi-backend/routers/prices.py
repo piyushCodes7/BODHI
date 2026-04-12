@@ -20,7 +20,7 @@ async def get_market_status():
     return market_status()
 
 @router.get("/live")
-async def live_price(symbol: str = Query(..., example="RELIANCE.NS")):
+async def live_price(symbol: str = Query(..., examples=["RELIANCE.NS"])):
     """
     Fetch the latest price for a single NSE symbol.
     During market hours this is the live price.

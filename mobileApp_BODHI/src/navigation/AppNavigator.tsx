@@ -5,18 +5,19 @@ import { createNativeStackNavigator }    from '@react-navigation/native-stack';
 import { createBottomTabNavigator }      from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider }              from 'react-native-safe-area-context';
 
+// Screens
+import { PaymentScreen }                 from '../screens/PaymentScreen';
 import { BodhiTabBar }                   from '../components/BodhiTabBar';
 import { AuthScreen }                    from '../screens/AuthScreen';
 import { VaultScreen }                   from '../screens/VaultScreen';
 import { SocialScreen }                  from '../screens/SocialScreen';
 import { AIVoiceScreen }                 from '../screens/AIVoiceScreen';
 import { MarketScreen }                  from '../screens/MarketScreen';
-import { PaperTradingScreen }            from '../screens/PaperTradingScreen'; // New
+import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
 import { InsuranceStoriesScreen }        from '../screens/InsuranceStoriesScreen';
 import { GroupTripWalletScreen, ImmuneSystemAlertScreen } from '../screens/TripAndAlertScreens';
 import { Colors, Fonts }                 from '../theme/tokens';
 
-// ── Me Screen Placeholder ─────────────────────────────────────
 function MeScreen({ navigation }: any) {
   return (
     <View style={ph.root}>
@@ -38,7 +39,6 @@ const ph = StyleSheet.create({
   btnText: { fontFamily: Fonts.label, fontSize:13, fontWeight:'700', color: Colors.electricViolet },
 });
 
-// ── Navigators ────────────────────────────────────────────────
 const Tab       = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -77,6 +77,13 @@ function RootNavigator() {
         name="ImmuneAlert"
         component={ImmuneSystemAlertScreen}
         options={{ presentation:'modal', animation:'fade_from_bottom' }}
+      />
+      
+      {/* PERFECTLY WIRED PAYMENT SCREEN */}
+      <RootStack.Screen
+        name="PaymentScreen"
+        component={PaymentScreen}
+        options={{ animation:'slide_from_right' }}
       />
     </RootStack.Navigator>
   );

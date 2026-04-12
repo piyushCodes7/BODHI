@@ -17,6 +17,7 @@
     "axios": "^1.15.0",
     "react": "18.2.0",
     "react-native": "0.73.4",
+    "react-native-document-picker": "^9.3.1",
     "react-native-gesture-handler": "^2.31.1",
     "react-native-gifted-charts": "^1.4.76",
     "react-native-haptic-feedback": "^3.0.0",

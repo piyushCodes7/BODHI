@@ -11,6 +11,11 @@ import models.social  # This ensures the Social tables get registered to the Bas
 # Routers
 from routers import auth, trade, search, prices, simulate
 from routers.social import router as social_router
+from routers import payments, insurance, wallets, expenses
+
+import models.wallets
+import models.expenses
+import models.payments
 
 # 1. Lifespan (Building the database)
 @asynccontextmanager
@@ -54,3 +59,7 @@ app.include_router(simulate.router, prefix="/simulate", tags=["Simulate"])
 
 # And here is your social router, safely placed AFTER the app exists!
 app.include_router(social_router, prefix="/social", tags=["Social"])
+app.include_router(payments.router)
+app.include_router(insurance.router)
+app.include_router(wallets.router)
+app.include_router(expenses.router)
