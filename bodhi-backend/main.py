@@ -1,19 +1,29 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from fastapi.security import OAuth2PasswordBearer
 
-# Database & Routers
+# Database & Models
 from database import engine, Base
 import models.portfolio
-from routers import auth, trade, search, prices, simulate
+import models.social  # This ensures the Social tables get registered to the Base
 
+# Routers
+from routers import auth, trade, search, prices, simulate
+from routers.social import router as social_router
+
+# 1. Lifespan (Building the database)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print("Building database tables...")
+    
     async with engine.begin() as conn:
-        print("Building database tables...")
         await conn.run_sync(Base.metadata.create_all)
+        
+    print("Tables built successfully!")
     yield
 
+# 2. CRITICAL: Create the app!
 app = FastAPI(
     title="BODHI API",
     version="1.0.0",
@@ -22,11 +32,7 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True} 
 )
 
-# --- SECURITY DEFINITION ---
-# This tells FastAPI how to handle the lock icon and token injection
-from fastapi.security import OAuth2PasswordBearer
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
+# 3. Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,10 +40,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# --- ROUTERS ---
 
+# --- SECURITY DEFINITION ---
+# This tells FastAPI how to handle the lock icon and token injection
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+# 4. NOW we attach all the routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(trade.router, prefix="/trade", tags=["Trade"])
 app.include_router(search.router, prefix="/search", tags=["Search"])
 app.include_router(prices.router, prefix="/price", tags=["Prices"])
 app.include_router(simulate.router, prefix="/simulate", tags=["Simulate"])
+
+# And here is your social router, safely placed AFTER the app exists!
+app.include_router(social_router, prefix="/social", tags=["Social"])
