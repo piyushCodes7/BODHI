@@ -352,7 +352,7 @@ cd mobileApp_BODHI
 **1. Install Node packages**
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 **2. Install iOS dependencies (macOS only)**
