@@ -273,7 +273,7 @@ sudo -u postgres createdb bodhi
 ### Phase 1 — Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/BODHI.git
+git clone https://github.com/govindjindal/BODHI.git
 cd BODHI
 ```
 
@@ -334,7 +334,7 @@ GEMINI_API_KEY=your_google_gemini_api_key_here
 **5. Start the backend server**
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+python3 -m uvicorn main:app --reload --host 0.0.0.0
 ```
 
 ✅ Backend is live. Visit [http://localhost:8000/docs](http://localhost:8000/docs) for the interactive API explorer. **Keep this terminal open.**
@@ -420,9 +420,9 @@ BODHI is built on a **Zero-Knowledge Architecture**:
 
 | Name | Role |
 |---|---|
-|**Govind Jindal** | Backend Architecture & AI/ML Pipeline |
-| **Aaradhya Khanna** | Mobile UI/UX & React Native |
-| **Piyush Sharma** | DevOps, Auth & Payment Integration |
+|**Govind Jindal** | Backend + Frontend Architecture, Integration|
+| **Aaradhya Khanna** | RAG LLM Architecture & Payment Integration|
+| **Piyush Sharma** | SMS Parser, Security & BODHI Brain |
 
 ---
 
