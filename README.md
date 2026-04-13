@@ -381,6 +381,52 @@ npx react-native start --reset-cache
 Click i for ios
 Click a for android
 ```
+### 📱 Running on a Physical Mobile Device
+
+If you are running the app on a physical phone (or certain emulators), your phone cannot connect to `localhost` or `127.0.0.1` because it thinks "localhost" is the phone itself. 
+
+You must point the React Native app to your computer's actual Local Wi-Fi IP address. **Make sure your phone and computer are connected to the exact same Wi-Fi network.**
+
+#### Step 1: Find your Computer's IP Address
+Open your terminal or command prompt and run the command for your operating system:
+
+* **🍎 macOS:**
+```bash
+  ipconfig getifaddr en0
+```
+
+(If that returns blank, try en1 or check System Settings > Network > Wi-Fi).
+
+* 🪟 Windows:
+```bash
+ipconfig
+```
+
+(Look for the line that says IPv4 Address under your Wi-Fi or Ethernet adapter).
+
+* 🐧 Linux:
+
+```bash
+hostname -I
+```
+#### Step 2: Update the React Native App
+Once you have your IP address (e.g., 192.168.1.55), open your API configuration file (usually located at mobileApp_BODHI/src/api/client.ts or similar).
+
+Change the BASE_URL to use your computer's IP address:
+
+TypeScript
+// ❌ WRONG (Works for web, breaks for physical phones)
+// const BASE_URL = 'http://localhost:8000';
+
+// ✅ CORRECT (Replace with your actual IP address)
+const BASE_URL = '[http://192.168.1.55:8000](http://192.168.1.55:8000)';
+
+### Step 3: Run the Backend on the Network
+Finally, make sure your FastAPI backend is actually broadcasting to the network, not just internally. Start your Uvicorn server with the --host 0.0.0.0 flag:
+
+```bash
+python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000 --reload
+```
 
 🎉 **BODHI is now running locally.**
 
