@@ -60,3 +60,10 @@ razorpay
 uvicorn
 fastapi
 sqlalchemy
+asyncpg
+jwt
+passlib
+python-multipart
+yfinance
+greenlet
+postgres
