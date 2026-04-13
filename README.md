@@ -1,28 +1,35 @@
-<div align="center">
-
-```
+<p align="center">
+<pre>
 ██████╗  ██████╗ ██████╗ ██╗  ██╗██╗
 ██╔══██╗██╔═══██╗██╔══██╗██║  ██║██║
 ██████╔╝██║   ██║██║  ██║███████║██║
 ██╔══██╗██║   ██║██║  ██║██╔══██║██║
 ██████╔╝╚██████╔╝██████╔╝██║  ██║██║
 ╚═════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝
-```
+</pre>
+</p>
 
-**Your Money. Alive.**
+<p align="center"><strong>Your Money. Alive.</strong></p>
 
-*The Financial Immune System Built for Gen-Z*
+<p align="center"><em>The Financial Immune System Built for Gen-Z</em></p>
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React Native](https://img.shields.io/badge/Mobile-React%20Native-61DAFB?style=flat-square&logo=react)](https://reactnative.dev/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
-[![TensorFlow Lite](https://img.shields.io/badge/AI-TFLite-FF6F00?style=flat-square&logo=tensorflow)](https://www.tensorflow.org/lite)
-[![License](https://img.shields.io/badge/License-Hackathon%20Demo-lightgrey?style=flat-square)](#license)
+<p align="center">
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi" alt="FastAPI"/></a>
+  <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/Mobile-React%20Native-61DAFB?style=flat-square&logo=react" alt="React Native"/></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql" alt="PostgreSQL"/></a>
+  <a href="https://www.tensorflow.org/lite"><img src="https://img.shields.io/badge/AI-TFLite-FF6F00?style=flat-square&logo=tensorflow" alt="TensorFlow Lite"/></a>
+  <img src="https://img.shields.io/badge/License-Hackathon%20Demo-lightgrey?style=flat-square" alt="License"/>
+</p>
 
-Built by **Team BUGHACKERS 404** — Govind Jindal · Aaradhya Khanna · Piyush Sharma  
-*FINVASIA Innovation Hackathon 2026*
+<p align="center">
+  Built by <strong>Team BUGHACKERS 404</strong> — Govind Jindal · Aaradhya Khanna · Piyush Sharma<br/>
+  <em>FINVASIA Innovation Hackathon 2026</em>
+</p>
 
-</div>
+<p align="center">
+  <img src="assets/banner.png" alt="BODHI Banner" width="100%"/>
+  <!-- Replace assets/banner.png with your hero banner or app logo -->
+</p>
 
 ---
 
@@ -82,6 +89,21 @@ An on-device AI layer powered by MobileBERT + LSTM models that learns your spend
 
 ---
 
+## 📱 Interface Showcase
+
+<p align="center">
+  <img src="assets/screenshots/login.png" alt="Login Screen" width="22%"/>
+  <img src="assets/screenshots/social-hub.png" alt="Social Hub" width="22%"/>
+  <img src="assets/screenshots/trip-wallet.png" alt="Trip Wallet" width="22%"/>
+  <img src="assets/screenshots/venture-club.png" alt="Venture Club" width="22%"/>
+</p>
+<p align="center">
+  <em>Login &nbsp;·&nbsp; Social Hub &nbsp;·&nbsp; Trip Wallet &nbsp;·&nbsp; Venture Club</em>
+</p>
+<!-- Replace each src path with your actual simulator/device screenshots -->
+
+---
+
 ## 🧠 System Architecture
 
 BODHI runs on a scalable, AI-first microservices architecture. Privacy-sensitive logic stays on-device; cloud intelligence handles everything else.
@@ -123,6 +145,13 @@ graph LR
     MS1 & MS2 & MS3 --> DB1 & DB2
     CL --> DB3 & DB4
 ```
+
+> 💡 If your Markdown renderer does not support Mermaid, view the full architecture diagram here:
+
+<p align="center">
+  <img src="assets/architecture.png" alt="BODHI System Architecture" width="85%"/>
+  <!-- Replace assets/architecture.png with an exported image of the architecture diagram -->
+</p>
 
 ---
 
@@ -390,11 +419,13 @@ BODHI is built on a **Zero-Knowledge Architecture**:
 
 ## 👥 Team
 
-| Name | Role |
-|---|---|
-| **Govind Jindal** | Backend + Mobile App Architecture |
-| **Aaradhya Khanna** | Payment Integration & RAG LLM |
-| **Piyush Sharma** | SMS Parsing & BODHI Brain |
+| | Name | Role |
+|---|---|---|
+| <img src="assets/team/govind.png" width="48" height="48" style="border-radius:50%"/> | **Govind Jindal** | Backend Architecture & AI/ML Pipeline |
+| <img src="assets/team/aaradhya.png" width="48" height="48" style="border-radius:50%"/> | **Aaradhya Khanna** | Mobile UI/UX & React Native |
+| <img src="assets/team/piyush.png" width="48" height="48" style="border-radius:50%"/> | **Piyush Sharma** | DevOps, Auth & Payment Integration |
+
+<!-- Replace each src with a headshot or avatar — 200×200px square images work best -->
 
 ---
 
@@ -404,10 +435,6 @@ This project was built for the **FINVASIA Innovation Hackathon 2026** and is sha
 
 ---
 
-<div align="center">
+<p align="center">Made with 🧠 and way too much coffee by <strong>Team BUGHACKERS 404</strong></p>
 
-Made with 🧠 and way too much coffee by **Team BUGHACKERS 404**
-
-*BODHI — Your money. Alive.*
-
-</div>
+<p align="center"><em>BODHI — Your money. Alive.</em></p>
