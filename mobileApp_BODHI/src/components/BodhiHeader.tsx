@@ -1,164 +1,169 @@
-// ─────────────────────────────────────────────────────────────
-//  BodhiHeader.tsx — Top navigation bar
-//  Uses useSafeAreaInsets() — works on Dynamic Island iPhones
-// ─────────────────────────────────────────────────────────────
-
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
-import { Colors, Fonts, Spacing } from '../theme/tokens';
+import { useNavigation } from '@react-navigation/native';
+import { Shield, X, User, Landmark, ShieldCheck, LifeBuoy, LogOut, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import { Colors, Spacing } from '../theme/tokens'; 
+
+const getInitials = (name?: string) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ');
+  if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 1).toUpperCase();
+};
+
+export function useHeaderHeight() {
+  const insets = useSafeAreaInsets();
+  return insets.top + 74; 
+}
 
 interface BodhiHeaderProps {
   dark?: boolean;
-  showClose?: boolean;
-  showSearch?: boolean;
-  showMore?: boolean;
-  onClose?: () => void;
-  onInsurancePress?: () => void; // 1. Added the prop definition here
-  avatarInitial?: string;
-  avatarUri?: string;
+  onInsurancePress?: () => void;
+  showBack?: boolean;
+  onBack?: () => void;
+  username?: string;
 }
 
-export function BodhiHeader({
-  dark = false,
-  showClose = false,
-  showSearch = false,
-  showMore = false,
-  onClose,
-  onInsurancePress, // 2. Destructured the prop here
-  avatarInitial = 'J',
-}: BodhiHeaderProps) {
+export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, username }: BodhiHeaderProps) {
   const insets = useSafeAreaInsets();
-  const tintColor = dark ? '#9ca3af' : Colors.tabInactive;
+  const navigation = useNavigation<any>();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const initials = getInitials(username);
+  const displayName = username || 'BODHI User';
+
+  // --- THE FIX: Dynamic text color based on the `dark` prop ---
+  const headerTextColor = dark ? '#FFFFFF' : '#0A0A14';
+  const shadowColor = dark ? 'rgba(0,0,0,0.5)' : 'transparent';
+
+  const handleLogout = () => {
+    setProfileOpen(false);
+    navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+  };
 
   return (
-    <View style={[styles.wrapper, { paddingTop: insets.top }]}>
-      {/* Blur backdrop */}
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType={dark ? 'dark' : 'light'}
-        blurAmount={20}
-        reducedTransparencyFallbackColor={dark ? '#0c0e12' : '#fff'}
-      />
-      {/* Tinted overlay */}
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: dark ? 'rgba(12,14,18,0.65)' : 'rgba(255,255,255,0.65)' },
-        ]}
-      />
+    <>
+      <View style={[styles.wrapper, { paddingTop: insets.top }]}>
+        <BlurView style={StyleSheet.absoluteFill} blurType={dark ? 'dark' : 'light'} blurAmount={20} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(12,14,18,0.65)' : 'rgba(255,255,255,0.2)' }]} />
 
-      <View style={styles.inner}>
-        {/* Left: Avatar + wordmark */}
-        <View style={styles.left}>
-          <View style={styles.avatarRing}>
-            <View style={[styles.avatar, { backgroundColor: dark ? '#1e1040' : '#2d1060' }]}>
-              <Text style={styles.avatarInitials}>{avatarInitial}</Text>
-            </View>
-            <View style={[styles.onlineDot, { borderColor: dark ? '#0c0e12' : '#fff' }]} />
+        <View style={styles.inner}>
+          <View style={styles.sideColumn}>
+            {showBack ? (
+              <TouchableOpacity onPress={onBack} style={styles.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <ArrowLeft size={28} color={headerTextColor} /> {/* Dynamic Color */}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.avatarRing} onPress={() => setProfileOpen(true)} activeOpacity={0.8}>
+                <View style={[styles.avatar, { backgroundColor: '#1e1040' }]}>
+                  <Text style={styles.avatarInitials}>{initials}</Text>
+                </View>
+                <View style={styles.onlineDot} />
+              </TouchableOpacity>
+            )}
           </View>
-          <Text style={[styles.wordmark, { color: dark ? '#a78bfa' : '#7c3aed' }]}>BODHI</Text>
-        </View>
 
-        {/* Right: icons */}
-        <View style={styles.right}>
-          {showSearch && (
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-              <Text style={[styles.iconText, { color: tintColor }]}>🔍</Text>
+          <View style={styles.centerLogo} pointerEvents="none">
+            {/* Dynamic Color and Shadow applied here */}
+            <Text style={[styles.logoText, { color: headerTextColor, textShadowColor: shadowColor }]}>
+              BODHI
+            </Text>
+          </View>
+
+          <View style={[styles.sideColumn, { alignItems: 'flex-end' }]}>
+            <TouchableOpacity style={styles.iconBtn} onPress={onInsurancePress}>
+               <Shield size={26} color={Colors.neonLime} strokeWidth={2} />
             </TouchableOpacity>
-          )}
-          
-          {/* 3. Wired the onPress event to the Shield Icon */}
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={onInsurancePress}>
-            <Text style={styles.iconText}>🛡</Text>
-          </TouchableOpacity>
-          
-          {showMore && (
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-              <Text style={[styles.iconText, { color: tintColor }]}>⋯</Text>
-            </TouchableOpacity>
-          )}
-          {showClose && (
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7} onPress={onClose}>
-              <Text style={[styles.iconText, { color: tintColor }]}>✕</Text>
-            </TouchableOpacity>
-          )}
+          </View>
         </View>
       </View>
-    </View>
+
+      <Modal visible={profileOpen} transparent animationType="slide" onRequestClose={() => setProfileOpen(false)}>
+        <View style={styles.modalOverlay}>
+          <BlurView style={StyleSheet.absoluteFill} blurType="dark" blurAmount={10} />
+          <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setProfileOpen(false)} />
+          
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom || 24 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Account</Text>
+              <TouchableOpacity onPress={() => setProfileOpen(false)} style={styles.closeBtn}>
+                <X size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.userInfoCard}>
+              <View style={[styles.largeAvatar, { backgroundColor: '#1e1040' }]}>
+                <Text style={styles.largeAvatarText}>{initials}</Text>
+              </View>
+              <View style={styles.userInfoText}>
+                <Text style={styles.userName}>{displayName}</Text>
+                <Text style={styles.userUpi}>{displayName.split(' ')[0].toLowerCase()}@bodhi</Text>
+              </View>
+            </View>
+
+            <View style={styles.menuGroup}>
+              <MenuOption Icon={User} title="Personal Details" />
+              <MenuOption Icon={Landmark} title="Bank Accounts & Cards" />
+              <MenuOption Icon={ShieldCheck} title="Security & Biometrics" />
+              <MenuOption Icon={LifeBuoy} title="Help & Support" />
+            </View>
+
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
+              <LogOut size={20} color="#FF2A5F" strokeWidth={2.5} />
+              <Text style={styles.logoutText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
-// ── exported helper so screens know how tall the header is ──
-export function useHeaderHeight() {
-  const insets = useSafeAreaInsets();
-  // top inset + inner row (16 padding top + ~42px row + 16 padding bottom)
-  return insets.top + 74;
-}
+const MenuOption = ({ Icon, title }: { Icon: any, title: string }) => (
+  <TouchableOpacity style={styles.menuOption} activeOpacity={0.7}>
+    <View style={styles.menuOptionLeft}>
+      <Icon size={22} color="#A0A0B0" strokeWidth={2} />
+      <Text style={styles.menuOptionText}>{title}</Text>
+    </View>
+    <ChevronRight size={20} color="#606070" />
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
-  wrapper: {
-    position: 'absolute',
-    top:      0,
-    left:     0,
-    right:    0,
-    zIndex:   50,
-    overflow: 'hidden',
-  },
-  inner: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
-    paddingHorizontal: Spacing.xxl,
-    paddingVertical:   Spacing.lg,
-  },
-  left:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  right: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  wrapper: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, overflow: 'hidden' },
+  inner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.xl, height: 64 },
+  
+  sideColumn: { width: 60, justifyContent: 'center', zIndex: 20 }, 
+  
+  centerLogo: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  logoText: { fontSize: 28, fontWeight: '900', letterSpacing: -0.5, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
+  
+  avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: Colors.neonLime, padding: 2 },
+  avatar: { width: '100%', height: '100%', borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  avatarInitials: { fontSize: 15, fontWeight: '700', color: Colors.neonLime },
+  onlineDot: { position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#0A0A14' },
+  iconBtn: { padding: 8 },
 
-  avatarRing: {
-    width:        42,
-    height:       42,
-    borderRadius: 21,
-    borderWidth:  2,
-    borderColor:  Colors.neonLime,
-    padding:      2,
-  },
-  avatar: {
-    width:          '100%',
-    height:         '100%',
-    borderRadius:   16,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  avatarInitials: {
-    fontFamily:  Fonts.headline,
-    fontSize:    15,
-    fontWeight:  '700',
-    color:       Colors.neonLime,
-  },
-  onlineDot: {
-    position:         'absolute',
-    bottom:           0,
-    right:            0,
-    width:            12,
-    height:           12,
-    borderRadius:     6,
-    backgroundColor:  Colors.neonLime,
-    borderWidth:      2,
-  },
-  wordmark: {
-    fontFamily:   Fonts.headline,
-    fontSize:     22,
-    fontWeight:   '900',
-    fontStyle:    'italic',
-    letterSpacing: -0.5,
-  },
-  iconBtn:  { padding: 8 },
-  iconText: { fontSize: 18 },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: Spacing.xl, paddingTop: Spacing.xl, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xl },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
+  closeBtn: { padding: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20 },
+  
+  userInfoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A24', padding: Spacing.lg, borderRadius: 20, marginBottom: Spacing.xl },
+  largeAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md, borderWidth: 2, borderColor: Colors.electricViolet },
+  largeAvatarText: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
+  userInfoText: { flex: 1 },
+  userName: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
+  userUpi: { fontSize: 14, color: '#A0A0B0', marginTop: 2 },
+
+  menuGroup: { backgroundColor: '#1A1A24', borderRadius: 20, overflow: 'hidden', marginBottom: Spacing.xl },
+  menuOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  menuOptionLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+  menuOptionText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, backgroundColor: 'rgba(255, 42, 95, 0.1)', paddingVertical: Spacing.lg, borderRadius: 20, marginBottom: Spacing.lg },
+  logoutText: { fontSize: 16, fontWeight: '700', color: '#FF2A5F' },
 });

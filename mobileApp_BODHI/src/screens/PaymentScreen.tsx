@@ -12,8 +12,21 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import {
+  Send,
+  QrCode,
+  Download,
+  Users,
+  Smartphone,
+  Zap,
+  Tv,
+  ArrowLeft,
+  Check,
+  ChevronRight
+} from 'lucide-react-native'; // <-- Professional Vector Icons
 import { Colors, Typography, Spacing, Radius, Shadow } from '../theme';
-import { BodhiHeader, BottomNav, GradientCard, SectionHeader } from '../components/shared';
+import { BottomNav, GradientCard, SectionHeader } from '../components/shared';
 import type { NavTab } from '../components/shared';
 import { PaymentAPI } from '../api/client';
 
@@ -33,40 +46,48 @@ interface Contact {
   id: string;
   name: string;
   phone: string;
-  avatar: string;
   recent?: boolean;
   upiId?: string;
 }
 
+// Emjois removed. We will auto-generate professional initials from the names.
 const CONTACTS: Contact[] = [
-  { id: '1', name: 'Hana Mori',    phone: '+91 98765 43210', avatar: '👩',    recent: true,  upiId: 'hana@bodhi'  },
-  { id: '2', name: 'Kenji Sato',   phone: '+91 87654 32109', avatar: '🧔',    recent: true,  upiId: 'kenji@bodhi' },
-  { id: '3', name: 'Priya Sharma', phone: '+91 76543 21098', avatar: '👩‍🦰',  upiId: 'priya@bodhi' },
-  { id: '4', name: 'Arjun Nair',   phone: '+91 65432 10987', avatar: '🧑',    upiId: 'arjun@bodhi' },
-  { id: '5', name: 'Zara Khan',    phone: '+91 54321 09876', avatar: '👩‍💼',  upiId: 'zara@bodhi'  },
+  { id: '1', name: 'Hana Mori', phone: '+91 98765 43210', recent: true, upiId: 'hana@bodhi' },
+  { id: '2', name: 'Kenji Sato', phone: '+91 87654 32109', recent: true, upiId: 'kenji@bodhi' },
+  { id: '3', name: 'Priya Sharma', phone: '+91 76543 21098', upiId: 'priya@bodhi' },
+  { id: '4', name: 'Arjun Nair', phone: '+91 65432 10987', upiId: 'arjun@bodhi' },
+  { id: '5', name: 'Zara Khan', phone: '+91 54321 09876', upiId: 'zara@bodhi' },
 ];
 
 const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
 
 const RECENT_TRANSACTIONS = [
-  { id: 'r1', name: 'Hana Mori',  amount: 1200, type: 'sent',     time: '2h ago',    avatar: '👩' },
-  { id: 'r2', name: 'Kenji Sato', amount: 3400, type: 'received', time: 'Yesterday', avatar: '🧔' },
-  { id: 'r3', name: 'Netflix',    amount:  799, type: 'sent',     time: '3 days ago',avatar: '📺' },
+  { id: 'r1', name: 'Hana Mori', amount: 1200, type: 'sent', time: '2h ago' },
+  { id: 'r2', name: 'Kenji Sato', amount: 3400, type: 'received', time: 'Yesterday' },
+  { id: 'r3', name: 'Netflix', amount: 799, type: 'sent', time: '3 days ago', isService: true }, // Flagged to use a TV icon
 ];
+
+// Helper function to extract initials (e.g., "Hana Mori" -> "HM")
+const getInitials = (name: string) => {
+  const parts = name.trim().split(' ');
+  if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+};
 
 export const PaymentScreen: React.FC<Props> = ({
   onNavigate, activeTab, onInsurancePress, onBack, currentUserId,
 }) => {
-  const [mode, setMode]                         = useState<PaymentMode>('home');
-  const [selectedContact, setSelectedContact]   = useState<Contact | null>(null);
-  const [amount, setAmount]                     = useState('');
-  const [note, setNote]                         = useState('');
-  const [phoneInput, setPhoneInput]             = useState('');
-  const [searchQuery, setSearchQuery]           = useState('');
-  const [loading, setLoading]                   = useState(false);
-  const [paySuccess, setPaySuccess]             = useState(false);
-  const [inputTab, setInputTab]                 = useState<'contacts' | 'phone' | 'upi'>('contacts');
-  const [qrScanning, setQrScanning]             = useState(false);
+  const navigation = useNavigation<any>();
+  const [mode, setMode] = useState<PaymentMode>('home');
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [paySuccess, setPaySuccess] = useState(false);
+  const [inputTab, setInputTab] = useState<'contacts' | 'phone' | 'upi'>('contacts');
+  const [qrScanning, setQrScanning] = useState(false);
 
   const successAnim = useRef(new Animated.Value(0)).current;
 
@@ -94,7 +115,7 @@ export const PaymentScreen: React.FC<Props> = ({
       if (currentUserId) {
         await PaymentAPI.createIntent({
           user_id: currentUserId,
-          amount: Math.round(parseFloat(amount) * 100), // convert to paise
+          amount: Math.round(parseFloat(amount) * 100),
           currency: 'INR',
           description: note || `Payment to ${selectedContact?.name ?? phoneInput}`,
         });
@@ -142,7 +163,7 @@ export const PaymentScreen: React.FC<Props> = ({
         <View style={[styles.blob, styles.blob1]} />
         <View style={[styles.blob, styles.blob2]} />
         <Animated.View style={[styles.successCircle, { transform: [{ scale: successAnim }] }]}>
-          <Text style={{ fontSize: 52, color: Colors.textPrimary }}>✓</Text>
+          <Check size={56} color="#000000" strokeWidth={3} />
         </Animated.View>
         <Text style={styles.successTitle}>Payment Sent!</Text>
         <Text style={styles.successSub}>
@@ -161,8 +182,8 @@ export const PaymentScreen: React.FC<Props> = ({
         <View style={[styles.blob, styles.blob2]} />
 
         <View style={styles.darkHeader}>
-          <TouchableOpacity onPress={() => setMode('send')} style={styles.backBtn}>
-            <Text style={styles.darkBackText}>←</Text>
+          <TouchableOpacity onPress={() => setMode('send')} style={styles.backBtn} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+            <ArrowLeft size={28} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.darkHeaderTitle}>Confirm Payment</Text>
           <View style={{ width: 36 }} />
@@ -170,7 +191,13 @@ export const PaymentScreen: React.FC<Props> = ({
 
         <ScrollView contentContainerStyle={styles.confirmBody}>
           <View style={styles.confirmAvatarWrap}>
-            <Text style={{ fontSize: 56 }}>{selectedContact?.avatar ?? '📱'}</Text>
+            <View style={[styles.contactAvatar, { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: Colors.purple }]}>
+              {selectedContact ? (
+                <Text style={{ fontSize: 32, fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
+              ) : (
+                <Smartphone size={36} color={Colors.textPrimary} />
+              )}
+            </View>
           </View>
           <Text style={styles.confirmTo}>SENDING TO</Text>
           <Text style={styles.confirmName}>{selectedContact?.name ?? phoneInput}</Text>
@@ -191,7 +218,7 @@ export const PaymentScreen: React.FC<Props> = ({
             {[
               { label: 'Payment method', value: 'BODHI Vault' },
               { label: 'Processing time', value: 'Instant' },
-              { label: 'Transaction fee',  value: 'FREE', highlight: true },
+              { label: 'Transaction fee', value: 'FREE', highlight: true },
             ].map(row => (
               <View key={row.label} style={styles.confirmMetaRow}>
                 <Text style={styles.confirmMetaLabel}>{row.label}</Text>
@@ -223,13 +250,18 @@ export const PaymentScreen: React.FC<Props> = ({
   if (mode === 'send') {
     return (
       <View style={styles.container}>
-        {/* header */}
         <View style={styles.sendHeader}>
-          <TouchableOpacity onPress={resetToHome} style={styles.backBtn}>
-            <Text style={{ fontSize: 20, color: Colors.textPrimary }}>←</Text>
+          <TouchableOpacity onPress={resetToHome} style={styles.backBtn} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+            <ArrowLeft size={26} color={Colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.sendHeaderContact}>
-            <Text style={{ fontSize: 26 }}>{selectedContact?.avatar ?? '📱'}</Text>
+            <View style={[styles.contactAvatar, { width: 40, height: 40 }]}>
+              {selectedContact ? (
+                <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
+              ) : (
+                <Smartphone size={20} color={Colors.textPrimary} />
+              )}
+            </View>
             <View>
               <Text style={styles.sendHeaderName}>{selectedContact?.name ?? phoneInput}</Text>
               {selectedContact?.upiId ? (
@@ -298,8 +330,8 @@ export const PaymentScreen: React.FC<Props> = ({
     return (
       <View style={styles.qrContainer}>
         <View style={styles.qrHeader}>
-          <TouchableOpacity onPress={resetToHome} style={styles.backBtn}>
-            <Text style={{ fontSize: 20, color: Colors.textWhite }}>←</Text>
+          <TouchableOpacity onPress={resetToHome} style={styles.backBtn} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+            <ArrowLeft size={26} color={Colors.textWhite} />
           </TouchableOpacity>
           <Text style={styles.qrHeaderTitle}>Scan to Pay</Text>
           <View style={{ width: 36 }} />
@@ -314,11 +346,10 @@ export const PaymentScreen: React.FC<Props> = ({
             {qrScanning ? (
               <View style={styles.qrScanLine} />
             ) : (
-              /* decorative mock QR grid */
               <View style={styles.qrMockGrid}>
                 {[
-                  [1,1,1,0,1],[1,0,1,1,0],[0,1,0,1,1],
-                  [1,1,0,0,1],[1,0,1,0,1],
+                  [1, 1, 1, 0, 1], [1, 0, 1, 1, 0], [0, 1, 0, 1, 1],
+                  [1, 1, 0, 0, 1], [1, 0, 1, 0, 1],
                 ].map((row, r) => (
                   <View key={r} style={{ flexDirection: 'row' }}>
                     {row.map((cell, c) => (
@@ -354,7 +385,15 @@ export const PaymentScreen: React.FC<Props> = ({
   // ── HOME SCREEN ────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      <BodhiHeader onInsurancePress={onInsurancePress} showBack onBack={onBack} />
+      <View style={styles.homeHeader}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+        >
+          <ArrowLeft size={28} color={Colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         <View style={styles.pageHeader}>
@@ -368,13 +407,13 @@ export const PaymentScreen: React.FC<Props> = ({
           <Text style={styles.cardBalance}>₹4,82,930</Text>
           <View style={styles.cardActions}>
             {[
-              { icon: '📤', label: 'SEND',    onPress: () => setMode('send') },
-              { icon: '📷', label: 'QR PAY',  onPress: () => setMode('qr')   },
-              { icon: '📥', label: 'REQUEST', onPress: () => {}               },
+              { Icon: Send, label: 'SEND', onPress: () => setMode('send') },
+              { Icon: QrCode, label: 'QR PAY', onPress: () => setMode('qr') },
+              { Icon: Download, label: 'REQUEST', onPress: () => { } },
             ].map(a => (
               <TouchableOpacity key={a.label} style={styles.cardAction} onPress={a.onPress}>
                 <View style={styles.cardActionIcon}>
-                  <Text style={{ fontSize: 20 }}>{a.icon}</Text>
+                  <a.Icon size={24} color={Colors.textWhite} strokeWidth={2.5} />
                 </View>
                 <Text style={styles.cardActionLabel}>{a.label}</Text>
               </TouchableOpacity>
@@ -386,19 +425,26 @@ export const PaymentScreen: React.FC<Props> = ({
         <View style={styles.section}>
           <SectionHeader title="Send Money" />
 
-          {/* Tabs */}
+          {/* Professional Tab Row with Lucide Icons */}
           <View style={styles.tabRow}>
-            {(['contacts', 'phone', 'upi'] as const).map(t => (
-              <TouchableOpacity
-                key={t}
-                style={[styles.tab, inputTab === t && styles.tabActive]}
-                onPress={() => setInputTab(t)}
-              >
-                <Text style={[styles.tabText, inputTab === t && styles.tabTextActive]}>
-                  {t === 'contacts' ? '👥 Contacts' : t === 'phone' ? '📱 Phone' : '⚡ UPI'}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {(['contacts', 'phone', 'upi'] as const).map(t => {
+              const Icon = t === 'contacts' ? Users : t === 'phone' ? Smartphone : Zap;
+              const isActive = inputTab === t;
+              return (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.tab, isActive && styles.tabActive]}
+                  onPress={() => setInputTab(t)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Icon size={16} color={isActive ? Colors.purple : Colors.textSecondary} strokeWidth={isActive ? 2.5 : 2} />
+                    <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                      {t === 'contacts' ? 'Contacts' : t === 'phone' ? 'Phone' : 'UPI'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )
+            })}
           </View>
 
           {/* CONTACTS tab */}
@@ -417,7 +463,9 @@ export const PaymentScreen: React.FC<Props> = ({
                 {CONTACTS.filter(c => c.recent).map(c => (
                   <TouchableOpacity key={c.id} style={styles.recentContact} onPress={() => handleSelectContact(c)}>
                     <View style={styles.recentAvatar}>
-                      <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
+                      <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.textPrimary }}>
+                        {getInitials(c.name)}
+                      </Text>
                     </View>
                     <Text style={styles.recentName}>{c.name.split(' ')[0]}</Text>
                   </TouchableOpacity>
@@ -428,13 +476,15 @@ export const PaymentScreen: React.FC<Props> = ({
               {filteredContacts.map(c => (
                 <TouchableOpacity key={c.id} style={styles.contactRow} onPress={() => handleSelectContact(c)}>
                   <View style={styles.contactAvatar}>
-                    <Text style={{ fontSize: 22 }}>{c.avatar}</Text>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>
+                      {getInitials(c.name)}
+                    </Text>
                   </View>
                   <View style={styles.contactInfo}>
                     <Text style={styles.contactName}>{c.name}</Text>
                     <Text style={styles.contactPhone}>{c.phone}</Text>
                   </View>
-                  <Text style={{ color: Colors.purple, fontSize: 20 }}>›</Text>
+                  <ChevronRight size={20} color={Colors.purple} />
                 </TouchableOpacity>
               ))}
             </>
@@ -503,7 +553,13 @@ export const PaymentScreen: React.FC<Props> = ({
               }}
             >
               <View style={styles.txAvatar}>
-                <Text style={{ fontSize: 22 }}>{tx.avatar}</Text>
+                {tx.isService ? (
+                  <Tv size={20} color={Colors.textPrimary} />
+                ) : (
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>
+                    {getInitials(tx.name)}
+                  </Text>
+                )}
               </View>
               <View style={styles.txInfo}>
                 <Text style={styles.txName}>{tx.name}</Text>
@@ -531,24 +587,27 @@ export const PaymentScreen: React.FC<Props> = ({
 
 // ─── styles ─────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:       { flex: 1, backgroundColor: Colors.bg },
-  scroll:          { paddingBottom: 32 },
+  container: { flex: 1, backgroundColor: Colors.bg },
+  scroll: { paddingBottom: 32 },
 
-  // blobs (decorative, used in dark screens)
-  blob:  { position: 'absolute', borderRadius: 999 },
-  blob1: { width: 260, height: 260, backgroundColor: '#3B1A6E', opacity: 0.18, top: -60,   right: -60  },
-  blob2: { width: 200, height: 200, backgroundColor: Colors.pink, opacity: 0.12, bottom: 80, left: -50  },
+  blob: { position: 'absolute', borderRadius: 999 },
+  blob1: { width: 260, height: 260, backgroundColor: '#3B1A6E', opacity: 0.18, top: -60, right: -60 },
+  blob2: { width: 200, height: 200, backgroundColor: Colors.pink, opacity: 0.12, bottom: 80, left: -50 },
 
-  // ── home ──
+  homeHeader: {
+    paddingHorizontal: Spacing.base,
+    paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
+    paddingBottom: Spacing.sm,
+  },
   pageHeader: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg },
-  pageTitle:  { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  pageSub:    { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1, marginTop: 2 },
+  pageTitle: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
+  pageSub: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1, marginTop: 2 },
 
-  balanceCard:    { marginHorizontal: Spacing.base, marginBottom: Spacing.xl },
-  cardLabel:      { fontSize: Typography.xs, color: 'rgba(255,255,255,0.75)', letterSpacing: 1, marginBottom: Spacing.xs },
-  cardBalance:    { fontSize: Typography['3xl'], fontWeight: Typography.extrabold, color: Colors.textWhite, marginBottom: Spacing.lg },
-  cardActions:    { flexDirection: 'row', justifyContent: 'space-around' },
-  cardAction:     { alignItems: 'center' },
+  balanceCard: { marginHorizontal: Spacing.base, marginBottom: Spacing.xl },
+  cardLabel: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.75)', letterSpacing: 1, marginBottom: Spacing.xs },
+  cardBalance: { fontSize: Typography['3xl'], fontWeight: Typography.extrabold, color: Colors.textWhite, marginBottom: Spacing.lg },
+  cardActions: { flexDirection: 'row', justifyContent: 'space-around' },
+  cardAction: { alignItems: 'center' },
   cardActionIcon: {
     width: 52, height: 52, borderRadius: Radius.full,
     backgroundColor: 'rgba(255,255,255,0.18)',
@@ -562,9 +621,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', backgroundColor: Colors.border,
     borderRadius: Radius.lg, padding: 3, marginBottom: Spacing.md,
   },
-  tab:           { flex: 1, paddingVertical: Spacing.xs, borderRadius: Radius.md, alignItems: 'center' },
-  tabActive:     { backgroundColor: Colors.bgCard, ...Shadow.sm },
-  tabText:       { fontSize: Typography.sm, color: Colors.textSecondary, fontWeight: Typography.medium },
+  tab: { flex: 1, paddingVertical: Spacing.xs, borderRadius: Radius.md, alignItems: 'center' },
+  tabActive: { backgroundColor: Colors.bgCard, ...Shadow.sm },
+  tabText: { fontSize: Typography.sm, color: Colors.textSecondary, fontWeight: Typography.medium },
   tabTextActive: { color: Colors.purple, fontWeight: Typography.bold },
 
   searchInput: {
@@ -596,10 +655,10 @@ const styles = StyleSheet.create({
   },
   contactAvatar: {
     width: 44, height: 44, borderRadius: Radius.full,
-    backgroundColor: Colors.bg, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
+    backgroundColor: '#1E1E2A', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
   },
-  contactInfo:  { flex: 1 },
-  contactName:  { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  contactInfo: { flex: 1 },
+  contactName: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
   contactPhone: { fontSize: Typography.sm, color: Colors.textSecondary, marginTop: 2 },
 
   phoneRow: {
@@ -612,7 +671,7 @@ const styles = StyleSheet.create({
     borderRightColor: Colors.border, justifyContent: 'center',
   },
   countryCodeText: { fontSize: Typography.base, color: Colors.textPrimary, fontWeight: Typography.medium },
-  phoneInput:      { flex: 1, padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary },
+  phoneInput: { flex: 1, padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary },
   upiInput: {
     backgroundColor: Colors.bgCard, borderRadius: Radius.md,
     padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary, ...Shadow.sm,
@@ -625,14 +684,14 @@ const styles = StyleSheet.create({
   },
   txAvatar: {
     width: 44, height: 44, borderRadius: Radius.full,
-    backgroundColor: Colors.bg, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
+    backgroundColor: '#1E1E2A', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
   },
-  txInfo:    { flex: 1 },
-  txName:    { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
-  txTime:    { fontSize: Typography.sm, color: Colors.textMuted, marginTop: 2 },
-  txAmount:  { fontSize: Typography.base, fontWeight: Typography.bold },
-  txPill:    { paddingHorizontal: 8, paddingVertical: 2, borderRadius: Radius.full },
-  txPillText:{ fontSize: 9, fontWeight: Typography.bold, letterSpacing: 0.5 },
+  txInfo: { flex: 1 },
+  txName: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  txTime: { fontSize: Typography.sm, color: Colors.textMuted, marginTop: 2 },
+  txAmount: { fontSize: Typography.base, fontWeight: Typography.bold },
+  txPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: Radius.full },
+  txPillText: { fontSize: 9, fontWeight: Typography.bold, letterSpacing: 0.5 },
 
   // ── send ──
   sendHeader: {
@@ -643,16 +702,16 @@ const styles = StyleSheet.create({
     gap: Spacing.md, backgroundColor: Colors.bg,
     borderBottomWidth: 1, borderBottomColor: Colors.border,
   },
-  backBtn:          { padding: Spacing.xs },
-  sendHeaderContact:{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  sendHeaderName:   { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary },
-  sendHeaderUpi:    { fontSize: Typography.sm, color: Colors.textSecondary },
+  backBtn: { padding: Spacing.xs },
+  sendHeaderContact: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  sendHeaderName: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary },
+  sendHeaderUpi: { fontSize: Typography.sm, color: Colors.textSecondary },
 
-  sendBody:       { paddingHorizontal: Spacing.xl, paddingTop: Spacing['2xl'], paddingBottom: 140 },
-  enterAmtLabel:  { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, textAlign: 'center', marginBottom: Spacing.md },
+  sendBody: { paddingHorizontal: Spacing.xl, paddingTop: Spacing['2xl'], paddingBottom: 140 },
+  enterAmtLabel: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, textAlign: 'center', marginBottom: Spacing.md },
   amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.lg },
-  rupeeSymbol:    { fontSize: 40, fontWeight: Typography.bold, color: Colors.textPrimary, marginRight: 4, marginBottom: 4 },
-  amountInput:    { fontSize: 64, fontWeight: Typography.extrabold, color: Colors.textPrimary, minWidth: 100, textAlign: 'center' },
+  rupeeSymbol: { fontSize: 40, fontWeight: Typography.bold, color: Colors.textPrimary, marginRight: 4, marginBottom: 4 },
+  amountInput: { fontSize: 64, fontWeight: Typography.extrabold, color: Colors.textPrimary, minWidth: 100, textAlign: 'center' },
 
   quickAmtsRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.sm, flexWrap: 'wrap', marginBottom: Spacing.xl },
   quickAmtPill: {
@@ -672,7 +731,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg, borderRadius: Radius.md, padding: Spacing.md,
   },
   balanceInfoText: { fontSize: Typography.sm, color: Colors.textSecondary },
-  balanceInfoAmt:  { fontSize: Typography.sm, fontWeight: Typography.bold, color: Colors.textPrimary },
+  balanceInfoAmt: { fontSize: Typography.sm, fontWeight: Typography.bold, color: Colors.textPrimary },
 
   sendFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -685,7 +744,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg, alignItems: 'center',
   },
   proceedBtnDisabled: { opacity: 0.4 },
-  proceedBtnText:     { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
+  proceedBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
 
   // ── confirm ──
   darkHeader: {
@@ -694,25 +753,24 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
     paddingBottom: Spacing.md,
   },
-  darkBackText:    { fontSize: 22, color: Colors.textPrimary },
   darkHeaderTitle: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary },
 
-  confirmBody:      { alignItems: 'center', padding: Spacing.xl, paddingBottom: 140 },
-  confirmAvatarWrap:{ marginBottom: Spacing.md },
-  confirmTo:        { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, marginBottom: 4 },
-  confirmName:      { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  confirmUpi:       { fontSize: Typography.sm, color: Colors.textSecondary, marginTop: 4, marginBottom: Spacing.md },
+  confirmBody: { alignItems: 'center', padding: Spacing.xl, paddingBottom: 140 },
+  confirmAvatarWrap: { marginBottom: Spacing.md },
+  confirmTo: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, marginBottom: 4 },
+  confirmName: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
+  confirmUpi: { fontSize: Typography.sm, color: Colors.textSecondary, marginTop: 4, marginBottom: Spacing.md },
   confirmAmountBox: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: Spacing.xl },
-  confirmCurrency:  { fontSize: Typography['2xl'], fontWeight: Typography.bold, color: Colors.textPrimary, marginBottom: 6 },
-  confirmAmount:    { fontSize: 56, fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  confirmNote:      { fontSize: Typography.base, color: Colors.textSecondary, fontStyle: 'italic', marginBottom: Spacing.xl },
+  confirmCurrency: { fontSize: Typography['2xl'], fontWeight: Typography.bold, color: Colors.textPrimary, marginBottom: 6 },
+  confirmAmount: { fontSize: 56, fontWeight: Typography.extrabold, color: Colors.textPrimary },
+  confirmNote: { fontSize: Typography.base, color: Colors.textSecondary, fontStyle: 'italic', marginBottom: Spacing.xl },
   confirmMeta: {
     width: '100%', backgroundColor: Colors.bgCard,
     borderRadius: Radius.xl, padding: Spacing.lg, gap: Spacing.md, ...Shadow.sm,
   },
-  confirmMetaRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  confirmMetaLabel:{ fontSize: Typography.base, color: Colors.textSecondary },
-  confirmMetaValue:{ fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  confirmMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  confirmMetaLabel: { fontSize: Typography.base, color: Colors.textSecondary },
+  confirmMetaValue: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
 
   confirmFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -726,8 +784,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg, alignItems: 'center',
     borderWidth: 1, borderColor: Colors.border,
   },
-  editBtnText:   { fontSize: Typography.base, color: Colors.textSecondary, fontWeight: Typography.semibold },
-  payNowBtn:     { flex: 2, backgroundColor: Colors.purple, borderRadius: Radius.full, padding: Spacing.lg, alignItems: 'center' },
+  editBtnText: { fontSize: Typography.base, color: Colors.textSecondary, fontWeight: Typography.semibold },
+  payNowBtn: { flex: 2, backgroundColor: Colors.purple, borderRadius: Radius.full, padding: Spacing.lg, alignItems: 'center' },
   payNowBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
 
   // ── success ──
@@ -742,8 +800,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl, ...Shadow.lg,
   },
   successTitle: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary, marginBottom: Spacing.sm },
-  successSub:   { fontSize: Typography.base, color: Colors.textSecondary, marginBottom: Spacing.sm },
-  successNote:  { fontSize: Typography.sm, color: Colors.textMuted, letterSpacing: 1 },
+  successSub: { fontSize: Typography.base, color: Colors.textSecondary, marginBottom: Spacing.sm },
+  successNote: { fontSize: Typography.sm, color: Colors.textMuted, letterSpacing: 1 },
 
   // ── QR ──
   qrContainer: { flex: 1, backgroundColor: '#0A0A14' },
@@ -754,7 +812,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
   },
   qrHeaderTitle: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textWhite },
-  qrViewfinder:  { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  qrViewfinder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   qrFrame: {
     width: W * 0.65, height: W * 0.65,
     borderRadius: Radius.lg,
@@ -762,15 +820,15 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     position: 'relative',
   },
-  qrCorner:     { position: 'absolute', width: 32, height: 32, borderColor: Colors.lime, borderWidth: 3 },
-  qrTL:         { top: -2, left: -2, borderBottomWidth: 0, borderRightWidth: 0, borderTopLeftRadius: Radius.sm },
-  qrTR:         { top: -2, right: -2, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: Radius.sm },
-  qrBL:         { bottom: -2, left: -2, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: Radius.sm },
-  qrBR:         { bottom: -2, right: -2, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: Radius.sm },
-  qrScanLine:   { position: 'absolute', width: '90%', height: 2, backgroundColor: Colors.lime, opacity: 0.8 },
-  qrMockGrid:   { gap: 8 },
-  qrCell:       { width: 28, height: 28, backgroundColor: Colors.textWhite, margin: 4, borderRadius: 3 },
-  qrHint:       { color: 'rgba(255,255,255,0.5)', marginTop: Spacing.xl, fontSize: Typography.sm, textAlign: 'center' },
+  qrCorner: { position: 'absolute', width: 32, height: 32, borderColor: Colors.lime, borderWidth: 3 },
+  qrTL: { top: -2, left: -2, borderBottomWidth: 0, borderRightWidth: 0, borderTopLeftRadius: Radius.sm },
+  qrTR: { top: -2, right: -2, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: Radius.sm },
+  qrBL: { bottom: -2, left: -2, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: Radius.sm },
+  qrBR: { bottom: -2, right: -2, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: Radius.sm },
+  qrScanLine: { position: 'absolute', width: '90%', height: 2, backgroundColor: Colors.lime, opacity: 0.8 },
+  qrMockGrid: { gap: 8 },
+  qrCell: { width: 28, height: 28, backgroundColor: Colors.textWhite, margin: 4, borderRadius: 3 },
+  qrHint: { color: 'rgba(255,255,255,0.5)', marginTop: Spacing.xl, fontSize: Typography.sm, textAlign: 'center' },
 
   qrFooter: { padding: Spacing.xl, paddingBottom: 48, gap: Spacing.md },
   qrScanBtn: {

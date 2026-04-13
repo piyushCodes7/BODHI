@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  BodhiTabBar.tsx — Custom floating bottom navigation
-//  Updated: Supports 6 tabs (Vault | Social | AI | Trade | Market | Me)
+//  Updated: 5 Tabs (Vault | Social | AI | Trade | Market) with Lucide Icons
 // ─────────────────────────────────────────────────────────────
 
 import React from 'react';
@@ -13,22 +13,23 @@ import {
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Fonts, Radius, Shadow } from '../theme/tokens';
+// Import official line-art icons
+import { Lock, Users, Cpu, BarChart2, Shuffle } from 'lucide-react-native';
+
+import { Colors, Fonts, Radius } from '../theme/tokens';
 
 type TabConfig = {
-  key: string;
   label: string;
-  icon: string;
+  Icon: React.ElementType; // Using React components for icons now
 };
 
-// Map icons directly to the Route Names defined in AppNavigator
+// Map routes to official Lucide icons. "Me" tab has been removed.
 const TAB_CONFIG: Record<string, TabConfig> = {
-  Vault:  { key: 'Vault',  label: 'VAULT',  icon: '💳' },
-  Social: { key: 'Social', label: 'SOCIAL', icon: '👥' },
-  AI:     { key: 'AI',     label: 'AI',     icon: '🎙' },
-  Trade:  { key: 'Trade',  label: 'TRADE',  icon: '💹' }, // New Trade Icon
-  Market: { key: 'Market', label: 'MARKET', icon: '📈' },
-  Me:     { key: 'Me',     label: 'ME',     icon: '👤' },
+  Vault:  { label: 'VAULT',  Icon: Lock },
+  Social: { label: 'SOCIAL', Icon: Users },
+  AI:     { label: 'AI',     Icon: Cpu },     // The microchip icon
+  Trade:  { label: 'TRADE',  Icon: BarChart2 }, // Candlestick alternative
+  Market: { label: 'MARKET', Icon: Shuffle },   // Crossing arrows
 };
 
 interface BodhiTabBarProps extends BottomTabBarProps {
@@ -41,7 +42,7 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
 
   const barBg    = dark ? 'rgba(12,14,18,0.75)'  : 'rgba(255,255,255,0.72)';
   const iconCol  = dark ? '#9ca3af'               : Colors.tabInactive;
-  const activeCol= dark ? '#c084fc'               : Colors.electricViolet;
+  const activeCol= dark ? '#c084fc'               : Colors.electricViolet; // Purple active state
   const labelCol = dark ? '#6b7280'               : Colors.tabInactive;
 
   return (
@@ -62,9 +63,9 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
           
-          // Lookup config by route name (More robust than index)
-          const tab = TAB_CONFIG[route.name] || { label: route.name, icon: '⚪️' };
+          const tab = TAB_CONFIG[route.name] || { label: route.name, Icon: Lock };
           const isAI = route.name === 'AI';
+          const IconComponent = tab.Icon;
 
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -79,12 +80,19 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
                   activeOpacity={0.85}
                   style={[
                     styles.aiButton,
-                    isFocused ? Shadow.neonLime : {},
+                    { 
+                      backgroundColor: dark ? '#1A1A24' : '#FFFFFF',
+                      shadowColor: isFocused ? Colors.electricViolet : '#c084fc',
+                    }
                   ]}
                 >
-                  <Text style={styles.aiIcon}>{tab.icon}</Text>
+                  <IconComponent 
+                    size={28} 
+                    color={dark ? Colors.textPrimary : '#12102A'} 
+                    strokeWidth={2}
+                  />
                 </TouchableOpacity>
-                <Text style={[styles.aiLabel, { color: isFocused ? Colors.neonLimeDark : labelCol }]}>
+                <Text style={[styles.aiLabel, { color: isFocused ? activeCol : labelCol }]}>
                   {tab.label}
                 </Text>
               </View>
@@ -98,9 +106,12 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
               activeOpacity={0.7}
               style={styles.tab}
             >
-              <Text style={[styles.tabIcon, { color: isFocused ? activeCol : iconCol }]}>
-                {tab.icon}
-              </Text>
+              <IconComponent 
+                size={22} 
+                color={isFocused ? activeCol : iconCol} 
+                strokeWidth={isFocused ? 2.5 : 2}
+                style={styles.tabIcon}
+              />
               <Text style={[
                 styles.tabLabel,
                 { color: isFocused ? activeCol : labelCol },
@@ -133,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection:  'row',
     alignItems:     'flex-end',
     justifyContent: 'space-around',
-    paddingHorizontal: 4, // Tightened for 6 tabs
+    paddingHorizontal: 12, // Adjusted for 5 tabs
     paddingTop:     8,
   },
   tab: {
@@ -143,44 +154,41 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   tabIcon: {
-    fontSize: 18, // Slightly smaller for 6-tab fit
-    marginBottom: 2,
+    marginBottom: 4,
   },
   tabLabel: {
     fontFamily:    Fonts.label,
-    fontSize:      8, // Slightly smaller for 6-tab fit
-    fontWeight:    '700',
+    fontSize:      10, // Sized up slightly since we have more room with 5 tabs
+    fontWeight:    '600',
     letterSpacing: 0.5,
   },
   tabLabelActive: {
     fontWeight: '800',
   },
   aiWrapper: {
-    flex:       1.2, // Give the elevated button slightly more room
+    flex:       1.2, 
     alignItems: 'center',
-    marginTop:  -32, 
+    marginTop:  -36, // Pulled up higher to match your image
   },
   aiButton: {
-    width:           52,
-    height:          52,
-    borderRadius:    26,
-    backgroundColor: Colors.neonLime,
+    width:           60,
+    height:          60,
+    borderRadius:    30,
     alignItems:      'center',
     justifyContent:  'center',
-    shadowColor:    '#d1fc00',
-    shadowOffset:   { width: 0, height: 0 },
-    shadowOpacity:  0.55,
-    shadowRadius:   18,
-    elevation:      14,
-  },
-  aiIcon: {
-    fontSize: 22,
+    borderWidth:     1,
+    borderColor:     'rgba(192, 132, 252, 0.15)', // Soft purple border ring
+    // The soft glowing shadow from your image
+    shadowOffset:   { width: 0, height: 8 },
+    shadowOpacity:  0.4,
+    shadowRadius:   16,
+    elevation:      10,
   },
   aiLabel: {
     fontFamily:    Fonts.label,
-    fontSize:      9,
+    fontSize:      10,
     fontWeight:    '700',
     letterSpacing: 1.2,
-    marginTop:     6,
+    marginTop:     8,
   },
 });

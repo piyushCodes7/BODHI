@@ -1,8 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// src/screens/VaultScreen.tsx
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, Dimensions, FlatList, ActivityIndicator, RefreshControl
 } from 'react-native';
+
+// Professional Vector Icons
+import { 
+  PiggyBank, 
+  BellRing, 
+  TrendingUp, 
+  Target, 
+  CreditCard, 
+  Users, 
+  Activity, 
+  TrendingDown 
+} from 'lucide-react-native';
+
 import LinearGradient from 'react-native-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -11,36 +25,32 @@ import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 import { GradientCard } from '../components/GradientCard';
 import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
 
-// 1. ── IMPORT THE INSURANCE SCREEN ──
 import { InsuranceScreen } from './InsuranceScreen';
 
 const { width: W } = Dimensions.get('window');
 const S = Spacing;
 
-const AI_INSIGHTS = [
-  { id:'1', label:'You saved\n₹2,300', tag:'SAVINGS', border: Colors.neonLime,       bg:['#d1fc00','#dcc9ff'] },
-  { id:'2', label:'Unused\nSub',        tag:'ALERT',   border: Colors.hotPink,        bg:['#f74b6d','#ff81f5'] },
-  { id:'3', label:'Market\nHigh',       tag:'MARKET',  border: Colors.electricViolet, bg:['#dcc9ff','#d1fc00'] },
-  { id:'4', label:'Budget\nSet',        tag:'GOAL',    border: Colors.textMuted,      bg:['#dbdde3','#e7e8ee'] },
+// Professional AI Insights Array
+const INSIGHTS = [
+  { id: '1', title: 'SAVINGS', desc: 'You saved ₹2,300', Icon: PiggyBank, border: Colors.neonLime,       bg: ['#d1fc00','#dcc9ff'], iconColor: '#0A0A14' },
+  { id: '2', title: 'ALERT',   desc: 'Unused Sub',       Icon: BellRing,  border: Colors.hotPink,        bg: ['#f74b6d','#ff81f5'], iconColor: '#FFFFFF' },
+  { id: '3', title: 'MARKET',  desc: 'Market High',      Icon: TrendingUp,border: Colors.electricViolet, bg: ['#dcc9ff','#d1fc00'], iconColor: '#0A0A14' },
+  { id: '4', title: 'GOAL',    desc: 'Budget Set',       Icon: Target,    border: Colors.textMuted,      bg: ['#dbdde3','#e7e8ee'], iconColor: '#0A0A14' },
 ];
 
+// Professional Quick Actions
 const ACTIONS = [
-  { id:'pay',    icon:'💸', label:'Pay',    sub:'FAST CHECKOUT', color: Colors.neonLime },
-  { id:'invest', icon:'📈', label:'Invest', sub:'YIELD POOLS',   color:'#dcc9ff' },
-  { id:'split',  icon:'👥', label:'Split',  sub:'GROUP BILLS',   color:'#ff81f5' },
-  { id:'voice',  icon:'🎙', label:'Voice',  sub:'AI COMMAND',    color: Colors.neonLime },
+  { id: 'pay',   label: 'Pay',   sub: 'FAST CHECKOUT', Icon: CreditCard, bg: 'rgba(212, 255, 0, 0.1)', color: Colors.neonLime },
+  { id: 'split', label: 'Split', sub: 'TRIPS & WALLETS', Icon: Users,      bg: 'rgba(123, 47, 190, 0.1)', color: Colors.electricViolet },
 ];
 
 const fmt = (n: number | undefined) => 
   n !== undefined ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '₹0.00';
 
-// 2. ── ADD 'navigation' TO PROPS ──
 export function VaultScreen({ navigation }: any) {
   const headerH = useHeaderHeight();
   
-  // 3. ── ADD MODAL STATE ──
   const [showInsurance, setShowInsurance] = useState(false);
-  
   const [portfolio, setPortfolio] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -76,6 +86,7 @@ export function VaultScreen({ navigation }: any) {
     );
   }
 
+  // Formatting Math
   const totalValueRaw = portfolio?.total_value || 100000;
   const totalValueParts = totalValueRaw.toFixed(2).split('.');
   const wholeValue = Number(totalValueParts[0]).toLocaleString('en-IN');
@@ -86,8 +97,11 @@ export function VaultScreen({ navigation }: any) {
 
   return (
     <View style={styles.root}>
-      {/* 4. ── WIRE THE SHIELD BUTTON IN HEADER ── */}
-      <BodhiHeader onInsurancePress={() => setShowInsurance(true)} />
+      {/* Header with dynamic username routing for the initials */}
+      <BodhiHeader 
+        onInsurancePress={() => setShowInsurance(true)} 
+        username={portfolio?.username} 
+      />
       
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -99,12 +113,13 @@ export function VaultScreen({ navigation }: any) {
           <Text style={styles.greetSub}>YOUR LIVE PAPER PORTFOLIO</Text>
         </View>
 
+        {/* ── BALANCE CARD ── */}
         <GradientCard style={styles.balanceCard}>
           <View style={styles.balanceInner}>
             <View style={styles.balanceTop}>
               <Text style={styles.balanceLabel}>TOTAL VAULT BALANCE</Text>
               <View style={styles.walletIconWrap}>
-                <Text style={{ fontSize: 18 }}>📈</Text>
+                <Activity size={22} color={Colors.textPrimary} strokeWidth={2.5} />
               </View>
             </View>
             
@@ -128,13 +143,15 @@ export function VaultScreen({ navigation }: any) {
           </View>
         </GradientCard>
 
+        {/* ── AI INSIGHTS ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>AI Insights</Text>
           <TouchableOpacity><Text style={styles.viewAll}>VIEW ALL</Text></TouchableOpacity>
         </View>
+
         <FlatList
           horizontal
-          data={AI_INSIGHTS}
+          data={INSIGHTS}
           keyExtractor={i => i.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.insightList}
@@ -146,20 +163,20 @@ export function VaultScreen({ navigation }: any) {
                 style={[styles.insightCircle, { borderColor: item.border }]}
                 start={{ x:0, y:0 }} end={{ x:1, y:1 }}
               >
-                <Text style={styles.insightLabel}>{item.label}</Text>
+                <item.Icon size={30} color={item.iconColor} strokeWidth={2} />
               </LinearGradient>
-              <Text style={styles.insightTag}>{item.tag}</Text>
+              <Text style={styles.insightTag}>{item.title}</Text>
             </TouchableOpacity>
           )}
         />
 
+        {/* ── QUICK ACTIONS ── */}
         <View style={styles.actionsGrid}>
           {ACTIONS.map(a => (
             <TouchableOpacity 
               key={a.id} 
               activeOpacity={0.8} 
               style={styles.actionCard}
-              // 5. ── WIRE THE PAY BUTTON ──
               onPress={() => {
                 if (a.id === 'pay') {
                   navigation.navigate('PaymentScreen');
@@ -168,8 +185,8 @@ export function VaultScreen({ navigation }: any) {
                 }
               }}
             >
-              <View style={[styles.actionIcon, { backgroundColor: a.color }]}>
-                <Text style={{ fontSize: 18 }}>{a.icon}</Text>
+              <View style={[styles.actionIcon, { backgroundColor: a.bg }]}>
+                <a.Icon size={24} color={a.color} strokeWidth={2} />
               </View>
               <Text style={styles.actionLabel}>{a.label}</Text>
               <Text style={styles.actionSub}>{a.sub}</Text>
@@ -177,6 +194,7 @@ export function VaultScreen({ navigation }: any) {
           ))}
         </View>
 
+        {/* ── YOUR HOLDINGS ── */}
         <Text style={[styles.sectionTitle, { marginBottom: S.lg }]}>Your Holdings</Text>
         <View style={styles.activityList}>
           {portfolio?.holdings?.length === 0 ? (
@@ -189,7 +207,11 @@ export function VaultScreen({ navigation }: any) {
               return (
                 <View key={index} style={styles.activityRow}>
                   <View style={styles.activityLogo}>
-                    <Text style={{ fontSize: 20 }}>{isProfit ? '🚀' : '📉'}</Text>
+                    {isProfit ? (
+                      <TrendingUp size={22} color="#16a34a" strokeWidth={2.5} />
+                    ) : (
+                      <TrendingDown size={22} color={Colors.errorRed} strokeWidth={2.5} />
+                    )}
                   </View>
                   <View style={styles.activityMeta}>
                     <Text style={styles.activityName}>{holding.symbol}</Text>
@@ -208,7 +230,7 @@ export function VaultScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* 6. ── DROP IN THE INSURANCE MODAL ── */}
+      {/* Insurance Modal Overlay */}
       <InsuranceScreen 
         visible={showInsurance} 
         onClose={() => setShowInsurance(false)} 
@@ -244,14 +266,13 @@ const styles = StyleSheet.create({
   viewAll:        { fontFamily: Fonts.label, fontSize:11, fontWeight:'700', color: Colors.electricViolet, letterSpacing:0.8 },
 
   insightList:    { gap:16, paddingRight: S.lg, marginBottom: S.xxl },
-  insightItem:    { alignItems:'center', gap:6 },
-  insightCircle:  { width:72, height:72, borderRadius:36, borderWidth:2, alignItems:'center', justifyContent:'center', padding:8 },
-  insightLabel:   { fontFamily: Fonts.label, fontSize:10, fontWeight:'700', color: Colors.textPrimary, textAlign:'center', lineHeight:13 },
-  insightTag:     { fontFamily: Fonts.label, fontSize:9, fontWeight:'700', color: Colors.textSecondary, letterSpacing:0.8, textTransform:'uppercase' },
+  insightItem:    { alignItems:'center', gap:8 },
+  insightCircle:  { width:64, height:64, borderRadius:32, borderWidth:2, alignItems:'center', justifyContent:'center' },
+  insightTag:     { fontFamily: Fonts.label, fontSize:10, fontWeight:'700', color: Colors.textSecondary, letterSpacing:0.8, textTransform:'uppercase' },
 
   actionsGrid:    { flexDirection:'row', flexWrap:'wrap', gap: S.md, marginBottom: S.xxl },
   actionCard:     { width:(W - S.xxl*2 - S.md)/2, backgroundColor: Colors.surfaceLow, borderRadius: Radius.lg, padding: S.xl, gap:8 },
-  actionIcon:     { width:40, height:40, borderRadius: Radius.full, alignItems:'center', justifyContent:'center' },
+  actionIcon:     { width:44, height:44, borderRadius: Radius.full, alignItems:'center', justifyContent:'center' },
   actionLabel:    { fontFamily: Fonts.headline, fontSize:16, fontWeight:'700', color: Colors.textPrimary },
   actionSub:      { fontFamily: Fonts.label, fontSize:10, fontWeight:'700', color: Colors.textSecondary, letterSpacing:0.8 },
 
