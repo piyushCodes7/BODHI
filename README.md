@@ -247,6 +247,8 @@ brew install node python git postgresql@14
 # Start PostgreSQL and create the database
 brew services start postgresql@14
 createdb bodhi
+
+createuser -s postgres
 ```
 
 **🪟 Windows**
@@ -364,18 +366,9 @@ cd ios && pod install && cd ..
 **3. Start the Metro bundler**
 
 ```bash
-npm start
+npx react-native start --reset-cache
 ```
-
-**Keep this terminal open.** Then, in a third terminal:
-
-```bash
-# iOS Simulator (requires macOS + Xcode)
-npm run ios
-
-# Android Emulator (requires Android Studio)
-npm run android
-```
+Click i for ios
 
 🎉 **BODHI is now running locally.**
 
