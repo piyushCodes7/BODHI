@@ -17,7 +17,6 @@
   <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi" alt="FastAPI"/></a>
   <a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/Mobile-React%20Native-61DAFB?style=flat-square&logo=react" alt="React Native"/></a>
   <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql" alt="PostgreSQL"/></a>
-  <a href="https://www.tensorflow.org/lite"><img src="https://img.shields.io/badge/AI-TFLite-FF6F00?style=flat-square&logo=tensorflow" alt="TensorFlow Lite"/></a>
   <img src="https://img.shields.io/badge/License-Hackathon%20Demo-lightgrey?style=flat-square" alt="License"/>
 </p>
 
@@ -94,13 +93,12 @@ An on-device AI layer powered by MobileBERT + LSTM models that learns your spend
 <p align="center">
   <img src="assets/screenshots/login.png" alt="Login Screen" width="22%"/>
   <img src="assets/screenshots/social-hub.png" alt="Social Hub" width="22%"/>
-  <img src="assets/screenshots/trip-wallet.png" alt="Trip Wallet" width="22%"/>
-  <img src="assets/screenshots/venture-club.png" alt="Venture Club" width="22%"/>
+  <img src="assets/screenshots/insurance-stories.png" alt="Insurance Stories" width="22%"/>
+  <img src="assets/screenshots/market.png" alt="Market" width="22%"/>
 </p>
 <p align="center">
-  <em>Login &nbsp;·&nbsp; Social Hub &nbsp;·&nbsp; Trip Wallet &nbsp;·&nbsp; Venture Club</em>
+  <em>Login &nbsp;·&nbsp; Social Hub &nbsp;·&nbsp; Insurance Stories &nbsp;·&nbsp; Market</em>
 </p>
-<!-- Replace each src path with your actual simulator/device screenshots -->
 
 ---
 
@@ -409,23 +407,22 @@ BODHI is built on a **Zero-Knowledge Architecture**:
 - [x] Core payment flows and trip wallet MVP
 - [x] Insurance RAG pipeline with Gemini 1.5 Pro
 - [x] Venture Clubs with swipe-to-vote UI
-- [x] On-device SMS spending parser (TFLite)
+- [ ] On-device SMS spending parser 
 - [ ] UPI deep-link integration via Razorpay
 - [ ] Voice-first finance queries (Whisper integration)
-- [ ] Cross-platform desktop companion (Tauri)
+- [ ] Cross-platform desktop companion
 - [ ] Open Banking API support (Account Aggregator framework)
+- [ ] Linking with Google and Apple Sign up
 
 ---
 
 ## 👥 Team
 
-| | Name | Role |
-|---|---|---|
-| <img src="assets/team/govind.png" width="48" height="48" style="border-radius:50%"/> | **Govind Jindal** | Backend Architecture & AI/ML Pipeline |
-| <img src="assets/team/aaradhya.png" width="48" height="48" style="border-radius:50%"/> | **Aaradhya Khanna** | Mobile UI/UX & React Native |
-| <img src="assets/team/piyush.png" width="48" height="48" style="border-radius:50%"/> | **Piyush Sharma** | DevOps, Auth & Payment Integration |
-
-<!-- Replace each src with a headshot or avatar — 200×200px square images work best -->
+| Name | Role |
+|---|---|
+|**Govind Jindal** | Backend Architecture & AI/ML Pipeline |
+| **Aaradhya Khanna** | Mobile UI/UX & React Native |
+| **Piyush Sharma** | DevOps, Auth & Payment Integration |
 
 ---
 
