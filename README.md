@@ -363,12 +363,24 @@ npm install --legacy-peer-deps
 cd ios && pod install && cd ..
 ```
 
+OR
+
+**2. Install android dependencies**
+
+```bash
+cd android && npm install @react-native-async-storage/async-storage@1.23.1 --legacy-peer-deps && cd ..
+```
+
 **3. Start the Metro bundler**
 
 ```bash
 npx react-native start --reset-cache
 ```
+
+```bash
 Click i for ios
+Click a for android
+```
 
 🎉 **BODHI is now running locally.**
 
