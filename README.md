@@ -42,7 +42,6 @@
 - [Project Structure](#-project-structure)
 - [Local Setup Guide](#-local-setup-guide)
 - [Privacy Model](#-privacy-model)
-- [Roadmap](#-roadmap)
 - [Team](#-team)
 
 ---
@@ -230,6 +229,9 @@ BODHI/
 
 ---
 
+### ⚠️ This App works well on iOS but you may face version conflict issues on Android .
+
+---
 ## 💻 Local Setup Guide
 
 > This guide assumes a clean machine. Follow all three phases in order.
