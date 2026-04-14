@@ -5,7 +5,8 @@ from sqlalchemy import desc
 from pydantic import BaseModel, Field
 
 from database import get_db
-from models.portfolio import User, PortfolioItem, Transaction
+from models.core import User
+from models.portfolio import PortfolioItem, Transaction
 
 # Our new real services!
 from services.trade_service import execute_buy, execute_sell, compute_costs, reset_portfolio_db

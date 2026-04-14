@@ -13,6 +13,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { Smartphone } from 'lucide-react-native';
 import { Colors, Radius, Spacing, Shadow } from '../theme/tokens';
+import { SocialAuthButtons } from '../components/SocialAuthButtons';
 
 export function AuthScreen({ navigation }: any) {
   const [isLogin, setIsLogin] = useState(true);
@@ -40,13 +41,6 @@ export function AuthScreen({ navigation }: any) {
     );
   };
 
-  const handleSocialAuth = (provider: string) => {
-    Alert.alert(
-      `${provider} Sign-In`,
-      `Official ${provider} authentication requires native developer keys and is disabled in this environment.`,
-      [{ text: 'Got it', style: 'cancel' }]
-    );
-  };
 
   const handleAuth = () => {
     if (!isLogin) {
@@ -61,6 +55,12 @@ export function AuthScreen({ navigation }: any) {
       }
     }
     
+    navigation.replace('Main'); 
+  };
+
+  const handleOAuthSuccess = (accessToken: string, isNewUser: boolean) => {
+    console.log("SUCCESS! JWT Token:", accessToken);
+    // You will eventually save this token to AsyncStorage here!
     navigation.replace('Main'); 
   };
 
@@ -187,15 +187,11 @@ export function AuthScreen({ navigation }: any) {
               </View>
 
               <View style={styles.socialRow}>
-                <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialAuth('Apple')}>
-                  <Text style={{ fontSize: 24, color: '#000', marginBottom: 2 }}></Text>
-                </TouchableOpacity>
+                {/* Your new live Google & Apple buttons */}
+                <SocialAuthButtons onSuccess={handleOAuthSuccess} />
 
-                <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialAuth('Google')}>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#000' }}>G</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialAuth('Phone')}>
+                {/* Keep your existing phone button! */}
+                <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Phone Auth', 'Coming soon!')}>
                   <Smartphone size={22} color="#000" strokeWidth={2.5} />
                 </TouchableOpacity>
               </View>

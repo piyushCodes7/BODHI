@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from database import get_db
-from models.portfolio import User
+from models.core import User
 
 # --- SECURITY CONFIGURATION ---
 # In a real production app, put this in a .env file!

@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
-from models.payments import LedgerEntryType, LedgerReferenceType, PaymentStatus
+from models.core import LedgerEntryType, LedgerReferenceType, PaymentStatus
 
 _ORM_CONFIG = ConfigDict(from_attributes=True, populate_by_name=True)
 

@@ -64,6 +64,16 @@ class LedgerEntryType(str, enum.Enum):
 # ---------------------------------------------------------------------------
 # User
 # ---------------------------------------------------------------------------
+import enum
+from sqlalchemy import String, Boolean, DateTime, CheckConstraint, Enum, UniqueConstraint, Text
+# Keep your existing imports for Mapped, mapped_column, relationship, _new_uuid, _utcnow, etc.
+
+class AuthProvider(str, enum.Enum):
+    local = "local"
+    google = "google"
+    apple = "apple"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -75,6 +85,24 @@ class User(Base):
     )
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    transactions = relationship("Transaction", back_populates="user")
+    portfolio = relationship("PortfolioItem", back_populates="user")
+    
+    # 🟢 --- NEW OAUTH COLUMNS START --- 🟢
+    auth_provider: Mapped[AuthProvider] = mapped_column(
+        Enum(AuthProvider, name="auth_provider_enum"), 
+        nullable=False, 
+        default=AuthProvider.local, 
+        index=True
+    )
+    provider_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    email_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # 🟢 --- NEW OAUTH COLUMNS END --- 🟢
+
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
@@ -96,11 +124,12 @@ class User(Base):
 
     __table_args__ = (
         CheckConstraint("length(email) >= 3", name="ck_users_email_min_len"),
+        # 🟢 ADDED: Prevents a duplicate Google/Apple account from being made
+        UniqueConstraint("auth_provider", "provider_id", name="uq_users_provider_provider_id"),
     )
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<User id={self.id} email={self.email}>"
-
+        return f"<User id={self.id} email={self.email} provider={self.auth_provider}>"
 
 # ---------------------------------------------------------------------------
 # Ledger  (immutable source-of-truth for all money movement)

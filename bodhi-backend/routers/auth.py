@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from pydantic import BaseModel
 
 from database import get_db
-from models.portfolio import User
+from models.core import User
 from services.auth_service import get_password_hash, verify_password, create_access_token, timedelta, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
