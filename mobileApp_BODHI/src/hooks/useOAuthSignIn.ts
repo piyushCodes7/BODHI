@@ -4,10 +4,7 @@ import {
   GoogleSignin,
   statusCodes as GoogleStatusCodes,
 } from '@react-native-google-signin/google-signin';
-import appleAuth, {
-  AppleAuthRequestOperation,
-  AppleAuthRequestScope,
-} from '@invertase/react-native-apple-authentication';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Automatically route to localhost on iOS Simulator, or 10.0.2.2 on Android Emulator
@@ -81,8 +78,8 @@ export function useOAuthSignIn() {
     setIsLoading('apple');
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: AppleAuthRequestOperation.LOGIN,
-        requestedScopes: [AppleAuthRequestScope.EMAIL, AppleAuthRequestScope.FULL_NAME],
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
       });
 
       const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
