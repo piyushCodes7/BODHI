@@ -232,7 +232,7 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.inputLabel}>FULL NAME</Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="Username"
+                        placeholder="e.g., Govind Jindal"
                         placeholderTextColor="#9CA3AF"
                         value={name}
                         onChangeText={setName}
@@ -241,7 +241,7 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.inputLabel}>MOBILE NUMBER</Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="+91 XXXXX-XXXXX"
+                        placeholder="e.g., 98765 43210"
                         placeholderTextColor="#9CA3AF"
                         value={phone}
                         onChangeText={setPhone}
@@ -253,7 +253,7 @@ export function AuthScreen({ navigation }: any) {
                   <Text style={styles.inputLabel}>EMAIL</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="user@domain.com"
+                    placeholder="e.g., name@example.com"
                     placeholderTextColor="#9CA3AF"
                     value={email}
                     onChangeText={setEmail}
@@ -265,7 +265,7 @@ export function AuthScreen({ navigation }: any) {
                   <View style={styles.passwordContainer}>
                     <TextInput
                       style={[styles.input, { flex: 1 }]}
-                      placeholder="Enter strong password"
+                      placeholder="Min. 8 characters"
                       placeholderTextColor="#9CA3AF"
                       value={password}
                       onChangeText={setPassword}
@@ -320,7 +320,7 @@ export function AuthScreen({ navigation }: any) {
                 <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="you@domain.com"
+                  placeholder="e.g., name@example.com"
                   placeholderTextColor="#9CA3AF"
                   value={email}
                   onChangeText={setEmail}
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: '#000', fontWeight: '800' },
 
   form: { marginBottom: Spacing.sm },
-  inputLabel: { fontSize: 10, fontWeight: '800', color: '#6B7280', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
+  inputLabel: { fontSize: 10, fontWeight: '800', color: '#555555', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
   input: { backgroundColor: '#F3F4F6', borderRadius: Radius.md, padding: 16, fontSize: 16, color: '#000', fontWeight: '500' },
   
   passwordContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: Radius.md },
