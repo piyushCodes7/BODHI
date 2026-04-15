@@ -21,7 +21,9 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     event,
+    Column
 )
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -86,8 +88,7 @@ class User(Base):
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     
-    transactions = relationship("Transaction", back_populates="user")
-    portfolio = relationship("PortfolioItem", back_populates="user")
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     
     # 🟢 --- NEW OAUTH COLUMNS START --- 🟢
     auth_provider: Mapped[AuthProvider] = mapped_column(
@@ -127,6 +128,9 @@ class User(Base):
         # 🟢 ADDED: Prevents a duplicate Google/Apple account from being made
         UniqueConstraint("auth_provider", "provider_id", name="uq_users_provider_provider_id"),
     )
+
+    reset_otp = Column(String(6), nullable=True, default=None)
+    reset_otp_expiry = Column(DateTime(timezone=True), nullable=True, default=None)
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<User id={self.id} email={self.email} provider={self.auth_provider}>"

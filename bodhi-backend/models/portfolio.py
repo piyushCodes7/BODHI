@@ -7,18 +7,18 @@ class PortfolioItem(Base):
     __tablename__ = "portfolio_items"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
     symbol = Column(String, index=True)
     quantity = Column(Integer, default=0)
     average_buy_price = Column(Float, default=0.0)
     
-    owner = relationship("User", back_populates="portfolio")
+    owner = relationship("User")
 
 class Transaction(Base):
     __tablename__ = "transactions"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
     type = Column(String)  # "BUY" or "SELL"
     symbol = Column(String)
     quantity = Column(Integer)
@@ -26,4 +26,4 @@ class Transaction(Base):
     total_value = Column(Float)
     timestamp = Column(DateTime, default=datetime.utcnow)
     
-    owner = relationship("User", back_populates="transactions")
+    owner = relationship("User")

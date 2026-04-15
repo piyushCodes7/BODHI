@@ -64,7 +64,7 @@ class Club(Base):
     is_public       = Column(Boolean, default=False)  # True = discoverable
     invite_code     = Column(String(12), unique=True, index=True, nullable=False)
     deadline        = Column(DateTime, nullable=True)  # Optional goal deadline
-    created_by      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_by      = Column(String(36), ForeignKey("users.id"), nullable=False)
     created_at      = Column(DateTime, default=datetime.utcnow)
     updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -95,7 +95,7 @@ class ClubMember(Base):
 
     id         = Column(Integer, primary_key=True)
     club_id    = Column(Integer, ForeignKey("clubs.id",  ondelete="CASCADE"), nullable=False)
-    user_id    = Column(Integer, ForeignKey("users.id",  ondelete="CASCADE"), nullable=False)
+    user_id    = Column(String(36), ForeignKey("users.id",  ondelete="CASCADE"), nullable=False)
     role       = Column(SAEnum(MemberRole), default=MemberRole.MEMBER)
     joined_at  = Column(DateTime, default=datetime.utcnow)
 
@@ -112,7 +112,7 @@ class Contribution(Base):
 
     id          = Column(Integer, primary_key=True)
     club_id     = Column(Integer, ForeignKey("clubs.id", ondelete="CASCADE"), nullable=False)
-    user_id     = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id     = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     amount      = Column(Float,  nullable=False)
     note        = Column(String(300), default="")
     status      = Column(String(20),  default="confirmed")  # confirmed | pending | refunded
@@ -126,9 +126,9 @@ class Invitation(Base):
 
     id              = Column(Integer, primary_key=True)
     club_id         = Column(Integer, ForeignKey("clubs.id", ondelete="CASCADE"), nullable=False)
-    invited_by      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    invited_by      = Column(String(36), ForeignKey("users.id"), nullable=False)
     invitee_email   = Column(String(200), nullable=True)   # null = open link
-    invitee_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    invitee_user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     status          = Column(SAEnum(InviteStatus), default=InviteStatus.PENDING)
     token           = Column(String(64), unique=True, index=True, nullable=False)
     expires_at      = Column(DateTime, nullable=False)
@@ -143,7 +143,7 @@ class ClubComment(Base):
 
     id          = Column(Integer, primary_key=True)
     club_id     = Column(Integer, ForeignKey("clubs.id", ondelete="CASCADE"), nullable=False)
-    user_id     = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id     = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     body        = Column(Text, nullable=False)
     created_at  = Column(DateTime, default=datetime.utcnow)
 
@@ -165,7 +165,7 @@ class VentureBet(Base):
     deadline        = Column(DateTime, nullable=True)
     status          = Column(SAEnum(BetStatus), default=BetStatus.OPEN)
     outcome_note    = Column(String(500), default="")  # filled on settlement
-    created_by      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_by      = Column(String(36), ForeignKey("users.id"), nullable=False)
     created_at      = Column(DateTime, default=datetime.utcnow)
 
     club            = relationship("Club", back_populates="venture_bets")
@@ -181,7 +181,7 @@ class BetPosition(Base):
 
     id          = Column(Integer, primary_key=True)
     bet_id      = Column(Integer, ForeignKey("venture_bets.id", ondelete="CASCADE"), nullable=False)
-    user_id     = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id     = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     amount      = Column(Float, nullable=False)
     note        = Column(String(300), default="")
     created_at  = Column(DateTime, default=datetime.utcnow)

@@ -55,10 +55,8 @@ class GroupWallet(Base):
     target_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
     total_contributed: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
 
-    # UPDATED: String(36) -> Integer
-    created_by: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
-    )
+    # 🟢 FIXED: Mapped[str]
+    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
@@ -78,8 +76,8 @@ class GroupMember(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     group_id: Mapped[str] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="CASCADE"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] and String(36)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     
     role: Mapped[MemberRole] = mapped_column(SAEnum(MemberRole, name="member_role_enum"), nullable=False, default=MemberRole.MEMBER)
     contributed_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
@@ -103,8 +101,8 @@ class GroupVoteProposal(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     group_id: Mapped[str] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="CASCADE"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    proposed_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] and String(36)
+    proposed_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -141,8 +139,8 @@ class TripWallet(Base):
     total_expenses: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
     remaining_balance: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
 
-    # UPDATED: String(36) -> Integer
-    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] 
+    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
@@ -164,8 +162,7 @@ class TripMember(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     trip_id: Mapped[str] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="CASCADE"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     
     role: Mapped[MemberRole] = mapped_column(SAEnum(MemberRole, name="member_role_enum"), nullable=False, default=MemberRole.MEMBER)
     contributed_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
@@ -190,8 +187,8 @@ class TripExpense(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     trip_id: Mapped[str] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="CASCADE"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    recorded_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] and String(36)
+    recorded_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")

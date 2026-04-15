@@ -10,11 +10,20 @@ from sqlalchemy.future import select
 from database import get_db
 from models.core import User
 
-# --- SECURITY CONFIGURATION ---
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 # In a real production app, put this in a .env file!
 SECRET_KEY = "super_secret_bodhi_key_do_not_share"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+# Configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = "govindjindal7808@gmail.com" 
+SENDER_PASSWORD = "cebm qeiq dllk xkwo" 
 
 # Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -56,3 +65,36 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if user is None:
         raise credentials_exception
     return user
+
+def send_otp_email(email_address: str, otp: str):
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = f"BODHI <{SENDER_EMAIL}>"
+        msg['To'] = email_address
+        msg['Subject'] = f"{otp} is your BODHI reset code"
+
+        body = f"""
+        <html>
+            <body style="font-family: sans-serif; background-color: #000; color: #fff; padding: 20px;">
+                <h2 style="color: #CCFF00;">BODHI</h2>
+                <p>Use the code below to reset your password. Valid for 15 minutes.</p>
+                <div style="background: #222; padding: 20px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 10px; color: #CCFF00;">{otp}</span>
+                </div>
+                <p style="font-size: 12px; color: #666; margin-top: 20px;">Your money. Alive.</p>
+            </body>
+        </html>
+        """
+        msg.attach(MIMEText(body, 'html'))
+
+        # Connect and Send
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"❌ Mail Error: {e}")
+        return False

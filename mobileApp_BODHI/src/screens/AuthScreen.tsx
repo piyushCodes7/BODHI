@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Smartphone, Eye, EyeOff } from 'lucide-react-native';
@@ -50,7 +51,6 @@ export function AuthScreen({ navigation }: any) {
     setIsLoading(true);
     try {
       if (authMode === 'login') {
-        // FastAPI OAuth2 Form Data
         const formData = new URLSearchParams();
         formData.append('username', email.trim().toLowerCase()); 
         formData.append('password', password);
@@ -83,18 +83,17 @@ export function AuthScreen({ navigation }: any) {
         const data = await response.json();
         
         if (!response.ok) {
-          // 🟢 SMART ERROR PARSER: Handles FastAPI strings OR arrays
           let errorMsg = 'Could not create account';
           if (data.detail) {
             if (typeof data.detail === 'string') {
-              errorMsg = data.detail; // Standard 400 string error
+              errorMsg = data.detail;
             } else if (Array.isArray(data.detail)) {
               errorMsg = data.detail.map((err: any) => {
                 const fieldName = err.loc ? err.loc[err.loc.length - 1] : 'Field';
                 return `${fieldName}: ${err.msg}`;
               }).join('\n');
             } else {
-              errorMsg = JSON.stringify(data.detail); // Catch-all
+              errorMsg = JSON.stringify(data.detail);
             }
           }
           throw new Error(errorMsg);
@@ -103,7 +102,6 @@ export function AuthScreen({ navigation }: any) {
         Alert.alert('Success', 'Account created! Please log in.');
         setAuthMode('login');
       }
-    // 👇 This is the part that got deleted!
     } catch (error: any) {
       Alert.alert('Authentication Failed', error.message);
     } finally {
@@ -128,7 +126,7 @@ export function AuthScreen({ navigation }: any) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || 'Failed to send reset code.');
 
-      setAuthMode('reset'); // Instantly swap the UI to the OTP input screen
+      setAuthMode('reset'); 
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
@@ -158,7 +156,7 @@ export function AuthScreen({ navigation }: any) {
       if (!response.ok) throw new Error(data.detail || 'Invalid or expired code.');
 
       Alert.alert('Success 🎉', 'Your password has been reset!');
-      setAuthMode('login'); // Send them back to the login screen
+      setAuthMode('login'); 
       setOtp('');
       setNewPassword('');
     } catch (error: any) {
@@ -172,7 +170,13 @@ export function AuthScreen({ navigation }: any) {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.logoText}>BODHI</Text>
+      {/* 🟢 YOUR NEW LOGO IMAGE 🟢 */}
+      {/* Make sure 'bodhi-logo.png' exists in your assets/images folder! */}
+      <Image 
+        source={require('../../assets/images/bodhi-logo.png')} 
+        style={styles.logoImage}
+        resizeMode="contain" 
+      />
       <Text style={styles.tagline}>Your money. Alive.</Text>
     </View>
   );
@@ -214,6 +218,8 @@ export function AuthScreen({ navigation }: any) {
         >
           {renderHeader()}
 
+          {/* 🟢 Mascot Placeholder: If you add Spline/Rive later, put the View here! */}
+          
           <View style={styles.card}>
             
             {/* Standard Login / Signup Flow */}
@@ -226,7 +232,7 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.inputLabel}>FULL NAME</Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="e.g. Govind Jindal"
+                        placeholder="Username"
                         placeholderTextColor="#9CA3AF"
                         value={name}
                         onChangeText={setName}
@@ -235,7 +241,7 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.inputLabel}>MOBILE NUMBER</Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 XXXXX-XXXXX"
                         placeholderTextColor="#9CA3AF"
                         value={phone}
                         onChangeText={setPhone}
@@ -247,7 +253,7 @@ export function AuthScreen({ navigation }: any) {
                   <Text style={styles.inputLabel}>EMAIL</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="you@domain.com"
+                    placeholder="user@domain.com"
                     placeholderTextColor="#9CA3AF"
                     value={email}
                     onChangeText={setEmail}
@@ -259,7 +265,7 @@ export function AuthScreen({ navigation }: any) {
                   <View style={styles.passwordContainer}>
                     <TextInput
                       style={[styles.input, { flex: 1 }]}
-                      placeholder="••••••••"
+                      placeholder="Enter strong password"
                       placeholderTextColor="#9CA3AF"
                       value={password}
                       onChangeText={setPassword}
@@ -380,8 +386,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingTop: 60, paddingBottom: 40 },
   header: { alignItems: 'center', marginBottom: 40 },
+  
+  // 🟢 NEW LOGO STYLES 🟢
+  logoImage: { width: 185, height: 65, marginBottom: 8 },
+  
   logoText: { fontSize: 48, fontWeight: '900', color: '#FFF', letterSpacing: -1.5 },
-  tagline: { fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: -4 },
+  tagline: { fontSize: 16,fontWeight: '500', color: 'rgba(255,255,255,0.9)', marginTop: -4,textShadowOffset: { width: 0, height: 0 },textShadowRadius: 10, },
   card: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: Spacing.xl, ...Shadow.lg },
   
   toggleContainer: { flexDirection: 'row', backgroundColor: '#F3F4F6', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
