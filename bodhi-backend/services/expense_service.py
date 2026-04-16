@@ -7,8 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Updated BODHI Imports
-from models.payments import Ledger, LedgerEntryType, LedgerReferenceType, PaymentStatus
-from models.portfolio import User # Update if User is elsewhere
+from models.core import Ledger, LedgerEntryType, LedgerReferenceType, PaymentStatus
+from models.core import User
 from models.expenses import Debt, DebtStatus, Expense, ExpenseSplit, Settlement, SplitMethod
 from schemas.expenses import DebtRead, ExpenseCreate, ExpenseRead, NetDebtGraph, SettlementCreate, SettlementRead, SplitParticipant
 

@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
-from models.portfolio import User, PortfolioItem, Transaction
+from models.core import User
+from models.portfolio import PortfolioItem, Transaction
 import logging
 
 logger = logging.getLogger(__name__)

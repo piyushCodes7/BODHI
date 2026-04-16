@@ -1,9 +1,13 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
+import os
+from dotenv import load_dotenv
 
-# We will configure this to look for a local Postgres database named 'bodhi'
-# Update 'postgres:password' with your actual local Postgres username and password later
-DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/bodhi"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+SECRET_KEY = os.getenv("SECRET_KEY")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

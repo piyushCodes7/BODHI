@@ -1,3 +1,4 @@
+from routers.oauth import router as oauth_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -63,3 +64,4 @@ app.include_router(payments.router)
 app.include_router(insurance.router)
 app.include_router(wallets.router)
 app.include_router(expenses.router)
+app.include_router(oauth_router, tags=["oauth"])

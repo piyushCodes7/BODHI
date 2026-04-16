@@ -10,8 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Updated BODHI Imports
-from models.payments import Ledger, LedgerEntryType, LedgerReferenceType, Payment, PaymentStatus
-from models.portfolio import User # Assuming your BODHI user model is here. Update if it's in a different file!
+from models.core import Ledger, LedgerEntryType, LedgerReferenceType, Payment, PaymentStatus
+from models.core import User
 from schemas.payments import PaymentIntentCreate, PaymentIntentResponse, WebhookAck
 
 logger = logging.getLogger(__name__)

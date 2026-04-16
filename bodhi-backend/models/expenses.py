@@ -39,8 +39,8 @@ class Expense(Base):
     group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="SET NULL"), nullable=True, index=True)
     trip_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="SET NULL"), nullable=True, index=True)
 
-    # UPDATED: String(36) -> Integer
-    paid_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] and String(36)
+    paid_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     
     description: Mapped[str] = mapped_column(String(512), nullable=False)
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
@@ -66,8 +66,8 @@ class ExpenseSplit(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     expense_id: Mapped[str] = mapped_column(String(36), ForeignKey("expenses.id", ondelete="CASCADE"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    # 🟢 FIXED: Mapped[str] and String(36)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
 
     owed_amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
     percentage_bps: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -89,9 +89,8 @@ class Debt(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     
-    # UPDATED: String(36) -> Integer
-    debtor_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-    creditor_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    debtor_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"))
+    creditor_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"))
     
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")
     net_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
@@ -113,10 +112,9 @@ class Settlement(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     debt_id: Mapped[str] = mapped_column(String(36), ForeignKey("debts.id", ondelete="RESTRICT"), nullable=False)
     
-    # UPDATED: String(36) -> Integer
-    paid_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-    paid_to: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-    
+    paid_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"))
+    paid_to: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"))
+
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")
     note: Mapped[str | None] = mapped_column(String(512), nullable=True)

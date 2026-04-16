@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Updated BODHI Imports
-from models.payments import Ledger, LedgerEntryType, LedgerReferenceType, PaymentStatus
-from models.portfolio import User # Update if User is elsewhere
+from models.core import Ledger, LedgerEntryType, LedgerReferenceType, PaymentStatus
+from models.core import User
 from models.wallets import GroupMember, GroupVoteProposal, GroupWallet, GroupWalletStatus, MemberRole
 from schemas.wallets import (
     GroupContributeRequest, GroupContributeResponse, GroupJoinRequest,
