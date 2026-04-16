@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   Smartphone, 
   Eye, 
@@ -72,6 +73,8 @@ export function AuthScreen({ navigation }: any) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || 'Incorrect credentials');
 
+        await AsyncStorage.setItem('bodhi_access_token', data.access_token);
+        
         navigation.replace('Main');
 
       } else if (authMode === 'signup') {
@@ -477,7 +480,7 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingTop: 60, paddingBottom: 40 },
   header: { alignItems: 'center', marginBottom: 30 },
   
-  logoImage: { width: 160, height: 50, marginBottom: 12, tintColor: '#FFF' },
+  logoImage: { width: 180, height: 60, marginBottom: 12, tintColor: '#FFF' },
   tagline: { fontSize: 15, fontWeight: '500', color: '#FFF' },
   taglineHighlight: { color: Colors.neonLime, fontWeight: '800' },
 

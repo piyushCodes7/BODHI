@@ -1,5 +1,6 @@
 from routers.oauth import router as oauth_router
 from fastapi import FastAPI
+from services.scheduler import scheduler
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi.security import OAuth2PasswordBearer
@@ -37,6 +38,12 @@ app = FastAPI(
     # This adds the global lock icon to the UI
     swagger_ui_parameters={"persistAuthorization": True} 
 )
+
+@app.on_event("startup")
+async def startup_event():
+    # Start the background AMO processor
+    scheduler.start()
+    print("🤖 Trading Scheduler Started")
 
 # 3. Middleware
 app.add_middleware(

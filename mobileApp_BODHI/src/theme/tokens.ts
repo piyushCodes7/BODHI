@@ -75,6 +75,17 @@ export const Spacing = {
   px:  6,
 } as const;
 
+export const FontSize = {
+  xs:   11,
+  sm:   13,
+  md:   15,
+  lg:   17,
+  xl:   20,
+  xxl:  26,
+  xxxl: 34,
+  hero: 44,
+} as const;
+
 export const Shadow = {
   neonLime: {
     shadowColor:   '#d1fc00',
@@ -113,3 +124,4 @@ export const Gradients = {
     end:    { x: 0, y: 1 },
   },
 } as const;
+

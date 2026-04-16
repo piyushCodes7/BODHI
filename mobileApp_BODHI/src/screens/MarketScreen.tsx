@@ -2,19 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   TextInput, StyleSheet, Dimensions, ActivityIndicator,
-  Modal, FlatList, Alert, KeyboardAvoidingView, Platform
+  Modal, FlatList, Alert, Platform
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { LineChart } from 'react-native-gifted-charts';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TrendingUp, Edit2, Calendar, TrendingDown, Hourglass, Sparkles } from 'lucide-react-native';
 
 import { apiClient } from '../api/client';
-import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
-import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
+import { Colors, Radius, Spacing } from '../theme/tokens';
 
-// ── Define Constants at the TOP to avoid "doesn't exist" errors ──
 const { width: W } = Dimensions.get('window');
-const S = Spacing;
 
 type Mode = 'Historical' | 'Predictive';
 
@@ -43,17 +42,17 @@ function thinChartData(data: any[], maxPoints = 120) {
 }
 
 export function MarketScreen() {
-  const headerH = useHeaderHeight();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
 
   // ── Input state ──
-  const [amountText, setAmountText] = useState('10000');
+  const [amountText, setAmountText] = useState('10,000');
   const [mode, setMode]             = useState<Mode>('Historical');
   const [selectedStock, setSelectedStock] = useState<StockOption>({
     symbol: 'RELIANCE.NS', name: 'Reliance Industries', exchange: 'NSE',
   });
   const [selectedEvent, setSelectedEvent] = useState<CrashEvent | null>(null);
-  const [customStartDate, setCustomStartDate] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('2020-01-01');
 
   // ── Remote data ──
   const [crashEvents, setCrashEvents] = useState<CrashEvent[]>([]);
@@ -153,9 +152,15 @@ export function MarketScreen() {
 
   return (
     <View style={styles.root}>
-      <BodhiHeader />
+      {/* ── Background Gradient ── */}
+      <LinearGradient
+        colors={['#05001F', '#0A0A14', '#0A0A14']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
 
-      {/* ─── STOCK PICKER MODAL ──────────────────────────── */}
+      {/* ─── STOCK PICKER MODAL ─── */}
       <Modal visible={showStockPicker} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
@@ -167,12 +172,12 @@ export function MarketScreen() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search NSE / BSE…"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor="rgba(255,255,255,0.4)"
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoFocus
           />
-          {searchLoading && <ActivityIndicator style={{ marginTop: 16 }} />}
+          {searchLoading && <ActivityIndicator style={{ marginTop: 16 }} color="#A855F7" />}
           <FlatList
             data={searchResults}
             keyExtractor={i => i.symbol}
@@ -186,7 +191,7 @@ export function MarketScreen() {
                 }}
               >
                 <View style={styles.assetIconSmall}>
-                  <Text style={{ fontSize: 14 }}>📈</Text>
+                  <TrendingUp size={16} color="#A855F7" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.searchRowName}>{item.name}</Text>
@@ -198,7 +203,7 @@ export function MarketScreen() {
         </View>
       </Modal>
 
-      {/* ─── EVENT PICKER MODAL ──────────────────────────── */}
+      {/* ─── EVENT PICKER MODAL ─── */}
       <Modal visible={showEventPicker} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
@@ -210,7 +215,7 @@ export function MarketScreen() {
           <FlatList
             data={crashEvents}
             keyExtractor={i => i.id}
-            contentContainerStyle={{ paddingHorizontal: S.xl }}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
@@ -226,7 +231,7 @@ export function MarketScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.eventName}>{item.name}</Text>
                   <Text style={styles.eventDesc}>{item.description}</Text>
-                  <Text style={[styles.eventFall, { color: Colors.errorRed }]}>
+                  <Text style={[styles.eventFall, { color: Colors.hotPink }]}>
                     Nifty fell {item.nifty_fall_pct}%
                   </Text>
                 </View>
@@ -236,53 +241,66 @@ export function MarketScreen() {
         </View>
       </Modal>
 
-      {/* ─── MAIN SCROLL ──────────────────────────────────── */}
+      {/* ─── MAIN SCROLL ─── */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scroll, { paddingTop: headerH + 16 }]}
+        contentContainerStyle={[styles.scroll, { paddingTop: Math.max(insets.top, 20) }]}
       >
-        <Text style={styles.pageTitle}>
-          Time <Text style={styles.pageTitleItalic}>Warp</Text>
-        </Text>
+        
+        {/* ── HERO HEADER ── */}
+        <View style={styles.headerSection}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.pageTitle}>Time <Text style={{color: '#A855F7'}}>Warp</Text></Text>
+            <Text style={styles.pageSubtitle}>Simulate the past. Predict the future.</Text>
+          </View>
+          
+          {/* Glowing Hourglass Illustration */}
+          <View style={styles.heroGlowBox}>
+            <View style={[styles.glowRing, { borderColor: 'rgba(168,85,247,0.3)', width: 120, height: 120, borderRadius: 60 }]} />
+            <View style={[styles.glowRing, { borderColor: 'rgba(255,45,120,0.2)', width: 80, height: 80, borderRadius: 40 }]} />
+            <Hourglass size={44} color="#A855F7" style={{ zIndex: 2 }} />
+          </View>
+        </View>
 
-        <View style={styles.inputBlock}>
+        {/* ── INPUTS ── */}
+        <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>ASSET OF CHOICE</Text>
-          <View style={styles.assetRow}>
+          <View style={styles.glassRow}>
             <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => setShowStockPicker(true)}>
-              <View style={styles.assetIcon}>
-                <Text style={{ fontSize: 18 }}>📈</Text>
+              <View style={styles.assetIconBox}>
+                <TrendingUp size={22} color="#A855F7" />
               </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
+              <View style={{ flex: 1, marginLeft: 16 }}>
                 <Text style={styles.assetName}>{selectedStock.name}</Text>
                 <Text style={styles.assetTicker}>{selectedStock.symbol} • {selectedStock.exchange}</Text>
               </View>
             </TouchableOpacity>
-            
             <TouchableOpacity style={styles.liveTradeBtn} onPress={openTradeModal}>
               <Text style={styles.liveTradeBtnText}>TRADE LIVE</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.inputBlock}>
+        <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>SIMULATION PRINCIPAL</Text>
-          <View style={styles.inputRow}>
+          <View style={styles.glassRow}>
             <Text style={styles.currencyPrefix}>₹</Text>
             <TextInput
               value={amountText}
               onChangeText={t => setAmountText(t.replace(/[^0-9.]/g, ''))}
-              style={styles.input}
+              style={styles.textInput}
               keyboardType="numeric"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor="rgba(255,255,255,0.4)"
             />
+            <View style={styles.editIconBox}>
+              <Edit2 size={16} color="#A855F7" />
+            </View>
           </View>
         </View>
 
-        <View style={styles.inputBlock}>
-          <View style={styles.modeHeader}>
-            <Text style={styles.inputLabel}>SIMULATION MODE</Text>
-          </View>
-          <View style={styles.toggle}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>SIMULATION MODE</Text>
+          <View style={styles.toggleContainer}>
             {(['Historical', 'Predictive'] as Mode[]).map(m => (
               <TouchableOpacity
                 key={m}
@@ -296,55 +314,66 @@ export function MarketScreen() {
         </View>
 
         {mode === 'Historical' && (
-          <View style={styles.inputBlock}>
-            <Text style={styles.inputLabel}>CRASH EVENT</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>CRASH EVENT (OPTIONAL)</Text>
             {loadingEvents ? (
-              <ActivityIndicator color={Colors.electricViolet} />
+              <ActivityIndicator color="#A855F7" />
             ) : (
-              <TouchableOpacity style={styles.eventPickerRow} onPress={() => setShowEventPicker(true)}>
-                <Text style={styles.eventPickerEmoji}>{selectedEvent?.emoji ?? '📉'}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.assetName}>{selectedEvent?.name ?? 'Select event'}</Text>
-                  <Text style={styles.assetTicker}>{selectedEvent?.description ?? ''}</Text>
+              <TouchableOpacity style={styles.glassRow} onPress={() => setShowEventPicker(true)}>
+                <View style={styles.assetIconBox}>
+                  <TrendingDown size={22} color="#A855F7" />
                 </View>
-                <Text style={styles.changeBtn}>Change</Text>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                  <Text style={styles.assetName}>{selectedEvent?.name ?? 'Select crash event'}</Text>
+                  <Text style={styles.assetTicker}>{selectedEvent?.description ?? 'e.g. COVID-19 Crash, 2008 Crisis'}</Text>
+                </View>
+                <Text style={styles.changeBtnText}>Change ›</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
         {mode === 'Predictive' && (
-          <View style={styles.inputBlock}>
+          <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>START DATE (YYYY-MM-DD)</Text>
-            <View style={styles.inputRow}>
+            <View style={styles.glassRow}>
+              <Calendar size={22} color="#A855F7" style={{ marginRight: 16 }} />
               <TextInput
                 value={customStartDate}
                 onChangeText={setCustomStartDate}
-                style={styles.input}
+                style={styles.textInput}
                 placeholder="2020-01-01"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor="rgba(255,255,255,0.4)"
               />
+              <View style={styles.editIconBox}>
+                <Edit2 size={16} color="#A855F7" />
+              </View>
             </View>
           </View>
         )}
 
+        {/* ── CALCULATE BUTTON ── */}
         <TouchableOpacity
-          style={[styles.ctaBtn, loading && { opacity: 0.7 }]}
+          style={[styles.calcBtn, loading && { opacity: 0.7 }]}
           onPress={simulate}
           activeOpacity={0.88}
           disabled={loading}
         >
-          {loading
-            ? <ActivityIndicator color={Colors.neonLimeDark} />
-            : <Text style={styles.ctaText}>CALCULATE ALPHA</Text>
-          }
+          {loading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Sparkles size={18} color="#000" />
+              <Text style={styles.calcBtnText}>CALCULATE ALPHA</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
-        {/* ─── Results ─────────────────────────────────────── */}
+        {/* ─── Results Section ─────────────────────────────────────── */}
         {sim && (
-          <>
+          <View style={{ marginTop: 20 }}>
             <LinearGradient
-              colors={[Colors.electricViolet, Colors.magenta, Colors.hotPink]}
+              colors={['#A855F7', '#7B2FBE', '#FF2A5F']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               style={styles.impactCard}
             >
@@ -362,8 +391,8 @@ export function MarketScreen() {
               </View>
               <View style={styles.resultAmtRow}>
                 <Text style={styles.resultAmt}>{fmt(sim.value_now)}</Text>
-                <View style={[styles.resultBadge, { backgroundColor: isGain ? '#dcfce7' : '#fee2e2' }]}>
-                  <Text style={[styles.resultBadgeText, { color: isGain ? '#16a34a' : Colors.errorRed }]}>
+                <View style={[styles.resultBadge, { backgroundColor: isGain ? 'rgba(212,255,0,0.1)' : 'rgba(255,45,120,0.1)' }]}>
+                  <Text style={[styles.resultBadgeText, { color: isGain ? Colors.neonLime : Colors.hotPink }]}>
                     {fmtPct(sim.gain_pct)}
                   </Text>
                 </View>
@@ -372,12 +401,12 @@ export function MarketScreen() {
               <View style={styles.chartArea}>
                 <LineChart
                   data={chartData.map((d: any) => ({ value: d.value }))}
-                  width={W - S.xxl * 2 - 40}
+                  width={W - 40 - 48}
                   height={120}
-                  thickness={2}
-                  color={isGain ? '#16a34a' : Colors.errorRed}
-                  startFillColor={isGain ? '#16a34a' : Colors.errorRed}
-                  endFillColor={isGain ? '#16a34a' : Colors.errorRed}
+                  thickness={3}
+                  color={isGain ? Colors.neonLime : Colors.hotPink}
+                  startFillColor={isGain ? Colors.neonLime : Colors.hotPink}
+                  endFillColor={isGain ? Colors.neonLime : Colors.hotPink}
                   startOpacity={0.2}
                   endOpacity={0.0}
                   initialSpacing={0}
@@ -389,7 +418,7 @@ export function MarketScreen() {
                 />
                 <View style={styles.chartLabels}>
                   <Text style={styles.chartLabelText}>{sim.start_date}</Text>
-                  <Text style={[styles.chartLabelText, { color: Colors.neonLimeDark }]}>TODAY</Text>
+                  <Text style={[styles.chartLabelText, { color: Colors.neonLime }]}>TODAY</Text>
                 </View>
               </View>
             </View>
@@ -397,27 +426,27 @@ export function MarketScreen() {
             <View style={styles.statsRow}>
               <View style={[styles.statCard, { flex: 1 }]}>
                 <Text style={styles.statLabel}>WORST DROP</Text>
-                <Text style={[styles.statVal, { fontSize: 22, color: Colors.errorRed }]}>
+                <Text style={[styles.statVal, { color: Colors.hotPink }]}>
                   {fmtPct(sim.loss_at_trough_pct)}
                 </Text>
               </View>
-              <View style={{ width: S.md }} />
+              <View style={{ width: 16 }} />
               <View style={[styles.statCard, { flex: 1 }]}>
                 <Text style={styles.statLabel}>VOLATILITY</Text>
                 <Text style={styles.statVal}>{sim.volatility_pct.toFixed(1)}%</Text>
               </View>
             </View>
 
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { marginBottom: 40 }]}>
               <Text style={styles.statLabel}>ALPHA SCORE</Text>
               <View style={styles.statRow}>
                 <Text style={styles.statVal}>{sim.alpha_score}/100</Text>
-                <View style={[styles.alphaBar, { width: '50%' }]}>
+                <View style={styles.alphaBar}>
                   <View style={[styles.alphaFill, { width: `${sim.alpha_score}%` }]} />
                 </View>
               </View>
             </View>
-          </>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -425,70 +454,90 @@ export function MarketScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.surface },
-  scroll: {
-    paddingTop: 16, paddingBottom: 120,
-    paddingHorizontal: S.xxl, gap: S.xl,
-  },
-  pageTitle: { fontFamily: Fonts.headline, fontSize: 32, fontWeight: '700', color: Colors.textPrimary },
-  pageTitleItalic: { fontStyle: 'italic', color: Colors.electricViolet },
-  inputBlock: { gap: 8 },
-  inputLabel: { fontFamily: Fonts.label, fontSize: 10, fontWeight: '700', color: Colors.textSecondary, letterSpacing: 1.4, textTransform: 'uppercase' },
-  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surfaceWhite, borderRadius: Radius.md, paddingHorizontal: S.lg, paddingVertical: S.lg },
-  currencyPrefix: { fontFamily: Fonts.headline, fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginRight: 4 },
-  input: { flex: 1, fontFamily: Fonts.headline, fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
-  assetRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.surfaceWhite, borderRadius: Radius.md, padding: S.lg },
-  assetIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
-  assetIconSmall: { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.surfaceHighest, alignItems: 'center', justifyContent: 'center' },
-  assetName: { fontFamily: Fonts.body, fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
-  assetTicker: { fontFamily: Fonts.label, fontSize: 11, color: Colors.textSecondary },
-  liveTradeBtn: { backgroundColor: Colors.electricViolet + '20', paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.full },
-  liveTradeBtnText: { fontFamily: Fonts.label, fontSize: 12, fontWeight: '800', color: Colors.electricViolet },
-  eventPickerRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, backgroundColor: Colors.surfaceWhite, borderRadius: Radius.md, padding: S.lg },
-  eventPickerEmoji: { fontSize: 24 },
-  modeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  toggle: { flexDirection: 'row', backgroundColor: Colors.surfaceHighest, borderRadius: Radius.full, padding: 4 },
-  toggleBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: Radius.full },
-  toggleActive: { backgroundColor: Colors.surfaceWhite, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
-  toggleText: { fontFamily: Fonts.body, fontSize: 14, fontWeight: '600', color: Colors.textSecondary },
-  toggleTextActive: { color: Colors.textPrimary, fontWeight: '700' },
-  ctaBtn: { backgroundColor: Colors.neonLime, borderRadius: Radius.md, paddingVertical: 18, alignItems: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 8 },
-  ctaText: { fontFamily: Fonts.headline, fontSize: 16, fontWeight: '900', color: Colors.neonLimeDark, letterSpacing: 1.2 },
-  impactCard: { borderRadius: Radius.lg, padding: S.xxl, gap: 8 },
-  impactLabel: { fontFamily: Fonts.label, fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.6, textTransform: 'uppercase' },
-  impactTitle: { fontFamily: Fonts.headline, fontSize: 22, fontWeight: '700', color: '#fff', lineHeight: 30 },
-  impactDesc: { fontFamily: Fonts.body, fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 20 },
-  resultCard: { backgroundColor: Colors.surfaceWhite, borderRadius: Radius.lg, padding: S.xxl },
+  root: { flex: 1, backgroundColor: '#05001F' },
+  scroll: { paddingHorizontal: 20, paddingBottom: 100 },
+  
+  // ── HERO HEADER ──
+  headerSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, marginTop: 10 },
+  headerTextWrap: { flex: 1 },
+  pageTitle: { fontSize: 36, fontWeight: '800', color: '#FFF', letterSpacing: -1 },
+  pageSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 4, fontWeight: '500' },
+  
+  heroGlowBox: { width: 120, height: 120, position: 'relative', justifyContent: 'center', alignItems: 'center' },
+  glowRing: { position: 'absolute', borderWidth: 1 },
+
+  // ── INPUT GROUPS ──
+  inputGroup: { marginBottom: 20 },
+  inputLabel: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.6)', letterSpacing: 1.4, marginBottom: 12 },
+  
+  glassRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  
+  assetIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(168,85,247,0.1)', borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', alignItems: 'center', justifyContent: 'center' },
+  assetName: { fontSize: 15, fontWeight: '700', color: '#FFF', marginBottom: 2 },
+  assetTicker: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  
+  liveTradeBtn: { backgroundColor: 'rgba(212,255,0,0.1)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(212,255,0,0.2)' },
+  liveTradeBtnText: { fontSize: 11, fontWeight: '800', color: Colors.neonLime, letterSpacing: 0.5 },
+
+  currencyPrefix: { fontSize: 24, fontWeight: '700', color: '#FFF', marginRight: 12 },
+  textInput: { flex: 1, fontSize: 24, fontWeight: '700', color: '#FFF' },
+  editIconBox: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
+
+  toggleContainer: { flexDirection: 'row', backgroundColor: '#0B0A1A', borderRadius: 24, padding: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  toggleBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 20 },
+  toggleActive: { backgroundColor: 'rgba(168,85,247,0.2)', borderWidth: 1, borderColor: '#A855F7' },
+  toggleText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  toggleTextActive: { color: '#FFF', fontWeight: '700' },
+
+  changeBtnText: { fontSize: 13, fontWeight: '700', color: '#A855F7' },
+
+  // ── CALCULATE BUTTON ──
+  calcBtn: { backgroundColor: Colors.neonLime, borderRadius: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 8, marginTop: 10 },
+  calcBtnText: { fontSize: 16, fontWeight: '800', color: '#000', letterSpacing: 1 },
+
+  // ── RESULTS ──
+  impactCard: { borderRadius: 24, padding: 24, marginBottom: 16 },
+  impactLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 8 },
+  impactTitle: { fontSize: 24, fontWeight: '800', color: '#FFF', lineHeight: 32, marginBottom: 12 },
+  impactDesc: { fontSize: 14, color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
+
+  resultCard: { backgroundColor: '#0B0A1A', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   resultTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  resultLabel: { fontFamily: Fonts.label, fontSize: 10, fontWeight: '700', color: Colors.textSecondary, letterSpacing: 1.2 },
-  resultPeriod: { fontFamily: Fonts.label, fontSize: 11, fontWeight: '700', color: Colors.textSecondary },
-  resultAmtRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: S.lg },
-  resultAmt: { fontFamily: Fonts.headline, fontSize: 32, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -1 },
-  resultBadge: { borderRadius: Radius.full, paddingHorizontal: 8, paddingVertical: 3 },
-  resultBadgeText: { fontFamily: Fonts.label, fontSize: 11, fontWeight: '700' },
+  resultLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2 },
+  resultPeriod: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  resultAmtRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+  resultAmt: { fontSize: 36, fontWeight: '800', color: '#FFF', letterSpacing: -1 },
+  resultBadge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
+  resultBadgeText: { fontSize: 12, fontWeight: '700' },
+
   chartArea: { marginTop: 8 },
-  chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 2 },
-  chartLabelText: { fontFamily: Fonts.label, fontSize: 10, color: Colors.textMuted },
-  statsRow: { flexDirection: 'row' },
-  statCard: { backgroundColor: Colors.surfaceWhite, borderRadius: Radius.lg, padding: S.xxl, gap: 4, marginBottom: S.md },
-  statLabel: { fontFamily: Fonts.label, fontSize: 10, fontWeight: '700', color: Colors.textSecondary, letterSpacing: 1.2, textTransform: 'uppercase' },
-  statVal: { fontFamily: Fonts.headline, fontSize: 28, fontWeight: '700', color: Colors.textPrimary },
+  chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  chartLabelText: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
+
+  statsRow: { flexDirection: 'row', marginBottom: 16 },
+  statCard: { backgroundColor: '#0B0A1A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', flex: 1 },
+  statLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2, marginBottom: 8 },
+  statVal: { fontSize: 24, fontWeight: '800', color: '#FFF' },
+  
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  alphaBar: { height: 6, backgroundColor: Colors.surfaceHighest, borderRadius: 3, overflow: 'hidden' },
+  alphaBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden', width: '50%' },
   alphaFill: { height: '100%', backgroundColor: Colors.neonLime, borderRadius: 3 },
-  modal: { flex: 1, backgroundColor: Colors.surface },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: S.xl, borderBottomWidth: 1, borderBottomColor: Colors.surfaceHighest },
-  modalTitle: { fontFamily: Fonts.headline, fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
-  modalClose: { fontFamily: Fonts.label, fontSize: 14, fontWeight: '700', color: Colors.electricViolet },
-  searchInput: { margin: S.xl, backgroundColor: Colors.surfaceWhite, borderRadius: Radius.md, padding: S.lg, fontFamily: Fonts.body, fontSize: 16, color: Colors.textPrimary },
-  searchRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, paddingVertical: S.lg, paddingHorizontal: S.xl, borderBottomWidth: 1, borderBottomColor: Colors.surfaceHighest },
-  searchRowName: { fontFamily: Fonts.body, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  searchRowMeta: { fontFamily: Fonts.label, fontSize: 11, color: Colors.textSecondary },
-  eventRow: { flexDirection: 'row', alignItems: 'flex-start', gap: S.md, paddingVertical: S.xl, borderBottomWidth: 1, borderBottomColor: Colors.surfaceHighest },
-  eventRowSelected: { backgroundColor: Colors.electricViolet + '10', borderRadius: Radius.md, paddingHorizontal: S.md },
+
+  // ── MODALS ──
+  modal: { flex: 1, backgroundColor: '#05001F' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFF' },
+  modalClose: { fontSize: 15, fontWeight: '700', color: '#A855F7' },
+  searchInput: { margin: 20, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, fontSize: 16, color: '#FFF', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  searchRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  assetIconSmall: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
+  searchRowName: { fontSize: 15, fontWeight: '700', color: '#FFF', marginBottom: 2 },
+  searchRowMeta: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  
+  eventRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  eventRowSelected: { backgroundColor: 'rgba(168,85,247,0.1)', borderRadius: 20, paddingHorizontal: 16, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
   eventEmoji: { fontSize: 28, marginTop: 2 },
-  eventName: { fontFamily: Fonts.body, fontSize: 15, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
-  eventDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.textSecondary, lineHeight: 18 },
-  eventFall: { fontFamily: Fonts.label, fontSize: 11, fontWeight: '700', marginTop: 4 },
-  changeBtn: { fontFamily: Fonts.label, fontSize: 12, fontWeight: '700', color: Colors.electricViolet },
+  eventName: { fontSize: 16, fontWeight: '800', color: '#FFF', marginBottom: 4 },
+  eventDesc: { fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 20, marginBottom: 6 },
+  eventFall: { fontSize: 12, fontWeight: '700' },
 });

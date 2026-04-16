@@ -14,8 +14,7 @@ import { MarketScreen }                  from '../screens/MarketScreen';
 import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
 import { PaymentScreen }                 from '../screens/PaymentScreen';
 import { VentureClubScreen }             from '../screens/VentureClubScreen';
-import { TripWalletScreen }              from '../screens/TripWalletScreen';
-import { InsuranceStoriesScreen }        from '../screens/InsuranceStoriesScreen';
+import InsuranceScreen                   from '../screens/TripWalletScreen';
 import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
 
 // ─── COMPONENT IMPORTS ───
@@ -46,10 +45,9 @@ function RootNavigator() {
       <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
       
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
-      <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="TripWallet" component={InsuranceScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       
-      <RootStack.Screen name="InsuranceStories" component={InsuranceStoriesScreen} options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
     </RootStack.Navigator>
   );
