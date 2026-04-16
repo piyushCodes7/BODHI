@@ -13,8 +13,16 @@ import {
   Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Smartphone, Eye, EyeOff } from 'lucide-react-native';
-import { Colors, Radius, Spacing, Shadow } from '../theme/tokens';
+import { 
+  Smartphone, 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  ChevronRight, 
+  ShieldCheck,
+} from 'lucide-react-native';
+import { Colors, Radius, Spacing } from '../theme/tokens';
 import { SocialAuthButtons } from '../components/SocialAuthButtons';
 
 // Automatically route to localhost on iOS Simulator, or 10.0.2.2 on Android
@@ -170,38 +178,62 @@ export function AuthScreen({ navigation }: any) {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      {/* 🟢 YOUR NEW LOGO IMAGE 🟢 */}
-      {/* Make sure 'bodhi-logo.png' exists in your assets/images folder! */}
       <Image 
         source={require('../../assets/images/bodhi-logo.png')} 
         style={styles.logoImage}
         resizeMode="contain" 
       />
-      <Text style={styles.tagline}>Your money. Alive.</Text>
+      <Text style={styles.tagline}>
+        Your money. <Text style={styles.taglineHighlight}>Alive.</Text>
+      </Text>
     </View>
   );
 
   const renderToggle = () => (
     <View style={styles.toggleContainer}>
       <TouchableOpacity 
-        style={[styles.toggleBtn, authMode === 'login' && styles.toggleBtnActive]}
+        style={styles.toggleBtn}
         onPress={() => setAuthMode('login')}
+        activeOpacity={0.8}
       >
-        <Text style={[styles.toggleText, authMode === 'login' && styles.toggleTextActive]}>Login</Text>
+        {authMode === 'login' ? (
+          <LinearGradient
+            colors={['#7B2FBE', '#4A00E0']}
+            style={styles.activeToggleBg}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.toggleTextActive}>Login</Text>
+          </LinearGradient>
+        ) : (
+          <Text style={styles.toggleText}>Login</Text>
+        )}
       </TouchableOpacity>
+      
       <TouchableOpacity 
-        style={[styles.toggleBtn, authMode === 'signup' && styles.toggleBtnActive]}
+        style={styles.toggleBtn}
         onPress={() => setAuthMode('signup')}
+        activeOpacity={0.8}
       >
-        <Text style={[styles.toggleText, authMode === 'signup' && styles.toggleTextActive]}>Sign Up</Text>
+        {authMode === 'signup' ? (
+          <LinearGradient
+            colors={['#7B2FBE', '#4A00E0']}
+            style={styles.activeToggleBg}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.toggleTextActive}>Sign Up</Text>
+          </LinearGradient>
+        ) : (
+          <Text style={styles.toggleText}>Sign Up</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Deep Neon Background Gradient */}
       <LinearGradient
-        colors={['#7B2FBE', '#FF2A5F']}
+        colors={['#05001F', '#2A0845', '#7A004A']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -217,12 +249,10 @@ export function AuthScreen({ navigation }: any) {
           keyboardShouldPersistTaps="handled"
         >
           {renderHeader()}
-
-          {/* 🟢 Mascot Placeholder: If you add Spline/Rive later, put the View here! */}
           
-          <View style={styles.card}>
+          <View style={styles.glassCard}>
             
-            {/* Standard Login / Signup Flow */}
+            {/* ─── Standard Login / Signup Flow ─── */}
             {(authMode === 'login' || authMode === 'signup') && (
               <>
                 {renderToggle()}
@@ -230,43 +260,52 @@ export function AuthScreen({ navigation }: any) {
                   {authMode === 'signup' && (
                     <>
                       <Text style={styles.inputLabel}>FULL NAME</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="e.g., Govind Jindal"
-                        placeholderTextColor="#9CA3AF"
-                        value={name}
-                        onChangeText={setName}
-                        autoCapitalize="words"
-                      />
+                      <View style={styles.inputWrapper}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g., Govind Jindal"
+                          placeholderTextColor="rgba(255,255,255,0.4)"
+                          value={name}
+                          onChangeText={setName}
+                          autoCapitalize="words"
+                        />
+                      </View>
+
                       <Text style={styles.inputLabel}>MOBILE NUMBER</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="e.g., 98765 43210"
-                        placeholderTextColor="#9CA3AF"
-                        value={phone}
-                        onChangeText={setPhone}
-                        keyboardType="phone-pad"
-                      />
+                      <View style={styles.inputWrapper}>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g., 98765 43210"
+                          placeholderTextColor="rgba(255,255,255,0.4)"
+                          value={phone}
+                          onChangeText={setPhone}
+                          keyboardType="phone-pad"
+                        />
+                      </View>
                     </>
                   )}
 
                   <Text style={styles.inputLabel}>EMAIL</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="e.g., name@example.com"
-                    placeholderTextColor="#9CA3AF"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
+                  <View style={styles.inputWrapper}>
+                    <Mail size={18} color="#A855F7" style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="e.g., name@example.com"
+                      placeholderTextColor="rgba(255,255,255,0.4)"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                  </View>
 
                   <Text style={styles.inputLabel}>PASSWORD</Text>
-                  <View style={styles.passwordContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Lock size={18} color="#A855F7" style={styles.inputIcon} />
                     <TextInput
-                      style={[styles.input, { flex: 1 }]}
+                      style={[styles.input, { flex: 1, paddingLeft: 0 }]}
                       placeholder="Min. 8 characters"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor="rgba(255,255,255,0.4)"
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -275,7 +314,7 @@ export function AuthScreen({ navigation }: any) {
                       style={styles.eyeBtn} 
                       onPress={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
+                      {showPassword ? <EyeOff size={18} color="#A855F7" /> : <Eye size={18} color="#A855F7" />}
                     </TouchableOpacity>
                   </View>
 
@@ -284,17 +323,28 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.forgotText}>Forgot password?</Text>
                     </TouchableOpacity>
                   ) : (
-                    <View style={{ height: Spacing.lg }} />
+                    <View style={{ height: Spacing.xl }} />
                   )}
 
-                  <TouchableOpacity style={styles.primaryBtn} onPress={handleStandardAuth} disabled={isLoading}>
-                    {isLoading ? <ActivityIndicator color="#000" /> : (
-                      <Text style={styles.primaryBtnText}>{authMode === 'login' ? 'Login to BODHI' : 'Create Account'}</Text>
-                    )}
+                  <TouchableOpacity activeOpacity={0.8} onPress={handleStandardAuth} disabled={isLoading}>
+                    <LinearGradient
+                      colors={['#FFE259', '#C8FF00']}
+                      style={styles.primaryBtn}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    >
+                      {isLoading ? <ActivityIndicator color="#000" /> : (
+                        <>
+                          <Text style={styles.primaryBtnText}>
+                            {authMode === 'login' ? 'Login to BODHI' : 'Create Account'}
+                          </Text>
+                          <ChevronRight size={20} color="#000" style={{ position: 'absolute', right: 20 }} />
+                        </>
+                      )}
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
 
-                {/* Social Auth */}
+                {/* Social Auth (Restored Original Logic) */}
                 <View style={styles.socialSection}>
                   <View style={styles.dividerRow}>
                     <View style={styles.dividerLine} />
@@ -302,75 +352,115 @@ export function AuthScreen({ navigation }: any) {
                     <View style={styles.dividerLine} />
                   </View>
                   <View style={styles.socialRow}>
+                    
+                    {/* Your existing functioning Social Component */}
                     <SocialAuthButtons onSuccess={handleOAuthSuccess} />
+                    
                     <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Phone', 'Coming soon!')}>
-                      <Smartphone size={22} color="#000" strokeWidth={2.5} />
+                      <Smartphone size={22} color="#FFF" />
                     </TouchableOpacity>
+                  </View>
+
+                  {/* Security Footer */}
+                  <View style={styles.securityFooter}>
+                    <ShieldCheck size={14} color="#A855F7" />
+                    <Text style={styles.securityText}>
+                      Your data is <Text style={{color: Colors.neonLime, fontWeight: '700'}}>100% secure</Text> with bank-level encryption
+                    </Text>
                   </View>
                 </View>
               </>
             )}
 
-            {/* Forgot Password Flow */}
+            {/* ─── Forgot Password Flow ─── */}
             {authMode === 'forgot' && (
               <View style={styles.form}>
-                <Text style={[styles.toggleTextActive, { fontSize: 22, marginBottom: 8 }]}>Reset Password</Text>
-                <Text style={{ color: '#6B7280', marginBottom: 24 }}>Enter your email and we'll send you a 6-digit reset code.</Text>
+                <Text style={styles.flowTitle}>Reset Password</Text>
+                <Text style={styles.flowSub}>Enter your email and we'll send you a 6-digit reset code.</Text>
 
                 <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g., name@example.com"
-                  placeholderTextColor="#9CA3AF"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
+                <View style={styles.inputWrapper}>
+                  <Mail size={18} color="#A855F7" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="e.g., name@example.com"
+                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
 
-                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 24 }]} onPress={handleForgotPassword} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#000" /> : <Text style={styles.primaryBtnText}>Send Reset Code</Text>}
+                <TouchableOpacity activeOpacity={0.8} onPress={handleForgotPassword} disabled={isLoading} style={{ marginTop: 32 }}>
+                  <LinearGradient
+                    colors={['#FFE259', '#C8FF00']}
+                    style={styles.primaryBtn}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  >
+                    {isLoading ? <ActivityIndicator color="#000" /> : (
+                      <>
+                        <Text style={styles.primaryBtnText}>Send Reset Code</Text>
+                        <ChevronRight size={20} color="#000" style={{ position: 'absolute', right: 20 }} />
+                      </>
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ alignItems: 'center', marginTop: 24 }} onPress={() => setAuthMode('login')}>
-                  <Text style={styles.footerLink}>← Back to Login</Text>
+                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => setAuthMode('login')}>
+                  <Text style={styles.forgotText}>← Back to Login</Text>
                 </TouchableOpacity>
               </View>
             )}
 
-            {/* Reset Password (OTP) Flow */}
+            {/* ─── Reset Password (OTP) Flow ─── */}
             {authMode === 'reset' && (
               <View style={styles.form}>
-                <Text style={[styles.toggleTextActive, { fontSize: 22, marginBottom: 8 }]}>Enter Code</Text>
-                <Text style={{ color: '#6B7280', marginBottom: 24 }}>We sent a 6-digit code to <Text style={{ color: Colors.electricViolet, fontWeight: '700' }}>{email}</Text>.</Text>
+                <Text style={styles.flowTitle}>Enter Code</Text>
+                <Text style={styles.flowSub}>
+                  We sent a 6-digit code to <Text style={{ color: Colors.neonLime }}>{email}</Text>.
+                </Text>
 
                 <Text style={styles.inputLabel}>6-DIGIT CODE</Text>
-                <TextInput
-                  style={[styles.input, { letterSpacing: 8, fontSize: 22, textAlign: 'center', fontWeight: '700' }]}
-                  placeholder="••••••"
-                  placeholderTextColor="#9CA3AF"
-                  value={otp}
-                  onChangeText={setOtp}
-                  keyboardType="number-pad"
-                  maxLength={6}
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={[styles.input, { letterSpacing: 8, fontSize: 22, textAlign: 'center', fontWeight: '700' }]}
+                    placeholder="••••••"
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    value={otp}
+                    onChangeText={setOtp}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                  />
+                </View>
 
                 <Text style={styles.inputLabel}>NEW PASSWORD</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Min 8 chars, 1 uppercase, 1 special"
-                  placeholderTextColor="#9CA3AF"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry
-                />
+                <View style={styles.inputWrapper}>
+                  <Lock size={18} color="#A855F7" style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, { flex: 1, paddingLeft: 0 }]}
+                    placeholder="Min 8 chars, 1 uppercase, 1 special"
+                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry
+                  />
+                </View>
 
-                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 24 }]} onPress={handleResetPassword} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#000" /> : <Text style={styles.primaryBtnText}>Confirm New Password</Text>}
+                <TouchableOpacity activeOpacity={0.8} onPress={handleResetPassword} disabled={isLoading} style={{ marginTop: 32 }}>
+                  <LinearGradient
+                    colors={['#FFE259', '#C8FF00']}
+                    style={styles.primaryBtn}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  >
+                    {isLoading ? <ActivityIndicator color="#000" /> : (
+                      <Text style={styles.primaryBtnText}>Confirm New Password</Text>
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ alignItems: 'center', marginTop: 24 }} onPress={() => setAuthMode('forgot')}>
-                  <Text style={styles.footerLink}>← Resend Code</Text>
+                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => setAuthMode('forgot')}>
+                  <Text style={styles.forgotText}>← Resend Code</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -385,40 +475,57 @@ export function AuthScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingTop: 60, paddingBottom: 40 },
-  header: { alignItems: 'center', marginBottom: 40 },
+  header: { alignItems: 'center', marginBottom: 30 },
   
-  // 🟢 NEW LOGO STYLES 🟢
-  logoImage: { width: 185, height: 65, marginBottom: 8 },
-  
-  logoText: { fontSize: 48, fontWeight: '900', color: '#FFF', letterSpacing: -1.5 },
-  tagline: { fontSize: 16,fontWeight: '500', color: 'rgba(255,255,255,0.9)', marginTop: -4,textShadowOffset: { width: 0, height: 0 },textShadowRadius: 10, },
-  card: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: Spacing.xl, ...Shadow.lg },
-  
-  toggleContainer: { flexDirection: 'row', backgroundColor: '#F3F4F6', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
-  toggleBtn: { flex: 1, paddingVertical: 12, borderRadius: Radius.full, alignItems: 'center' },
-  toggleBtnActive: { backgroundColor: Colors.neonLime, ...Shadow.sm },
-  toggleText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
-  toggleTextActive: { color: '#000', fontWeight: '800' },
+  logoImage: { width: 160, height: 50, marginBottom: 12, tintColor: '#FFF' },
+  tagline: { fontSize: 15, fontWeight: '500', color: '#FFF' },
+  taglineHighlight: { color: Colors.neonLime, fontWeight: '800' },
 
-  form: { marginBottom: Spacing.sm },
-  inputLabel: { fontSize: 10, fontWeight: '800', color: '#555555', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
-  input: { backgroundColor: '#F3F4F6', borderRadius: Radius.md, padding: 16, fontSize: 16, color: '#000', fontWeight: '500' },
+  // ── GLASS CARD ──
+  glassCard: { 
+    backgroundColor: 'rgba(15, 10, 30, 0.6)', 
+    borderRadius: 30, 
+    padding: Spacing.xl, 
+    borderWidth: 1,
+    borderColor: 'rgba(255, 50, 150, 0.3)',
+  },
   
-  passwordContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: Radius.md },
+  // ── TOGGLE ──
+  toggleContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
+  toggleBtn: { flex: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', height: 44 },
+  activeToggleBg: { width: '100%', height: '100%', borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8 },
+  toggleText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  toggleTextActive: { color: '#FFF', fontWeight: '800', fontSize: 14 },
+
+  // ── FORM & TEXT ──
+  form: { marginBottom: Spacing.sm },
+  flowTitle: { fontSize: 24, fontWeight: '800', color: '#FFF', marginBottom: 8, textAlign: 'center' },
+  flowSub: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 24, textAlign: 'center', lineHeight: 20 },
+  
+  inputLabel: { fontSize: 11, fontWeight: '800', color: '#FFF', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.md, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  inputIcon: { marginLeft: 16, marginRight: 12 },
+  input: { flex: 1, paddingVertical: 16, paddingHorizontal: 16, fontSize: 15, color: '#FFF', fontWeight: '500' },
   eyeBtn: { padding: 16 },
 
   forgotBtn: { alignSelf: 'flex-end', marginTop: 12, marginBottom: Spacing.xl },
-  forgotText: { color: Colors.electricViolet, fontWeight: '700', fontSize: 13 },
+  forgotText: { color: '#FF2D78', fontWeight: '700', fontSize: 13 },
 
-  primaryBtn: { backgroundColor: Colors.neonLime, borderRadius: Radius.full, paddingVertical: 18, alignItems: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+  // ── BUTTON ──
+  primaryBtn: { borderRadius: Radius.full, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10 },
   primaryBtnText: { fontSize: 16, fontWeight: '800', color: '#000' },
 
+  // ── SOCIAL & FOOTER ──
   socialSection: { marginTop: Spacing.xl },
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
-  dividerText: { marginHorizontal: 12, fontSize: 12, color: '#9CA3AF', fontWeight: '500' },
-  socialRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg },
-  socialBtn: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  dividerText: { marginHorizontal: 12, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
+  socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginBottom: Spacing.xl },
   
-  footerLink: { color: Colors.electricViolet, fontWeight: '800', fontSize: 14 },
+  // NOTE: If your SocialAuthButtons look out of place, go into your SocialAuthButtons.tsx file 
+  // and update their background color to 'rgba(255,255,255,0.05)' to match this dark theme!
+  socialBtn: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  
+  securityFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  securityText: { color: 'rgba(255,255,255,0.5)', fontSize: 11, marginLeft: 6 },
 });
