@@ -27,3 +27,4 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     
     owner = relationship("User")
+    status = Column(String, default="EXECUTED") # Can be "EXECUTED", "PENDING_AMO", or "REJECTED

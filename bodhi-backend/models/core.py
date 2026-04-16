@@ -14,6 +14,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     Enum as SAEnum,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -103,6 +104,10 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     email_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # 🟢 --- NEW OAUTH COLUMNS END --- 🟢
+
+    balance: Mapped[float] = mapped_column(Float, nullable=False, default=100000.0)
+
+    paper_balance = Column(Float, default=100000.0, nullable=False)
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

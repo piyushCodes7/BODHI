@@ -1,199 +1,469 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Plane, Trash2, CheckCircle2, Receipt, Wallet, Plus } from 'lucide-react-native';
-import { Colors, Spacing, Shadow } from '../theme/tokens';
-import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader'; // <-- Added hook
+// src/screens/InsuranceScreen.tsx
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView,
+  Animated, Dimensions, Alert, ActivityIndicator, Platform,
+  TextInput, KeyboardAvoidingView,
+} from 'react-native';
+import DocumentPicker from 'react-native-document-picker';
+import LinearGradient from 'react-native-linear-gradient';
+import { 
+  Zap, 
+  Search, 
+  MessageCircle, 
+  CloudUpload, 
+  FileText, 
+  ChevronRight, 
+  Clock, 
+  ShieldCheck, 
+  Sparkles, 
+  Diamond 
+} from 'lucide-react-native';
+import { Colors, Spacing, Radius } from '../theme/tokens';
+import { InsuranceAPI } from '../api/client';
 
-export function TripWalletScreen({ route, navigation }: any) {
-  const headerHeight = useHeaderHeight(); // <-- Dynamic Header Height
-  const { tripName } = route.params || { tripName: 'Shared Wallet' };
+const { width: W, height: H } = Dimensions.get('window');
 
-  // Fully dynamic member state
-  const [members, setMembers] = useState([
-    { id: '1', name: 'Govind', contributed: 7500, initials: 'GJ' }
-  ]);
+interface Props { visible: boolean; onClose: () => void; }
+type Phase = 'upload' | 'processing' | 'stories' | 'chat';
 
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [isClosing, setIsClosing] = useState(false);
-
-  const totalContributions = members.reduce((sum, m) => sum + m.contributed, 0);
-  const currentPoolBalance = totalContributions - totalSpent;
-
-  // --- LOGIC: ADD & REMOVE MEMBERS ---
-  const handleAddMember = () => {
-    Alert.prompt("Add Member", "Enter the new member's name:", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Next", onPress: (name) => {
-          if (!name) return;
-          // Chain prompt to get their contribution
-          Alert.prompt("Initial Contribution", `How much is ${name} adding to the pool?`, [
-            { text: "Cancel", style: "cancel" },
-            { text: "Add Member", onPress: (amt) => {
-                const val = parseFloat(amt || '0');
-                const initials = name.substring(0, 2).toUpperCase();
-                setMembers(prev => [...prev, { id: Date.now().toString(), name, contributed: val, initials }]);
-            }}
-          ], "plain-text", "0", "decimal-pad");
-        }
-      }
-    ]);
-  };
-
-  const handleRemoveMember = (id: string, name: string) => {
-    Alert.alert("Remove Member", `Are you sure you want to remove ${name} from this trip?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove", style: "destructive", onPress: () => {
-          setMembers(prev => prev.filter(m => m.id !== id));
-      }}
-    ]);
-  };
-
-  // --- LOGIC: SPEND & SETTLE ---
-  const handleAddExpense = () => {
-    Alert.prompt("New Expense", "Enter the amount spent", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Deduct", onPress: (val) => {
-          const amt = parseFloat(val || '0');
-          if (amt > currentPoolBalance) Alert.alert("Insufficient Pool");
-          else setTotalSpent(prev => prev + amt);
-        }
-      }
-    ], "plain-text", "", "decimal-pad");
-  };
-
-  const handleSettleAndClose = () => {
-    if (members.length === 0) return Alert.alert("Error", "No members in the trip.");
-    if (totalSpent === 0) return Alert.alert("No Expenses", "Nothing spent yet.");
-
-    const fairShare = totalSpent / members.length;
-    let summary = `Total Spent: ₹${totalSpent}\nFair Share: ₹${fairShare.toFixed(0)} each.\n\n`;
-
-    members.forEach(m => {
-      const balance = m.contributed - fairShare;
-      if (balance > 0) summary += `• ${m.name}: Receives ₹${balance.toFixed(0)} back\n`;
-      else if (balance < 0) summary += `• ${m.name}: Owed ₹${Math.abs(balance).toFixed(0)}\n`;
-      else summary += `• ${m.name}: Settled\n`;
-    });
-
-    Alert.alert("Settle Trip", summary, [
-      { text: "Cancel", style: "cancel" },
-      { text: "CLOSE TRIP", onPress: () => {
-          setIsClosing(true);
-          setTimeout(() => { Alert.alert("Success", "Settlements sent."); navigation.goBack(); }, 1000);
-        }
-      }
-    ]);
-  };
-
-  return (
-    <View style={styles.root}>
-      <BodhiHeader dark showBack onBack={() => navigation.goBack()} username="Govind" />
-
-      {/* Applying Dynamic Padding Here */}
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: headerHeight + 16 }]}>
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <View style={styles.iconBox}><Plane size={24} color={Colors.neonLime} /></View>
-            <TouchableOpacity onPress={() => navigation.goBack()}><Trash2 size={24} color={Colors.hotPink} /></TouchableOpacity>
-          </View>
-          <Text style={styles.title}>{tripName}</Text>
-          <Text style={styles.subtitle}>Shared Wallet • {members.length} Members</Text>
-        </View>
-
-        <View style={styles.treasuryCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardLabel}>CURRENT POOL BALANCE</Text>
-            <Wallet size={16} color={Colors.neonLime} />
-          </View>
-          <Text style={styles.balanceAmount}>₹{currentPoolBalance.toLocaleString()}</Text>
-          <View style={styles.statsRow}>
-            <View><Text style={styles.statLabel}>Pooled</Text><Text style={styles.statValue}>₹{totalContributions}</Text></View>
-            <View style={{ alignItems: 'flex-end' }}><Text style={styles.statLabel}>Spent</Text><Text style={[styles.statValue, { color: Colors.hotPink }]}>₹{totalSpent}</Text></View>
-          </View>
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressFill, { width: totalContributions > 0 ? `${(totalSpent / totalContributions) * 100}%` : '0%' }]} />
-          </View>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Group Members</Text>
-          <TouchableOpacity onPress={handleAddMember} style={styles.addBtn}>
-             <Plus size={20} color={Colors.neonLime} />
-          </TouchableOpacity>
-        </View>
-
-        {members.map(m => (
-          <View key={m.id} style={styles.memberRow}>
-            <View style={styles.memberLeft}>
-              <View style={styles.avatar}><Text style={styles.avatarText}>{m.initials}</Text></View>
-              <Text style={styles.memberName}>{m.name}</Text>
-            </View>
-            
-            <View style={styles.memberRight}>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.memberCont}>₹{m.contributed}</Text>
-                <Text style={styles.memberSub}>Contributed</Text>
-              </View>
-              {/* Trash icon to remove a specific member */}
-              <TouchableOpacity onPress={() => handleRemoveMember(m.id, m.name)} style={{ padding: 4 }}>
-                <Trash2 size={18} color="#606070" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-
-        <View style={{ height: 30 }} />
-        <TouchableOpacity style={styles.actionBtn} onPress={handleAddExpense}>
-          <Receipt size={20} color={Colors.neonLime} />
-          <Text style={styles.actionBtnText}>Record Group Expense</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={[styles.settleBtn, isClosing && { opacity: 0.7 }]} onPress={handleSettleAndClose} disabled={isClosing}>
-          <CheckCircle2 size={22} color="#000" strokeWidth={2.5} />
-          <Text style={styles.settleBtnText}>{isClosing ? 'PROCESSING...' : 'SETTLE & CLOSE TRIP'}</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+interface StorySlide {
+  title: string; subtitle: string; explanation: string; clause_reference: string | null;
+  confidence_level: 'High' | 'Medium' | 'Low'; fallback: string | null; icon: string; bgColor: string;
+}
+interface ChatMessage {
+  id: string; role: 'user' | 'assistant'; text: string; confidence?: 'High' | 'Medium' | 'Low';
+  clause?: string | null; loading?: boolean;
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0A0A14' },
-  scroll: { padding: Spacing.xl, paddingBottom: 150 },
-  header: { marginBottom: 32 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  iconBox: { width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(212, 255, 0, 0.1)', alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 32, fontWeight: '800', color: '#FFF' },
-  subtitle: { fontSize: 14, color: '#A0A0B0', marginTop: 4 },
-  treasuryCard: { backgroundColor: '#1A1A24', borderRadius: 28, padding: 24, marginBottom: 32, ...Shadow.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  cardLabel: { fontSize: 10, fontWeight: '800', color: '#A0A0B0', letterSpacing: 1.5 },
-  balanceAmount: { fontSize: 48, fontWeight: '900', color: '#FFF', marginBottom: 24 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  statLabel: { fontSize: 10, color: '#606070', fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 },
-  statValue: { fontSize: 18, fontWeight: '800', color: '#FFF' },
-  progressContainer: { height: 6, backgroundColor: '#333', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: Colors.neonLime },
-  
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#FFF' },
-  addBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(212, 255, 0, 0.1)', alignItems: 'center', justifyContent: 'center' },
+const STORY_QUESTIONS = [
+  { q: 'What does this policy cover?', icon: '◈', bgColor: '#1A1033' },
+  { q: 'What are the exclusions and things not covered?', icon: '✕', bgColor: '#0D2233' },
+  { q: 'What is the claim process and timeline?', icon: '≡', bgColor: '#1A0D33' },
+  { q: 'What are the premium and payment details?', icon: '₹', bgColor: '#0D1A33' },
+  { q: 'Are there any hidden clauses or loopholes I should know about?', icon: '?', bgColor: '#330D1A' },
+];
 
-  memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#11111A', padding: 16, borderRadius: 20, marginBottom: 12 },
-  memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.electricViolet, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFF', fontWeight: '800', fontSize: 14 },
-  memberName: { fontSize: 16, fontWeight: '600', color: '#FFF' },
+const CONFIDENCE_COLORS = { High: Colors.neonLime, Medium: '#FF9900', Low: Colors.hotPink };
+const PRESET_QUESTIONS = ['Is maternity covered?', 'Pre-existing conditions?', 'Network hospitals?', 'What is my claim limit?', 'Is dental included?', 'How to file a claim?'];
+const genId = () => Math.random().toString(36).slice(2);
+
+async function pickPdfFile(): Promise<{ name: string; uri: string } | null> {
+  try {
+    const result = await DocumentPicker.pickSingle({ type: [DocumentPicker.types.pdf] });
+    return { name: result.name || 'document.pdf', uri: result.uri };
+  } catch (err) {
+    if (DocumentPicker.isCancel(err)) return null;
+    throw err;
+  }
+}
+
+export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
+  const [phase, setPhase]               = useState<Phase>('upload');
+  const [documentId, setDocumentId]     = useState<string | null>(null);
+  const [docName, setDocName]           = useState<string>('');
+  const [slides, setSlides]             = useState<StorySlide[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [uploading, setUploading]       = useState(false);
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput]       = useState('');
+  const [chatLoading, setChatLoading]   = useState(false);
+  const chatScrollRef                   = useRef<ScrollView>(null);
+
+  const progressAnims = useRef(STORY_QUESTIONS.map(() => new Animated.Value(0))).current;
+  const SLIDE_DURATION = 9000;
+
+  const runProgress = useCallback((idx: number) => {
+    progressAnims[idx].setValue(0);
+    Animated.timing(progressAnims[idx], {
+      toValue: 1, duration: SLIDE_DURATION, useNativeDriver: false,
+    }).start(({ finished }) => {
+      if (finished && idx < slides.length - 1) setCurrentSlide(idx + 1);
+    });
+  }, [progressAnims, slides.length]);
+
+  useEffect(() => {
+    if (phase === 'stories' && slides.length > 0) {
+      progressAnims.forEach((a, i) => { a.setValue(i < currentSlide ? 1 : 0); });
+      runProgress(currentSlide);
+    }
+    return () => { progressAnims.forEach(a => (a as any).stop?.()); };
+  }, [currentSlide, phase, slides.length]);
+
+  const buildSlides = async (docId: string | null) => {
+    const generated: StorySlide[] = [];
+    for (const { q, icon, bgColor } of STORY_QUESTIONS) {
+      try {
+        const res = await InsuranceAPI.query(q, docId ?? undefined);
+        generated.push({ title: q.split(' ').slice(0, 5).join(' ') + '…', subtitle: 'INSURETECH SERIES', explanation: res.simple_explanation, clause_reference: res.clause_reference, confidence_level: res.confidence_level, fallback: res.fallback, icon, bgColor });
+      } catch {
+        generated.push({ title: q.split(' ').slice(0, 5).join(' ') + '…', subtitle: 'INSURETECH SERIES', explanation: 'Unable to retrieve information. Please consult your insurer directly.', clause_reference: null, confidence_level: 'Low', fallback: 'Try asking in the chat below.', icon, bgColor });
+      }
+    }
+    return generated;
+  };
+
+  const handleUpload = async () => {
+    let file: { name: string; uri: string } | null = null;
+    try { file = await pickPdfFile(); if (!file) return; } catch { Alert.alert('Error', 'Could not open document picker.'); return; }
+    setUploading(true); setPhase('processing'); setDocName(file.name);
+    try {
+      let docId: string | null = null;
+      try { const ingested = await InsuranceAPI.ingest(file.uri, file.name); docId = ingested.document_id; setDocumentId(docId); } catch { console.warn('Ingestion failed.'); }
+      const generated = await buildSlides(docId);
+      setSlides(generated); setPhase('stories'); setCurrentSlide(0);
+    } catch (e: any) { Alert.alert('Error', e.message ?? 'Something went wrong.'); setPhase('upload'); } finally { setUploading(false); }
+  };
+
+  const handleUseDemoDoc = async () => {
+    setPhase('processing'); setDocName('Demo Policy');
+    try {
+      const docs = await InsuranceAPI.listDocuments();
+      const docId = docs.length > 0 ? docs[0].document_id : null;
+      setDocumentId(docId);
+      const generated = await buildSlides(docId);
+      setSlides(generated); setPhase('stories'); setCurrentSlide(0);
+    } catch { Alert.alert('Error', 'Could not load demo. Please upload a document.'); setPhase('upload'); }
+  };
+
+  const goNext = () => { if (currentSlide < slides.length - 1) { progressAnims[currentSlide].setValue(1); setCurrentSlide(p => p + 1); } };
+  const goPrev = () => { if (currentSlide > 0) { progressAnims[currentSlide].setValue(0); setCurrentSlide(p => p - 1); } };
+
+  const openChat = () => {
+    if (chatMessages.length === 0) setChatMessages([{ id: genId(), role: 'assistant', text: docName ? `Hi! I've analysed "${docName}". Ask me anything about your policy.` : "Hi! I'm your policy assistant." }]);
+    setPhase('chat');
+  };
+
+  const sendMessage = async (text: string) => {
+    const q = text.trim(); if (!q) return;
+    const userMsg: ChatMessage = { id: genId(), role: 'user', text: q };
+    const loadingMsg: ChatMessage = { id: genId(), role: 'assistant', text: '', loading: true };
+    setChatMessages(prev => [...prev, userMsg, loadingMsg]); setChatInput(''); setChatLoading(true);
+    setTimeout(() => chatScrollRef.current?.scrollToEnd({ animated: true }), 100);
+    try {
+      const res = await InsuranceAPI.query(q, documentId ?? undefined);
+      setChatMessages(prev => prev.map(m => m.id === loadingMsg.id ? { ...m, loading: false, text: res.simple_explanation, confidence: res.confidence_level, clause: res.clause_reference } : m));
+    } catch {
+      setChatMessages(prev => prev.map(m => m.id === loadingMsg.id ? { ...m, loading: false, text: "Sorry, I couldn't reach the server. Please try again." } : m));
+    } finally { setChatLoading(false); setTimeout(() => chatScrollRef.current?.scrollToEnd({ animated: true }), 100); }
+  };
+
+  const reset = () => {
+    setPhase('upload'); setSlides([]); setCurrentSlide(0); setDocumentId(null); setDocName(''); setChatMessages([]); setChatInput('');
+    progressAnims.forEach(a => a.setValue(0));
+  };
+
+  const currentSlideData = slides[currentSlide];
+
+  return (
+    <Modal visible={visible} animationType="slide" statusBarTranslucent>
+      <View style={styles.container}>
+        
+        {/* ── GLOBAL DEEP SPACE BACKGROUND ── */}
+        <LinearGradient
+          colors={['#05001F', '#1A0033', '#4A0033']}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+
+        {/* ═══════════════ UPLOAD PHASE ════════════════════════════════════ */}
+        {phase === 'upload' && (
+          <View style={styles.uploadPhase}>
+            
+            {/* Custom Close Button */}
+            <TouchableOpacity onPress={onClose} style={styles.closeIconBtn} hitSlop={{top: 20, right: 20, bottom: 20, left: 20}}>
+              <Text style={styles.closeIconText}>✕</Text>
+            </TouchableOpacity>
+
+            <ScrollView contentContainerStyle={styles.uploadContent} showsVerticalScrollIndicator={false}>
+              
+              {/* Glowing Orb Logo */}
+              <View style={styles.orbContainer}>
+                <View style={styles.orbRing1} />
+                <View style={styles.orbRing2} />
+                <LinearGradient colors={['#4A00E0', '#FF007F']} style={styles.orbCore} start={{x:0, y:0}} end={{x:1, y:1}}>
+                   <View style={styles.orbInnerCutout}>
+                     <Diamond size={28} color={Colors.neonLime} />
+                   </View>
+                </LinearGradient>
+              </View>
+
+              {/* Headers */}
+              <Text style={styles.mainTitle}>
+                Insurance{'\n'}Explained in <Text style={{ color: Colors.neonLime }}>30 sec</Text>
+              </Text>
+              <Text style={styles.mainSubtitle}>
+                Upload your policy document and our AI will break it{'\n'}down — no jargon, no confusion.
+              </Text>
+
+              {/* Feature Cards */}
+              <View style={styles.featureList}>
+                {/* Fast Setup */}
+                <View style={styles.featureCard}>
+                  <View style={styles.featureIconWrap}>
+                    <Zap size={20} color={Colors.neonLime} />
+                  </View>
+                  <View style={styles.featureTextWrap}>
+                    <Text style={[styles.featureTitle, { color: Colors.neonLime }]}>FAST SETUP</Text>
+                    <Text style={styles.featureDesc}>Full analysis in under 5 minutes.</Text>
+                  </View>
+                  <View style={[styles.featureBadge, { borderColor: Colors.neonLime, backgroundColor: 'rgba(200,255,0,0.05)' }]}>
+                    <Clock size={12} color={Colors.neonLime} style={{ marginRight: 4 }} />
+                    <Text style={[styles.featureBadgeText, { color: Colors.neonLime }]}>~5 min</Text>
+                  </View>
+                </View>
+
+                {/* Hidden Clauses */}
+                <View style={styles.featureCard}>
+                  <View style={styles.featureIconWrap}>
+                    <Search size={20} color={Colors.hotPink} />
+                  </View>
+                  <View style={styles.featureTextWrap}>
+                    <Text style={[styles.featureTitle, { color: Colors.hotPink }]}>HIDDEN CLAUSES</Text>
+                    <Text style={styles.featureDesc}>Loopholes and exclusions surfaced.</Text>
+                  </View>
+                  <View style={[styles.featureBadge, { borderColor: Colors.hotPink, backgroundColor: 'rgba(255,45,120,0.05)' }]}>
+                    <ShieldCheck size={12} color={Colors.hotPink} style={{ marginRight: 4 }} />
+                    <Text style={[styles.featureBadgeText, { color: Colors.hotPink }]}>100% Scan</Text>
+                  </View>
+                </View>
+
+                {/* AI Chatbot */}
+                <View style={styles.featureCard}>
+                  <View style={styles.featureIconWrap}>
+                    <MessageCircle size={20} color="#A855F7" />
+                  </View>
+                  <View style={styles.featureTextWrap}>
+                    <Text style={[styles.featureTitle, { color: '#A855F7' }]}>AI CHATBOT</Text>
+                    <Text style={styles.featureDesc}>Ask follow-up questions instantly.</Text>
+                  </View>
+                  <View style={[styles.featureBadge, { borderColor: '#A855F7', backgroundColor: 'rgba(168,85,247,0.05)' }]}>
+                    <Sparkles size={12} color="#A855F7" style={{ marginRight: 4 }} />
+                    <Text style={[styles.featureBadgeText, { color: '#A855F7' }]}>24/7 AI</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Main Upload Action */}
+              <TouchableOpacity style={styles.uploadMainBtn} onPress={handleUpload} disabled={uploading}>
+                 <View style={styles.uploadIconCircle}>
+                    <CloudUpload size={22} color="#FFF" />
+                 </View>
+                 <View style={styles.uploadBtnTextWrap}>
+                    <Text style={styles.uploadBtnTitle}>UPLOAD POLICY PDF</Text>
+                    <Text style={styles.uploadBtnSub}>We support PDF up to 25MB</Text>
+                 </View>
+                 <View style={styles.uploadArrowCircle}>
+                    <ChevronRight size={20} color="#000" />
+                 </View>
+              </TouchableOpacity>
+
+              {/* Divider */}
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or try with</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Demo Action */}
+              <TouchableOpacity style={styles.demoMainBtn} onPress={handleUseDemoDoc} disabled={uploading}>
+                 <View style={[styles.uploadIconCircle, { backgroundColor: 'rgba(168,85,247,0.15)' }]}>
+                    <FileText size={22} color="#A855F7" />
+                 </View>
+                 <View style={styles.uploadBtnTextWrap}>
+                    <Text style={[styles.uploadBtnTitle, { color: '#FFF' }]}>Try with demo document</Text>
+                    <Text style={[styles.uploadBtnSub, { color: 'rgba(255,255,255,0.5)' }]}>See how BODHI AI works</Text>
+                 </View>
+                 <ChevronRight size={24} color="#A855F7" />
+              </TouchableOpacity>
+
+            </ScrollView>
+          </View>
+        )}
+
+        {/* ═══════════════ PROCESSING PHASE ════════════════════════════════ */}
+        {phase === 'processing' && (
+          <View style={[styles.uploadPhase, { justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={styles.processingCard}>
+              <ActivityIndicator size="large" color={Colors.neonLime} style={{ marginBottom: Spacing.lg }} />
+              <Text style={styles.processingTitle}>Analysing your policy…</Text>
+              <Text style={styles.processingSubtitle}>{docName ? `"${docName}"` : 'Extracting key clauses'}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* ═══════════════ STORIES PHASE ════════════════════════════════════ */}
+        {phase === 'stories' && currentSlideData && (
+          <View style={[styles.storySlide, { backgroundColor: currentSlideData.bgColor }]}>
+            <View style={styles.progressBars}>
+              {STORY_QUESTIONS.map((_, i) => (
+                <View key={i} style={styles.progressBarTrack}><Animated.View style={[styles.progressBarFill, { width: progressAnims[i].interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} /></View>
+              ))}
+            </View>
+
+            <View style={styles.storyHeader}>
+              <View style={styles.storyHeaderLeft}>
+                <View style={styles.storyAvatar}><Text style={styles.storyAvatarText}>B</Text></View>
+                <View><Text style={styles.storyUsername}>BODHI Vault</Text><Text style={styles.storySeriesLabel}>{currentSlideData.subtitle}</Text></View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+                <TouchableOpacity onPress={openChat} style={styles.chatHeaderBtn}><Text style={styles.chatHeaderBtnText}>Chat</Text></TouchableOpacity>
+                <TouchableOpacity onPress={onClose}><Text style={styles.closeBtn}>✕</Text></TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.slideIconWrap}><View style={styles.slideIconCircle}><Text style={styles.slideIconText}>{currentSlideData.icon}</Text></View></View>
+
+            <View style={styles.slideContent}>
+              <Text style={styles.slideTitle}>{currentSlideData.title}</Text>
+              <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: H * 0.28 }}>
+                <Text style={styles.slideSubtitle}>{currentSlideData.explanation}</Text>
+              </ScrollView>
+              <View style={[styles.confidenceBadge, { borderColor: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]}>
+                <View style={[styles.confidenceDot, { backgroundColor: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]} />
+                <Text style={[styles.confidenceText, { color: CONFIDENCE_COLORS[currentSlideData.confidence_level] }]}>{currentSlideData.confidence_level} confidence</Text>
+                {currentSlideData.clause_reference ? <Text style={styles.clauseRef}> · {currentSlideData.clause_reference}</Text> : null}
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.tapLeft} onPress={goPrev} />
+            <TouchableOpacity style={styles.tapRight} onPress={goNext} />
+
+            <View style={styles.storyFooter}>
+              <TouchableOpacity style={styles.queryBtn} onPress={openChat}><Text style={styles.queryBtnText}>Ask a question about this policy</Text></TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ═══════════════ CHAT PHASE ═══════════════════════════════════════ */}
+        {phase === 'chat' && (
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+            <View style={styles.chatHeader}>
+              <TouchableOpacity style={styles.chatBackBtn} onPress={() => setPhase(slides.length > 0 ? 'stories' : 'upload')}><Text style={{ fontSize: 20, color: '#FFF' }}>←</Text></TouchableOpacity>
+              <View style={styles.chatHeaderInfo}>
+                <View style={styles.storyAvatar}><Text style={styles.storyAvatarText}>AI</Text></View>
+                <View><Text style={styles.chatHeaderTitle}>Policy Assistant</Text></View>
+              </View>
+              <TouchableOpacity onPress={onClose}><Text style={styles.closeBtn}>✕</Text></TouchableOpacity>
+            </View>
+
+            <ScrollView ref={chatScrollRef} style={styles.chatMessages} contentContainerStyle={styles.chatMessagesContent} showsVerticalScrollIndicator={false}>
+              {chatMessages.map(msg => (
+                <View key={msg.id} style={[styles.msgBubble, msg.role === 'user' ? styles.msgBubbleUser : styles.msgBubbleAI]}>
+                  {msg.loading ? <Text style={styles.typingText}>Thinking…</Text> : <Text style={[styles.msgText, msg.role === 'user' && styles.msgTextUser]}>{msg.text}</Text>}
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.chatInputBar}>
+              <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} />
+              <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]} onPress={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
+                <Text style={{ fontSize: 18, color: '#000', fontWeight: '700' }}>→</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        )}
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#05001F' },
   
-  memberRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  memberCont: { fontSize: 16, fontWeight: '800', color: Colors.neonLime },
-  memberSub: { fontSize: 10, color: '#606070', textAlign: 'right' },
+  // ── UPLOAD PHASE CYBERPUNK UI ──
+  uploadPhase: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40, position: 'relative' },
+  closeIconBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 50 : 30, right: 20, zIndex: 10 },
+  closeIconText: { fontSize: 24, color: 'rgba(255,255,255,0.5)', fontWeight: '300' },
   
-  actionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: '#1A1A24', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  actionBtnText: { fontSize: 16, fontWeight: '700', color: Colors.neonLime },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: 40, backgroundColor: '#0A0A14' },
-  settleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: Colors.neonLime, paddingVertical: 20, borderRadius: 50 },
-  settleBtnText: { fontSize: 16, fontWeight: '900', color: '#000' },
+  uploadContent: { paddingHorizontal: 20, paddingBottom: 60, alignItems: 'center' },
+  
+  orbContainer: { alignItems: 'center', justifyContent: 'center', height: 160, marginTop: 20, marginBottom: 20 },
+  orbRing1: { position: 'absolute', width: 140, height: 140, borderRadius: 70, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', opacity: 0.5 },
+  orbRing2: { position: 'absolute', width: 190, height: 190, borderRadius: 95, borderWidth: 1, borderColor: 'rgba(168,85,247,0.1)', opacity: 0.3 },
+  orbCore: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 20, elevation: 10 },
+  orbInnerCutout: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#1A0033', alignItems: 'center', justifyContent: 'center' },
+
+  mainTitle: { fontSize: 32, fontWeight: '800', color: '#FFF', textAlign: 'center', lineHeight: 38, marginBottom: 16, letterSpacing: -0.5 },
+  mainSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 10 },
+
+  featureList: { width: '100%', gap: 12, marginBottom: 32 },
+  featureCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  featureIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  featureTextWrap: { flex: 1 },
+  featureTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, marginBottom: 4 },
+  featureDesc: { fontSize: 11, color: 'rgba(255,255,255,0.5)' },
+  featureBadge: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
+  featureBadgeText: { fontSize: 10, fontWeight: '600' },
+
+  uploadMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.neonLime, borderRadius: 20, padding: 12, shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+  uploadIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  uploadBtnTextWrap: { flex: 1 },
+  uploadBtnTitle: { fontSize: 15, fontWeight: '800', color: '#000', marginBottom: 2 },
+  uploadBtnSub: { fontSize: 12, color: 'rgba(0,0,0,0.6)', fontWeight: '500' },
+  uploadArrowCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center' },
+
+  dividerRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 24 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  dividerText: { marginHorizontal: 16, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
+
+  demoMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 12, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
+
+  // ── PROCESSING, STORIES, CHAT STYLES ──
+  processingCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 24, alignItems: 'center', width: W - 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  processingTitle: { fontSize: 18, fontWeight: '700', color: '#FFF', marginBottom: 8 },
+  processingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+
+  storyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 68 : 48, paddingBottom: 16 },
+  storyHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  storyAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  storyAvatarText: { fontSize: 14, color: '#FFF', fontWeight: '700' },
+  storyUsername: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  storySeriesLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', letterSpacing: 1 },
+  closeBtn: { fontSize: 24, color: '#FFF', fontWeight: '300', padding: 4 },
+  chatHeaderBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  chatHeaderBtnText: { fontSize: 13, color: '#FFF', fontWeight: '600' },
+
+  progressBars: { flexDirection: 'row', paddingHorizontal: 16, gap: 4, paddingBottom: 8, paddingTop: Platform.OS === 'ios' ? 56 : 36, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
+  progressBarTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 2, overflow: 'hidden' },
+  progressBarFill: { height: 3, backgroundColor: '#FFF', borderRadius: 2 },
+
+  storySlide: { flex: 1 },
+  slideIconWrap: { alignItems: 'center', marginVertical: 40 },
+  slideIconCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  slideIconText: { fontSize: 36, color: Colors.neonLime, fontWeight: '700' },
+  slideContent: { flex: 1, paddingHorizontal: 24, paddingBottom: 175 },
+  slideTitle: { fontSize: 28, fontWeight: '800', color: '#FFF', marginBottom: 16, lineHeight: 34 },
+  slideSubtitle: { fontSize: 16, color: 'rgba(255,255,255,0.8)', lineHeight: 24, marginBottom: 24 },
+  confidenceBadge: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', gap: 6, marginBottom: 12 },
+  confidenceDot: { width: 8, height: 8, borderRadius: 4 },
+  confidenceText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
+  clauseRef: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+
+  tapLeft:  { position: 'absolute', left: 0,  top: 100, bottom: 200, width: W * 0.35 },
+  tapRight: { position: 'absolute', right: 0, top: 100, bottom: 200, width: W * 0.35 },
+
+  storyFooter: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: 40 },
+  queryBtn: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 30, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  queryBtnText: { fontSize: 15, color: '#FFF', fontWeight: '600' },
+
+  chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 16, backgroundColor: '#05001F', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  chatBackBtn: { padding: 8 },
+  chatHeaderInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginLeft: 8 },
+  chatHeaderTitle: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  chatMessages: { flex: 1, backgroundColor: '#05001F' },
+  chatMessagesContent: { padding: 20, gap: 16, paddingBottom: 24 },
+  msgBubble: { maxWidth: '85%', borderRadius: 20, padding: 16 },
+  msgBubbleUser: { alignSelf: 'flex-end', backgroundColor: '#A855F7', borderBottomRightRadius: 4 },
+  msgBubbleAI: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.08)', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  msgText: { fontSize: 15, color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
+  msgTextUser: { color: '#FFF' },
+  typingText: { fontSize: 14, color: 'rgba(255,255,255,0.5)' },
+  chatInputBar: { flexDirection: 'row', alignItems: 'flex-end', backgroundColor: '#05001F', padding: 12, paddingHorizontal: 20, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingBottom: Platform.OS === 'ios' ? 28 : 16 },
+  chatInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, fontSize: 15, color: '#FFF', maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  sendBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.neonLime, alignItems: 'center', justifyContent: 'center' },
 });
+
+export default InsuranceScreen;

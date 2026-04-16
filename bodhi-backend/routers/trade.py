@@ -8,11 +8,15 @@ from database import get_db
 from models.core import User
 from models.portfolio import PortfolioItem, Transaction
 
-# Our new real services!
+# Our real services
 from services.trade_service import execute_buy, execute_sell, compute_costs, reset_portfolio_db
 from services.auth_service import get_current_user
 from services.yfinance_service import get_live_price
 from services.market_hours import market_status
+from sqlalchemy.orm import Session
+import yfinance as yf
+import asyncio
+import math
 
 router = APIRouter()
 
@@ -38,8 +42,9 @@ async def buy_stock(
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Could not fetch live price for {req.symbol}")
     
-    # We now pass current_user.id instead of a hardcoded '1'
-    result = await execute_buy(db, current_user.id, req.symbol.upper(), req.amount_inr, price_data["price"])
+    # 🔥 FIX: Pass status["open"] as the final argument
+    result = await execute_buy(db, current_user.id, req.symbol.upper(), req.amount_inr, price_data["price"], status["open"])
+    
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
@@ -60,7 +65,9 @@ async def sell_stock(
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Could not fetch live price for {req.symbol}")
     
-    result = await execute_sell(db, current_user.id, req.symbol.upper(), req.quantity, price_data["price"])
+    # 🔥 FIX: Pass status["open"] as the final argument
+    result = await execute_sell(db, current_user.id, req.symbol.upper(), req.quantity, price_data["price"], status["open"])
+    
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
 
@@ -77,7 +84,12 @@ async def get_portfolio_summary(
     result = await db.execute(select(PortfolioItem).where(PortfolioItem.user_id == current_user.id))
     holdings = result.scalars().all()
     
-    total_value = current_user.balance
+    STARTING_CAPITAL = 100000.0  # Used for percentage calculations
+    
+    # 🔥 FIX: Handle existing users who have NULL (None) in the new paper_balance column
+    current_cash = current_user.paper_balance if current_user.paper_balance is not None else STARTING_CAPITAL
+    
+    total_value = current_cash
     holdings_detail = []
 
     for holding in holdings:
@@ -86,9 +98,11 @@ async def get_portfolio_summary(
             price_data = await get_live_price(holding.symbol)
             live_price = price_data["price"]
             day_change_pct = price_data.get("change_pct", 0)
+            company_name = price_data.get("shortName", holding.symbol) 
         except Exception:
             live_price = holding.average_buy_price
             day_change_pct = 0.0
+            company_name = holding.symbol
         
         current_value = holding.quantity * live_price
         invested_value = holding.quantity * holding.average_buy_price
@@ -99,6 +113,7 @@ async def get_portfolio_summary(
         
         holdings_detail.append({
             "symbol": holding.symbol,
+            "name": company_name,                
             "qty": holding.quantity,
             "avg_price": round(holding.average_buy_price, 2),
             "live_price": round(live_price, 2),
@@ -109,17 +124,19 @@ async def get_portfolio_summary(
             "day_change_pct": day_change_pct
         })
 
-    total_pnl = round(total_value - 100000.0, 2)
+    total_pnl = round(total_value - STARTING_CAPITAL, 2)
+    total_pnl_pct = round((total_pnl / STARTING_CAPITAL) * 100, 2)  
     
     return {
-        "username": current_user.username,
-        "cash": round(current_user.balance, 2),
+        "username": current_user.email,
+        "cash": round(current_cash, 2),          # <-- Updated to use safe fallback
+        "starting_capital": STARTING_CAPITAL,    
         "total_value": round(total_value, 2),
         "total_pnl": total_pnl,
+        "total_pnl_pct": total_pnl_pct,          
         "holdings": holdings_detail,
         "market_status": market_status()
     }
-
 
 @router.get("/history")
 async def transaction_history(
@@ -135,11 +152,14 @@ async def transaction_history(
 
 
 @router.post("/reset")
-async def reset(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # 🔒 Requires Login
-):
-    return await reset_portfolio_db(db, current_user.id)
+async def reset_portfolio(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # We pass current_user.id to the service
+    success = await reset_portfolio_db(db, str(current_user.id))
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to reset portfolio in database")
+        
+    return {"status": "success", "message": "Balance reset to ₹1,00,000"}
 
 
 @router.get("/costs-preview")
@@ -147,12 +167,19 @@ async def costs_preview(
     symbol: str = Query(...), 
     amount_inr: float = Query(...), 
     side: str = Query("BUY"),
-    current_user: User = Depends(get_current_user)  # 🔒 Requires Login
+    current_user: User = Depends(get_current_user)
 ):
     try:
         price_data = await get_live_price(symbol)
+        # 🔥 CHECK: If yfinance returned an error or no price
+        if not price_data or "price" not in price_data or price_data["price"] is None:
+            raise HTTPException(status_code=404, detail=f"Stock symbol '{symbol}' not found.")
+            
         live_price = price_data["price"]
-    except Exception:
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in costs-preview: {e}")
         raise HTTPException(status_code=502, detail=f"Could not fetch price for {symbol}")
     
     qty = int(amount_inr / live_price)
@@ -170,3 +197,51 @@ async def costs_preview(
         "net_amount": round(net, 2),
         "market_status": market_status()
     }
+
+@router.get("/chart")
+async def get_chart_data(symbol: str = Query(...), period: str = Query("1mo")):
+    # 1. Clean the symbol for Indian Markets
+    clean_symbol = symbol.upper()
+    if not clean_symbol.endswith(".NS") and not clean_symbol.endswith(".BO"):
+        clean_symbol = f"{clean_symbol}.NS"
+
+    # 2. Define the worker function INSIDE the async function
+    def fetch_history():
+        ticker = yf.Ticker(clean_symbol)
+        # Fetching data for the requested period
+        hist = ticker.history(period=period, interval="1d")
+        
+        if hist.empty:
+            return []
+
+        data = []
+        for date, row in hist.iterrows():
+            # Skip empty/zero candles that break the chart
+            if row["Open"] == 0 or math.isnan(row["Open"]):
+                continue 
+
+            def safe_float(val, default=0.0):
+                try:
+                    if math.isnan(val) or math.isinf(val):
+                        return default
+                    return round(float(val), 2)
+                except:
+                    return default
+
+            data.append({
+                "time": date.strftime("%Y-%m-%d"),
+                "open": safe_float(row["Open"]),
+                "high": safe_float(row["High"]),
+                "low": safe_float(row["Low"]),
+                "close": safe_float(row["Close"])
+            })
+        return data
+
+    # 3. Execute and return
+    try:
+        # We run the blocking yfinance call in a separate thread
+        chart_data = await asyncio.to_thread(fetch_history)
+        return {"symbol": clean_symbol, "data": chart_data}
+    except Exception as e:
+        print(f"Chart Error for {clean_symbol}: {e}")
+        return {"symbol": clean_symbol, "data": []}

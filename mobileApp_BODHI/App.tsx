@@ -3,6 +3,7 @@ import { configureGoogleSignIn } from './src/hooks/useOAuthSignIn'; // Adjust pa
 import { StatusBar, LogBox } from 'react-native';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
+
 LogBox.ignoreLogs(['ViewPropTypes will be removed', 'ColorPropType will be removed']);
 
 export default function App() {
