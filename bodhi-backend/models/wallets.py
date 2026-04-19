@@ -23,10 +23,6 @@ class GroupWalletStatus(str, enum.Enum):
     DEPLOYING = "DEPLOYING"
     CLOSED = "CLOSED"
 
-class TripWalletStatus(str, enum.Enum):
-    COLLECTING = "COLLECTING"
-    ACTIVE = "ACTIVE"
-    CLOSED = "CLOSED"
 
 class MemberRole(str, enum.Enum):
     ADMIN = "ADMIN"
@@ -125,80 +121,3 @@ class GroupVoteProposal(Base):
         CheckConstraint("votes_against >= 0", name="ck_gvp_votes_against_non_negative"),
     )
 
-class TripWallet(Base):
-    __tablename__ = "trip_wallets"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")
-
-    status: Mapped[TripWalletStatus] = mapped_column(SAEnum(TripWalletStatus, name="trip_wallet_status_enum"), nullable=False, default=TripWalletStatus.COLLECTING)
-
-    total_contributed: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
-    total_expenses: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
-    remaining_balance: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
-
-    # 🟢 FIXED: Mapped[str] 
-    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
-    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
-    members: Mapped[list["TripMember"]] = relationship("TripMember", back_populates="trip", lazy="noload", cascade="all, delete-orphan")
-    expenses: Mapped[list["TripExpense"]] = relationship("TripExpense", back_populates="trip", lazy="noload", cascade="all, delete-orphan")
-
-    __table_args__ = (
-        CheckConstraint("total_contributed >= 0", name="ck_tw_contributed_non_negative"),
-        CheckConstraint("total_expenses >= 0", name="ck_tw_expenses_non_negative"),
-        CheckConstraint("remaining_balance >= 0", name="ck_tw_balance_non_negative"),
-        CheckConstraint("total_expenses <= total_contributed", name="ck_tw_expenses_lte_contributed"),
-    )
-
-class TripMember(Base):
-    __tablename__ = "trip_members"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
-    trip_id: Mapped[str] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="CASCADE"), nullable=False)
-    
-    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-    
-    role: Mapped[MemberRole] = mapped_column(SAEnum(MemberRole, name="member_role_enum"), nullable=False, default=MemberRole.MEMBER)
-    contributed_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
-    refunded_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
-
-    joined_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
-
-    trip: Mapped["TripWallet"] = relationship("TripWallet", back_populates="members")
-
-    __table_args__ = (
-        UniqueConstraint("trip_id", "user_id", name="uq_trip_member"),
-        CheckConstraint("contributed_amount >= 0", name="ck_tm_contributed_non_negative"),
-        CheckConstraint("refunded_amount >= 0", name="ck_tm_refunded_non_negative"),
-        CheckConstraint("refunded_amount <= contributed_amount", name="ck_tm_refunded_lte_contributed"),
-        Index("ix_trip_members_trip_user", "trip_id", "user_id"),
-    )
-
-class TripExpense(Base):
-    __tablename__ = "trip_expenses"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
-    trip_id: Mapped[str] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="CASCADE"), nullable=False)
-    
-    # 🟢 FIXED: Mapped[str] and String(36)
-    recorded_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
-
-    amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="INR")
-    description: Mapped[str] = mapped_column(String(512), nullable=False)
-    category: Mapped[str | None] = mapped_column(String(64), nullable=True)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
-
-    trip: Mapped["TripWallet"] = relationship("TripWallet", back_populates="expenses")
-
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="ck_te_amount_positive"),
-    )

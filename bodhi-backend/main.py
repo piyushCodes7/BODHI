@@ -11,7 +11,7 @@ import models.portfolio
 import models.social  # This ensures the Social tables get registered to the Base
 
 # Routers
-from routers import auth, trade, search, prices, simulate
+from routers import auth, trade, search, prices, simulate, social
 from routers.social import router as social_router
 from routers import payments, insurance, wallets, expenses
 
@@ -72,3 +72,4 @@ app.include_router(insurance.router)
 app.include_router(wallets.router)
 app.include_router(expenses.router)
 app.include_router(oauth_router, tags=["oauth"])
+app.include_router(social.router)

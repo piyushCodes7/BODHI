@@ -5,6 +5,9 @@ import { createNativeStackNavigator }    from '@react-navigation/native-stack';
 import { createBottomTabNavigator }      from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider }              from 'react-native-safe-area-context';
 
+// 🟢 ADDED: Missing import for your tab icon
+import { Users }                         from 'lucide-react-native';
+
 // ─── SCREEN IMPORTS ───
 import { AuthScreen }                    from '../screens/AuthScreen';
 import { VaultScreen }                   from '../screens/VaultScreen';
@@ -14,7 +17,8 @@ import { MarketScreen }                  from '../screens/MarketScreen';
 import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
 import { PaymentScreen }                 from '../screens/PaymentScreen';
 import { VentureClubScreen }             from '../screens/VentureClubScreen';
-import InsuranceScreen                   from '../screens/TripWalletScreen';
+// 🟢 FIXED: Import the actual TripWalletScreen (assuming you've created it!)
+import { TripWalletScreen }              from '../screens/TripWalletScreen'; 
 import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
 
 // ─── COMPONENT IMPORTS ───
@@ -31,7 +35,13 @@ function MainTabNavigator() {
       screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="Vault"  component={VaultScreen}   />
-      <Tab.Screen name="Social" component={SocialScreen}  />
+      <Tab.Screen 
+        name="Social" 
+        component={SocialScreen} 
+        options={{
+          tabBarIcon: ({ color, size }) => (<Users color={color} size={size} />)
+        }}
+      />
       <Tab.Screen name="AI"     component={AIVoiceScreen} />
       <Tab.Screen name="Trade"  component={PaperTradingScreen} /> 
       <Tab.Screen name="Market" component={MarketScreen}  />
@@ -45,7 +55,8 @@ function RootNavigator() {
       <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
       
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
-      <RootStack.Screen name="TripWallet" component={InsuranceScreen} options={{ animation: 'slide_from_right' }} />
+      {/* 🟢 FIXED: Now points to the correct Trip Wallet component */}
+      <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />

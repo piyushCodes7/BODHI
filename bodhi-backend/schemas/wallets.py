@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from models.wallets import GroupWalletStatus, MemberRole, ProposalStatus, TripWalletStatus
+from models.wallets import GroupWalletStatus, MemberRole, ProposalStatus
 
 _ORM = ConfigDict(from_attributes=True, populate_by_name=True)
 PositivePaise = Annotated[int, Field(gt=0, description="Amount in paise")]

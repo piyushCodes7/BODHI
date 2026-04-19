@@ -1,274 +1,288 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, FlatList 
-} from 'react-native';
-import { 
-  Check, X, Users, TrendingUp, TrendingDown, Plus, Trash2, Search, MessageSquare 
-} from 'lucide-react-native';
-import { Colors, Spacing, Radius, Shadow } from '../theme/tokens';
-import { BodhiHeader, useHeaderHeight } from '../components/BodhiHeader';
+/**
+ * VentureClubScreen.tsx
+ * Isolated Group Paper Trading & Polling for BODHI
+ */
 
-// --- 1. MOCK API DATA (Replace with your actual Axios calls) ---
-const MOCK_API_STOCKS = [
-  { id: '1', symbol: 'TATA MOTORS', price: 984.30, change: '+2.5%', isUp: true },
-  { id: '2', symbol: 'RELIANCE',    price: 2945.10,change: '+1.2%', isUp: true },
-  { id: '3', symbol: 'ZOMATO',      price: 164.50, change: '-0.8%', isUp: false },
-  { id: '4', symbol: 'JIO FIN',     price: 354.20, change: '+4.5%', isUp: true },
-  { id: '5', symbol: 'HDFC BANK',   price: 1450.00,change: '-1.1%', isUp: false },
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert
+} from 'react-native';
+import { ChevronLeft, TrendingUp, Vote, Plus, BarChart2, Wallet } from 'lucide-react-native';
+import { apiClient } from '../api/client';
+
+// ── Design Tokens ──
+const C = {
+  bg: '#07051A',
+  cardBg: '#0E0C24',
+  neonLime: '#C8FF00',
+  purple: '#A855F7',
+  red: '#F43F5E',
+  white: '#FFFFFF',
+  whiteDim: 'rgba(255,255,255,0.4)',
+  border: 'rgba(255,255,255,0.08)',
+};
+
+// ── Mock Data (For holdings and polls until Phase 2 & 3) ──
+const GROUP_PORTFOLIO = [
+  { id: '1', symbol: 'RELIANCE', qty: 15, avgPrice: 2840.50, currentPrice: 2910.00 },
+  { id: '2', symbol: 'TATAMOTORS', qty: 50, avgPrice: 920.00, currentPrice: 985.20 },
+];
+
+const ACTIVE_POLLS = [
+  { id: 'p1', type: 'BUY', symbol: 'ZOMATO', qty: 100, votesFor: 3, votesAgainst: 1, totalNeeded: 5 },
 ];
 
 export function VentureClubScreen({ route, navigation }: any) {
-  const headerHeight = useHeaderHeight();
-  const { clubName } = route.params || { clubName: 'Venture Club' };
+  const { clubId, clubName } = route.params || {};
+  const [tab, setTab] = useState<'PORTFOLIO' | 'POLLS'>('PORTFOLIO');
+  
+  // ── Live State ──
+  const [loading, setLoading] = useState(true);
+  const [clubData, setClubData] = useState<any>(null);
 
-  // --- STATE ---
-  const [members, setMembers] = useState([
-    { id: '1', name: 'Govind J.', initials: 'GJ' },
-    { id: '2', name: 'Piyush',    initials: 'P' },
-    { id: '3', name: 'Manan',     initials: 'M' }
-  ]);
+  const formatINR = (val: number) => `₹${(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
-  const [activeProposal, setActiveProposal] = useState<any>(null);
-  const [isStockModalVisible, setIsStockModalVisible] = useState(false);
-  const [votes, setVotes] = useState({ yes: 0, no: 0 });
-  const [hasVoted, setHasVoted] = useState(false);
-
-  // --- MEMBER LOGIC ---
-  const handleAddMember = () => {
-    Alert.prompt("Add Member", "Enter member's name:", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Add", onPress: (name) => {
-          if (!name) return;
-          const initials = name.substring(0, 2).toUpperCase();
-          setMembers(prev => [...prev, { id: Date.now().toString(), name, initials }]);
-        }
-      }
-    ]);
-  };
-
-  const handleRemoveMember = (id: string, name: string) => {
-    Alert.alert("Remove", `Remove ${name} from this club?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Remove", style: "destructive", onPress: () => {
-          setMembers(prev => prev.filter(m => m.id !== id));
-      }}
-    ]);
-  };
-
-  // --- STOCK PROPOSAL LOGIC ---
-  const handleSelectStock = (stock: any) => {
-    setActiveProposal(stock);
-    setIsStockModalVisible(false);
-    // Reset votes for the new proposal
-    setVotes({ yes: 0, no: 0 });
-    setHasVoted(false);
-  };
-
-  // --- VOTING LOGIC ---
-  const handleVote = (decision: 'YES' | 'NO') => {
-    setHasVoted(true);
-    const newVotes = decision === 'YES' ? { ...votes, yes: votes.yes + 1 } : { ...votes, no: votes.no + 1 };
-    setVotes(newVotes);
-
-    // Dynamic Math: Needs > 50% of current members to pass
-    const majorityThreshold = Math.floor(members.length / 2) + 1;
-
-    if (newVotes.yes >= majorityThreshold) {
-      Alert.alert("Proposal Passed! 🚀", `The club reached consensus. Purchasing ₹5,000 of ${activeProposal.symbol} from the shared vault.`);
-    } else if (newVotes.no >= majorityThreshold) {
-      Alert.alert("Proposal Rejected ❌", "The club voted against this investment.");
+  // 1. Fetch live pool data
+  const fetchClubData = async () => {
+    if (!clubId) return;
+    try {
+      setLoading(true);
+      const response = await apiClient.get(`/social/investments/${clubId}`);
+      setClubData(response.data);
+    } catch (error) {
+      console.error("Failed to fetch club data:", error);
+      Alert.alert("Error", "Could not load club details.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <View style={styles.root}>
-      <BodhiHeader dark showBack onBack={() => navigation.goBack()} username="Govind" />
-      
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: headerHeight + 16 }]}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.clubTitle}>{clubName}</Text>
-          <Text style={styles.clubMeta}>{members.length} Members • Shared Vault: ₹1.2L</Text>
-        </View>
+  useEffect(() => {
+    fetchClubData();
+  }, [clubId]);
 
-        {/* ── ACTIVE PROPOSAL CARD ── */}
-        <View style={styles.assetCard}>
-          {!activeProposal ? (
-            // Empty State: Create a Proposal
-            <View style={styles.emptyProposal}>
-              <TrendingUp size={48} color="#333" style={{ marginBottom: 16 }} />
-              <Text style={styles.assetName}>No Active Proposal</Text>
-              <Text style={styles.proposalText}>Select a stock from the market to start a group vote.</Text>
-              <TouchableOpacity style={styles.selectStockBtn} onPress={() => setIsStockModalVisible(true)}>
-                <Search size={18} color="#000" />
-                <Text style={styles.selectStockBtnText}>Search Market</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            // Active State: Votable Asset
-            <>
-              <TouchableOpacity 
-                style={styles.changeAssetBtn} 
-                onPress={() => setIsStockModalVisible(true)}
-              >
-                <Text style={styles.changeAssetText}>Change</Text>
-              </TouchableOpacity>
-
-              {activeProposal.isUp ? (
-                <TrendingUp size={40} color={Colors.neonLime} />
-              ) : (
-                <TrendingDown size={40} color={Colors.hotPink} />
-              )}
-              <Text style={styles.assetName}>{activeProposal.symbol}</Text>
-              <Text style={styles.assetPrice}>
-                ₹{activeProposal.price} <Text style={{ color: activeProposal.isUp ? Colors.neonLime : Colors.hotPink, fontSize: 14 }}>{activeProposal.change}</Text>
-              </Text>
-              <Text style={styles.proposalText}>Proposal: Invest ₹5,000 from Pool</Text>
-
-              <View style={styles.statusBox}>
-                <Users size={20} color="#A0A0B0" />
-                <Text style={styles.statusText}>Votes Cast: {votes.yes + votes.no} / {members.length}</Text>
-              </View>
-
-              {!hasVoted ? (
-                <View style={styles.voteRow}>
-                  <TouchableOpacity style={[styles.btn, styles.noBtn]} onPress={() => handleVote('NO')}>
-                    <X color="#FFF" />
-                    <Text style={styles.btnText}>Skip</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.btn, styles.yesBtn]} onPress={() => handleVote('YES')}>
-                    <Check color="#000" />
-                    <Text style={[styles.btnText, { color: '#000' }]}>Invest</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={styles.votedContainer}>
-                   <Text style={styles.votedText}>Vote Recorded: {votes.yes} YES | {votes.no} NO</Text>
-                </View>
-              )}
-            </>
-          )}
-        </View>
-
-        {/* ── MEMBERS LIST ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Club Members</Text>
-          <TouchableOpacity onPress={handleAddMember} style={styles.addBtn}>
-             <Plus size={20} color={Colors.neonLime} />
-          </TouchableOpacity>
-        </View>
-
-        {members.map(m => (
-          <View key={m.id} style={styles.memberRow}>
-            <View style={styles.memberLeft}>
-              <View style={styles.avatar}><Text style={styles.avatarText}>{m.initials}</Text></View>
-              <Text style={styles.memberName}>{m.name}</Text>
-            </View>
-            <TouchableOpacity onPress={() => handleRemoveMember(m.id, m.name)} style={{ padding: 8 }}>
-              <Trash2 size={18} color="#606070" />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        <View style={{ height: 24 }} />
-
-        {/* ── DISCUSSION / CHAT BUTTON ── */}
-        <TouchableOpacity 
-          style={styles.chatBtn} 
-          onPress={() => Alert.alert("Club Chat", "Opening group discussion...")}
-        >
-          <MessageSquare size={20} color={Colors.electricViolet} />
-          <Text style={styles.chatBtnText}>Discuss with Club</Text>
-        </TouchableOpacity>
-
-      </ScrollView>
-
-      {/* ── STOCK PICKER MODAL (Mock API Fetch) ── */}
-      <Modal visible={isStockModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Market Assets</Text>
-              <TouchableOpacity onPress={() => setIsStockModalVisible(false)} style={styles.closeBtn}>
-                <X size={24} color="#FFF" />
-              </TouchableOpacity>
-            </View>
+  // 2. Add Funds Handler
+  const handleAddFunds = () => {
+    Alert.prompt(
+      'Add Funds to Pool',
+      'Enter the amount you want to contribute (₹)',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Deposit',
+          onPress: async (amountStr) => {
+            const amount = parseFloat(amountStr || '0');
+            if (!amount || amount <= 0) return;
             
-            <FlatList
-              data={MOCK_API_STOCKS}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.stockItem} onPress={() => handleSelectStock(item)}>
-                  <View>
-                    <Text style={styles.stockSymbol}>{item.symbol}</Text>
-                    <Text style={styles.stockPrice}>₹{item.price.toFixed(2)}</Text>
-                  </View>
-                  <View style={[styles.stockBadge, { backgroundColor: item.isUp ? 'rgba(212, 255, 0, 0.1)' : 'rgba(255, 42, 95, 0.1)' }]}>
-                     <Text style={[styles.stockChange, { color: item.isUp ? Colors.neonLime : Colors.hotPink }]}>{item.change}</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </View>
-      </Modal>
+            try {
+              await apiClient.post(`/social/investments/${clubId}/contribute`, {
+                amount: amount,
+              });
+              await fetchClubData(); // Instantly refresh the buying power
+            } catch (e) {
+              Alert.alert("Error", "Failed to add funds.");
+            }
+          },
+        },
+      ],
+      'plain-text',
+      '',
+      'number-pad'
+    );
+  };
 
-    </View>
+  if (loading || !clubData) {
+    return (
+      <SafeAreaView style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={C.neonLime} />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.root}>
+      {/* ── HEADER ── */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={20}>
+          <ChevronLeft color={C.white} size={28} />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>{clubData.name || clubName}</Text>
+          <Text style={styles.headerSub}>Isolated Group Fund</Text>
+        </View>
+        <View style={{ width: 28 }} />
+      </View>
+
+      {/* ── TABS ── */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'PORTFOLIO' && styles.activeTab]}
+          onPress={() => setTab('PORTFOLIO')}
+        >
+          <BarChart2 size={16} color={tab === 'PORTFOLIO' ? C.bg : C.whiteDim} />
+          <Text style={[styles.tabText, tab === 'PORTFOLIO' && styles.activeTabText]}>
+            Portfolio
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.tab, tab === 'POLLS' && styles.activeTab]}
+          onPress={() => setTab('POLLS')}
+        >
+          <Vote size={16} color={tab === 'POLLS' ? C.bg : C.whiteDim} />
+          <Text style={[styles.tabText, tab === 'POLLS' && styles.activeTabText]}>
+            Active Polls (1)
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {tab === 'PORTFOLIO' ? (
+          <>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>Group Buying Power</Text>
+              <Text style={styles.summaryValue}>{formatINR(clubData.buying_power)}</Text>
+              
+              <TouchableOpacity 
+                style={styles.addFundsBtn} 
+                activeOpacity={0.8}
+                onPress={handleAddFunds}
+              >
+                <Wallet size={16} color={C.purple} />
+                <Text style={styles.addFundsText}>Add Funds</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sectionTitle}>Current Holdings</Text>
+            {GROUP_PORTFOLIO.map((item) => {
+              const profit = (item.currentPrice - item.avgPrice) * item.qty;
+              const isPositive = profit >= 0;
+              return (
+                <View key={item.id} style={styles.holdingCard}>
+                  <View>
+                    <Text style={styles.symbol}>{item.symbol}</Text>
+                    <Text style={styles.qty}>{item.qty} Shares @ {formatINR(item.avgPrice)}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.currentPrice}>{formatINR(item.currentPrice)}</Text>
+                    <Text style={[styles.profit, { color: isPositive ? C.neonLime : C.red }]}>
+                      {isPositive ? '+' : ''}{formatINR(profit)}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <TouchableOpacity style={styles.proposeBtn} activeOpacity={0.8}>
+              <Plus size={20} color={C.bg} />
+              <Text style={styles.proposeBtnText}>Propose New Trade</Text>
+            </TouchableOpacity>
+
+            {ACTIVE_POLLS.map((poll) => (
+              <View key={poll.id} style={styles.pollCard}>
+                <View style={styles.pollHeader}>
+                  <View style={[styles.badge, { backgroundColor: poll.type === 'BUY' ? 'rgba(200,255,0,0.1)' : 'rgba(244,63,94,0.1)' }]}>
+                    <Text style={[styles.badgeText, { color: poll.type === 'BUY' ? C.neonLime : C.red }]}>
+                      {poll.type}
+                    </Text>
+                  </View>
+                  <Text style={styles.pollTitle}>{poll.qty}x {poll.symbol}</Text>
+                </View>
+                
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressLabels}>
+                    <Text style={styles.progressText}>Votes For: {poll.votesFor}</Text>
+                    <Text style={styles.progressText}>Needed: {poll.totalNeeded}</Text>
+                  </View>
+                  <View style={styles.progressBarBg}>
+                    <View style={[styles.progressBarFill, { width: `${(poll.votesFor / poll.totalNeeded) * 100}%` }]} />
+                  </View>
+                </View>
+
+                <View style={styles.voteActions}>
+                  <TouchableOpacity style={[styles.voteBtn, { borderColor: C.neonLime }]}>
+                    <Text style={[styles.voteBtnText, { color: C.neonLime }]}>Vote YES</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.voteBtn, { borderColor: C.red }]}>
+                    <Text style={[styles.voteBtnText, { color: C.red }]}>Vote NO</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-// --- STYLES ---
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0A0A14' },
-  content: { padding: Spacing.xl, paddingBottom: 100 },
-  header: { marginBottom: 24, alignItems: 'center' },
-  clubTitle: { fontSize: 28, fontWeight: '900', color: '#FFF' },
-  clubMeta: { fontSize: 14, color: '#A0A0B0', marginTop: 4, fontWeight: '600' },
+  root: { flex: 1, backgroundColor: C.bg },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
+  headerTitleContainer: { alignItems: 'center' },
+  headerTitle: { color: C.white, fontSize: 20, fontWeight: '800' },
+  headerSub: { color: C.purple, fontSize: 12, fontWeight: '600', marginTop: 2 },
   
-  assetCard: { backgroundColor: '#1A1A24', width: '100%', padding: 32, borderRadius: 32, alignItems: 'center', marginBottom: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', ...Shadow.md },
-  changeAssetBtn: { position: 'absolute', top: 20, right: 20, padding: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full },
-  changeAssetText: { color: '#A0A0B0', fontSize: 12, fontWeight: '700' },
-  emptyProposal: { alignItems: 'center' },
-  assetName: { fontSize: 24, fontWeight: '800', color: '#FFF', marginTop: 16, textAlign: 'center' },
-  assetPrice: { fontSize: 18, fontWeight: '700', color: '#FFF', marginTop: 4 },
-  proposalText: { color: '#A0A0B0', marginTop: 8, textAlign: 'center', marginBottom: 24 },
+  tabContainer: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, gap: 10 },
+  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: C.cardBg, borderWidth: 1, borderColor: C.border, gap: 6 },
+  activeTab: { backgroundColor: C.neonLime, borderColor: C.neonLime },
+  tabText: { color: C.whiteDim, fontSize: 14, fontWeight: '700' },
+  activeTabText: { color: C.bg },
+
+  scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+  sectionTitle: { color: C.white, fontSize: 16, fontWeight: '700', marginBottom: 12, marginTop: 10 },
   
-  selectStockBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.neonLime, paddingHorizontal: 24, paddingVertical: 14, borderRadius: Radius.full },
-  selectStockBtnText: { color: '#000', fontWeight: '800', fontSize: 16 },
+  summaryCard: { backgroundColor: C.purple, padding: 20, borderRadius: 20, marginBottom: 24, alignItems: 'center' },
+  summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '600', marginBottom: 4 },
+  summaryValue: { color: C.white, fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
 
-  statusBox: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  statusText: { color: '#A0A0B0', fontWeight: '600' },
-  voteRow: { flexDirection: 'row', gap: 16, width: '100%' },
-  btn: { flex: 1, flexDirection: 'row', height: 54, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  noBtn: { backgroundColor: '#FF2A5F' },
-  yesBtn: { backgroundColor: Colors.neonLime },
-  btnText: { fontWeight: '800', color: '#FFF', fontSize: 16 },
-  votedContainer: { backgroundColor: '#11111A', padding: 16, borderRadius: 16, width: '100%', alignItems: 'center' },
-  votedText: { color: Colors.neonLime, fontWeight: '700' },
+  holdingCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: C.cardBg, padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: C.border },
+  symbol: { color: C.white, fontSize: 16, fontWeight: '800', marginBottom: 4 },
+  qty: { color: C.whiteDim, fontSize: 12, fontWeight: '500' },
+  currentPrice: { color: C.white, fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  profit: { fontSize: 13, fontWeight: '700' },
 
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#FFF' },
-  addBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(212, 255, 0, 0.1)', alignItems: 'center', justifyContent: 'center' },
+  proposeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: C.neonLime, paddingVertical: 16, borderRadius: 16, marginBottom: 24, gap: 8 },
+  proposeBtnText: { color: C.bg, fontSize: 15, fontWeight: '800' },
 
-  memberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#11111A', padding: 16, borderRadius: 20, marginBottom: 12 },
-  memberLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.electricViolet, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFF', fontWeight: '800', fontSize: 14 },
-  memberName: { fontSize: 16, fontWeight: '600', color: '#FFF' },
+  pollCard: { backgroundColor: C.cardBg, padding: 20, borderRadius: 20, borderWidth: 1, borderColor: C.border },
+  pollHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badgeText: { fontSize: 12, fontWeight: '800' },
+  pollTitle: { color: C.white, fontSize: 18, fontWeight: '800' },
+  
+  progressContainer: { marginBottom: 24 },
+  progressLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  progressText: { color: C.whiteDim, fontSize: 12, fontWeight: '600' },
+  progressBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' },
+  progressBarFill: { height: '100%', backgroundColor: C.neonLime, borderRadius: 4 },
 
-  chatBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: '#1A1A24', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: 'rgba(123, 47, 190, 0.3)' },
-  chatBtnText: { fontSize: 16, fontWeight: '700', color: Colors.electricViolet },
+  voteActions: { flexDirection: 'row', gap: 12 },
+  voteBtn: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
+  voteBtnText: { fontSize: 14, fontWeight: '700' },
 
-  // Modal Styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#1A1A24', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: Spacing.xl, height: '70%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xl },
-  modalTitle: { fontSize: 22, fontWeight: '800', color: '#FFF' },
-  closeBtn: { padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: Radius.full },
-  stockItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  stockSymbol: { fontSize: 16, fontWeight: '800', color: '#FFF' },
-  stockPrice: { fontSize: 14, color: '#A0A0B0', marginTop: 4 },
-  stockBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full },
-  stockChange: { fontSize: 12, fontWeight: '800' }
+  addFundsBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: C.white, 
+    paddingHorizontal: 16, 
+    paddingVertical: 8, 
+    borderRadius: 20, 
+    marginTop: 16, 
+    gap: 6 
+  },
+  addFundsText: { 
+    color: C.purple, 
+    fontSize: 14, 
+    fontWeight: '800' 
+  },
 });

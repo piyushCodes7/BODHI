@@ -1,40 +1,41 @@
 import asyncio
-
+import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from alembic import context
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# ─── 1. PATH SETUP ─────────────────────────────────────────────────────────────
+# This ensures Alembic can find your app modules (database, models, etc.)
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from models.core import Base, User
+# ─── 2. IMPORT BASE & ALL MODELS ───────────────────────────────────────────────
+# We MUST import Base first, and then explicitly import every single file 
+# that contains database models so Alembic knows they exist.
+from database import Base
 
+import models.core
+import models.expenses
+import models.payments
+import models.portfolio
+import models.social
+import models.wallets
 
+# ─── 3. SET TARGET METADATA ────────────────────────────────────────────────────
+# This tells Alembic to look at the combined state of all the files imported above.
+target_metadata = Base.metadata
 
+# ─── 4. ALEMBIC CONFIGURATION ──────────────────────────────────────────────────
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -47,7 +48,6 @@ def run_migrations_offline() -> None:
 
     Calls to context.execute() here emit the given string to the
     script output.
-
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -62,6 +62,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    """Run the actual migrations using the provided connection."""
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -69,11 +70,9 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-
+    """In this scenario we need to create an AsyncEngine
+    and associate it with the context.
     """
-
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -88,7 +87,6 @@ async def run_async_migrations() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-
     asyncio.run(run_async_migrations())
 
 
