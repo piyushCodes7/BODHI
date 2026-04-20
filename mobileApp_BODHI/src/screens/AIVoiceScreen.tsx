@@ -29,7 +29,7 @@ import {
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
 
-import { SARVAM_API_KEY } from '@env';
+import { SARVAM_API_KEY, GEMINI_API_KEY } from '@env';
 
 const NUM_BARS = 5;
 const BAR_MIN_HEIGHT = 8;
@@ -189,6 +189,8 @@ const startRecording = async () => {
         return;
       }
 
+      // ─── Step 1: Sarvam STT ────────────────────────────────────
+      setTranscription('Transcribing...');
       const formData = new FormData();
       formData.append('file', {
         uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
@@ -200,7 +202,7 @@ const startRecording = async () => {
       formData.append('mode', 'transcribe');
 
       console.log('📡 Sending audio to Sarvam STT...');
-      const response = await fetch('https://api.sarvam.ai/speech-to-text', {
+      const sttResponse = await fetch('https://api.sarvam.ai/speech-to-text', {
         method: 'POST',
         headers: {
           'api-subscription-key': SARVAM_API_KEY,
@@ -208,19 +210,62 @@ const startRecording = async () => {
         body: formData,
       });
 
-      const data = await response.json();
-      console.log('📥 Sarvam STT Response:', JSON.stringify(data).substring(0, 200));
+      const sttData = await sttResponse.json();
+      console.log('📥 Sarvam STT Response:', JSON.stringify(sttData).substring(0, 200));
 
-      if (data.transcript) {
-        setTranscription(data.transcript);
-        setInputText(data.transcript);
-      } else {
-        console.warn('No transcript in response:', data);
+      if (!sttData.transcript) {
+        console.warn('No transcript in response:', sttData);
         setTranscription('Could not understand audio. Please try again.');
+        return;
       }
+
+      const userQuestion = sttData.transcript;
+      setInputText(userQuestion);
+      setTranscription(`You said: "${userQuestion}"\n\nThinking...`);
+
+      // ─── Step 2: Gemini AI ─────────────────────────────────────
+      console.log('🧠 Sending to Gemini:', userQuestion);
+      
+      if (!GEMINI_API_KEY) {
+        console.error('❌ GEMINI_API_KEY is missing! Did you restart Metro after adding it to .env?');
+        setTranscription('API Key missing. Restart Metro.');
+        return;
+      }
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are Saheli, Bodhi's AI financial assistant. You help Indian users manage their money. Answer in a friendly, concise way (2-3 sentences max). If the question is in Hindi, reply in Hindi. If in English, reply in English.\n\nUser: ${userQuestion}`,
+            }],
+          }],
+        }),
+      });
+
+      console.log('🤖 Gemini HTTP Status:', geminiResponse.status);
+      const geminiData = await geminiResponse.json();
+      console.log('🤖 Gemini Response received:', JSON.stringify(geminiData).substring(0, 200));
+
+      if (!geminiResponse.ok) {
+        console.error('❌ Gemini Error Data:', geminiData);
+        setTranscription(`Gemini Error: ${geminiResponse.status}`);
+        return;
+      }
+
+      const aiReply =
+        geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        'Saheli could not generate a response.';
+
+      setTranscription(aiReply);
+
+
     } catch (error) {
-      console.error('Sarvam STT Error:', error);
-      setTranscription('Failed to connect to Sarvam. Check your API key.');
+      console.error('❌ Voice Pipeline Error:', error);
+      setTranscription('Something went wrong. Please try again.');
     } finally {
       setIsProcessing(false);
     }
