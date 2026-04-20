@@ -58,3 +58,26 @@ export const InsuranceAPI = {
     return res.data;
   }
 };
+
+export const fetchBodhiVoice = async (text: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${BASE_URL}/ai/speak`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    return `data:audio/mp3;base64,${data.audio_base64}`;
+    
+  } catch (error) {
+    console.error("API Client Error fetching voice:", error);
+    return null;
+  }
+};
