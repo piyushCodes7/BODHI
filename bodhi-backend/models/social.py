@@ -253,7 +253,7 @@ class TripSplit(Base):
 
     id              = Column(Integer, primary_key=True)
     expense_id      = Column(
-        Integer,
+        String(36),
         ForeignKey("trip_expenses.id", ondelete="CASCADE"),
         nullable=False,
     )
