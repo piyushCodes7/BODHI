@@ -252,17 +252,19 @@ class TripSplit(Base):
     __tablename__ = "trip_splits"
 
     id              = Column(Integer, primary_key=True)
+    
+    # THE FIX: Changed String(36) to Integer to match TripExpense.id
     expense_id      = Column(
-        Integer,
+        Integer, 
         ForeignKey("trip_expenses.id", ondelete="CASCADE"),
         nullable=False,
     )
+    
     user_id         = Column(
         String(36),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    # For EQUAL/EXACT → rupee amount owed; for PERCENTAGE → fraction (0.0–1.0)
     amount          = Column(Float, nullable=False)
     is_settled      = Column(Boolean, default=False, nullable=False)
     settled_at      = Column(DateTime, nullable=True)

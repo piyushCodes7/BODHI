@@ -356,7 +356,7 @@ cd mobileApp_BODHI
 **1. Install Node packages**
 
 ```bash
-npm install --legacy-peer-deps
+npm install react-native-sqlite-storage --legacy-peer-deps
 ```
 
 **2. Install iOS dependencies (macOS only)**
