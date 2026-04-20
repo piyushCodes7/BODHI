@@ -25,9 +25,10 @@ import {
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
 import { SocialAuthButtons } from '../components/SocialAuthButtons';
+import { BASE_URL } from '../api/client';
 
-// Automatically route to localhost on iOS Simulator, or 10.0.2.2 on Android
-const API_URL = Platform.OS === 'ios' ? 'http://127.0.0.1:8000/auth' : 'http://10.0.2.2:8000/auth';
+// Automatically route to auth endpoints based on the global BASE_URL
+const API_URL = `${BASE_URL}/auth`;
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'reset';
 

@@ -27,6 +27,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius, FontSize } from '../theme/tokens';
+import { BASE_URL } from '../api/client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ const validateForm = (payload: UpdateProfilePayload): ValidationErrors => {
 
 // TODO: replace with your actual API client (axios instance / fetch wrapper)
 const updateProfileApi = async (payload: UpdateProfilePayload): Promise<UserProfile> => {
-  const response = await fetch('https://api.bodhi.app/users/me', {
+  const response = await fetch(`${BASE_URL}/users/me`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

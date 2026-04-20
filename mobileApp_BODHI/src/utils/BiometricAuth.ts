@@ -24,6 +24,7 @@
 
 import ReactNativeBiometrics, { BiometryTypes } from 'react-native-biometrics';
 import { Alert } from 'react-native';
+import { BASE_URL } from '../api/client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -177,7 +178,7 @@ export const performBiometricLogin = async (userId: string): Promise<boolean> =>
   try {
     // A: Fetch a one-time nonce from FastAPI
     //    POST /auth/biometric/challenge  → { nonce: "uuid-..." }
-    const challengeResponse = await fetch('https://api.bodhi.app/auth/biometric/challenge', {
+    const challengeResponse = await fetch(`${BASE_URL}/auth/biometric/challenge`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId }),
@@ -193,7 +194,7 @@ export const performBiometricLogin = async (userId: string): Promise<boolean> =>
 
     // C: Send signature to FastAPI for RSA verification
     //    POST /auth/biometric/verify  → { access_token: "...", token_type: "bearer" }
-    const verifyResponse = await fetch('https://api.bodhi.app/auth/biometric/verify', {
+    const verifyResponse = await fetch(`${BASE_URL}/auth/biometric/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

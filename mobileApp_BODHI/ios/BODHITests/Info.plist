@@ -53,5 +53,7 @@
 		<string>PlusJakartaSans-Italic.ttf</string>
 		<string>PlusJakartaSans-BoldItalic.ttf</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>BODHI needs access to your microphone so you can talk to Saheli.</string>
 </dict>
 </plist>
