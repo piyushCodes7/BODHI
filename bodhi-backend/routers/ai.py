@@ -1,5 +1,9 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import base64
+import tempfile
+import os
 from services.sarvam_service import generate_bodhi_speech, transcribe_audio
 from services.brain_service import process_user_intent
 
@@ -30,6 +34,28 @@ async def get_bodhi_voice(request: SpeechRequest):
     base64_audio = await generate_bodhi_speech(request.text)
     print("✅ Voice generated successfully.")
     return {"audio_base64": base64_audio}
+
+@router.get("/stream_tts/{filename}")
+async def stream_tts_audio(filename: str, text: str):
+    """Generates Sarvam speech and returns an audio file stream directly."""
+    print(f"🎧 Streaming TTS requested for: '{text[:50]}...'")
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+        
+    try:
+        base64_audio = await generate_bodhi_speech(text)
+        audio_bytes = base64.b64decode(base64_audio)
+        
+        # Save to temp file
+        tf = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+        tf.write(audio_bytes)
+        tf.close()
+        
+        print(f"✅ Voice generated and cached to temp file.")
+        return FileResponse(tf.name, media_type="audio/wav")
+    except Exception as e:
+        print(f"❌ Streaming TTS Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to stream audio")
 
 @router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe_speech(file: UploadFile = File(...)):
