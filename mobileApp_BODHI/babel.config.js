@@ -5,6 +5,6 @@ module.exports = {
       moduleName: '@env',
       path: '.env',
     }],
-    // 'react-native-reanimated/plugin' <-- Keep this if it's already there
+    'react-native-reanimated/plugin',
   ],
 };
