@@ -37,7 +37,7 @@ class Expense(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
     group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="SET NULL"), nullable=True, index=True)
-    trip_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("trip_wallets.id", ondelete="SET NULL"), nullable=True, index=True)
+    trip_id: Mapped[str | None] = mapped_column(Integer, ForeignKey("trip_wallets.id", ondelete="SET NULL"), nullable=True, index=True)
 
     # 🟢 FIXED: Mapped[str] and String(36)
     paid_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)

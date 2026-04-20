@@ -1166,7 +1166,7 @@ PODS:
     - React-perflogger (= 0.73.4)
   - RNAppleAuthentication (2.5.1):
     - React-Core
-  - RNAudioRecorderPlayer (3.5.3):
+  - RNAudioRecorderPlayer (3.6.14):
     - React-Core
   - RNGestureHandler (2.31.1):
     - glog
@@ -1515,7 +1515,7 @@ SPEC CHECKSUMS:
   React-utils: 8439db27c3745f6de9d67eb61f5600c8d624274c
   ReactCommon: cc18bd33c0fab03c67620da6a602dcc1704e66b4
   RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
-  RNAudioRecorderPlayer: 5208e7a883cb8cdd5e7d26eb5110f6eb74ebe2d6
+  RNAudioRecorderPlayer: b5ed41ccfe72a211a870bfe09ab36c046eb27d2a
   RNGestureHandler: ee39f3faf060a0a157312bd5e1bfe26ce46232da
   RNGoogleSignin: b11289afb825c32c250272e4d92446f71091814e
   RNReactNativeHapticFeedback: ca37b9e053a3557c6149b815a46057eaa4935358
@@ -1527,4 +1527,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 2004a8080677e9ca8bde204c9c8af207e0edc076
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.14.3
