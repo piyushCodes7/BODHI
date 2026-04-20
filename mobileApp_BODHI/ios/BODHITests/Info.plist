@@ -31,7 +31,7 @@
 		<string>PlusJakartaSans-ExtraBoldItalic.ttf</string>
 		<string>SpaceGrotesk-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
-		<string>PlusJakartaSans-SemiBold.ttf</string>
+    <string>PlusJakartaSans-SemiBold.ttf</string>
 		<string>PlusJakartaSans-SemiBoldItalic.ttf</string>
 		<string>PlusJakartaSans-ExtraLightItalic.ttf</string>
 		<string>PlusJakartaSans-Italic-VariableFont_wght.ttf</string>
@@ -55,5 +55,6 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
     <string>BODHI needs access to your microphone so you can talk to Saheli.</string>
+	<string>BODHI needs access to your microphone so you can talk to Saheli.</string>
 </dict>
 </plist>
