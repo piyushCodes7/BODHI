@@ -26,10 +26,14 @@ import {
   Mic,
   Bell,
   StopCircle,
+  ShieldClose, 
+  Globe,
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
+import RNFS from 'react-native-fs';
+import { WebView } from 'react-native-webview';
 
-import { SARVAM_API_KEY, GEMINI_API_KEY } from '@env';
+import { SARVAM_API_KEY, GEMINI_API_KEY, API_BASE_URL } from '@env';
 
 const NUM_BARS = 5;
 const BAR_MIN_HEIGHT = 8;
@@ -50,6 +54,7 @@ export function AIVoiceScreen() {
   const [transcription, setTranscription] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [base64Audio, setBase64Audio] = useState<string | null>(null);
 
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
 
@@ -232,7 +237,7 @@ const startRecording = async () => {
         return;
       }
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
       
       const geminiResponse = await fetch(geminiUrl, {
         method: 'POST',
@@ -240,7 +245,7 @@ const startRecording = async () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are Saheli, Bodhi's AI financial assistant. You help Indian users manage their money. Answer in a friendly, concise way (2-3 sentences max). If the question is in Hindi, reply in Hindi. If in English, reply in English.\n\nUser: ${userQuestion}`,
+              text: `You are GAP, Bodhi's AI financial assistant. You help Indian users manage their money. Answer in a friendly, concise way (2-3 sentences max), and ans in a funny snarky way. If the question is in Hindi, reply in Hindi. If in English, reply in English. .\n\nUser: ${userQuestion}`,
             }],
           }],
         }),
@@ -258,10 +263,39 @@ const startRecording = async () => {
 
       const aiReply =
         geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        'Saheli could not generate a response.';
+        'GAP could not generate a response.';
 
       setTranscription(aiReply);
 
+      // ─── Step 3: Fetch Base64 from Sarvam ----------
+      console.log('🗣️ Fetching TTS Base64...');
+      
+      const ttsResponse = await fetch('https://api.sarvam.ai/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'api-subscription-key': SARVAM_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: aiReply,
+          target_language_code: 'hi-IN',
+          speaker: 'ritu',
+          pace: 1.1,
+          sample_rate: 24000,
+          enable_preprocessing: true,
+          model: 'bulbul:v3',
+        }),
+      });
+
+      const ttsData = await ttsResponse.json();
+      
+      if (ttsData.audios && ttsData.audios.length > 0) {
+        console.log('✅ Base64 received successfully. Injecting into WebView Player...');
+        // The WebView in the render output will auto-play this!
+        setBase64Audio(ttsData.audios[0]);
+      } else {
+        console.error('❌ Failed to fetch TTS Base64', ttsData);
+      }
 
     } catch (error) {
       console.error('❌ Voice Pipeline Error:', error);
@@ -340,6 +374,23 @@ const startRecording = async () => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Hidden WebView for bulletproof Base64 Audio Playback */}
+        {base64Audio ? (
+          <WebView
+            originWhitelist={['*']}
+            source={{ html: `<audio autoplay src="data:audio/wav;base64,${base64Audio}" onended="window.ReactNativeWebView.postMessage('ended')" />` }}
+            mediaPlaybackRequiresUserAction={false}
+            javaScriptEnabled={true}
+            onMessage={(event) => {
+              if (event.nativeEvent.data === 'ended') {
+                console.log('🛑 Audio finished playing via WebView');
+                setBase64Audio(null);
+              }
+            }}
+            style={{ width: 0, height: 0, opacity: 0 }}
+          />
+        ) : null}
 
         {/* ─── Glowing Orb ─── */}
         <TouchableOpacity
