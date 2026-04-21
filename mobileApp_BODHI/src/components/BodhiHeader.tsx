@@ -19,6 +19,7 @@ export function useHeaderHeight() {
 }
 
 interface BodhiHeaderProps {
+  showMore?: boolean;
   dark?: boolean;
   onInsurancePress?: () => void;
   showBack?: boolean;

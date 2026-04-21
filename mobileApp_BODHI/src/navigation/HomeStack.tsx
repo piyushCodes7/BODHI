@@ -15,7 +15,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import HomeScreen from '../screens/VaultScreen';
+import { VaultScreen as HomeScreen } from '../screens/VaultScreen';
 import PaperTradeScreen from '../screens/PaperTradeScreen';
 import PersonalDetailsScreen from '../screens/PersonalDetailsScreen';
 import BankAccountsScreen from '../screens/BankAccountsScreen';
@@ -38,7 +38,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 // ─── Shared header theme ──────────────────────────────────────────────────────
 
 const screenOptions = {
-  headerStyle:       { backgroundColor: Colors.bgBase },
+  headerStyle:       { backgroundColor: Colors.darkBase },
   headerTintColor:   Colors.neonLime,
   headerTitleStyle:  { color: Colors.textPrimary, fontWeight: '700' as const },
   headerBackTitleVisible: false,

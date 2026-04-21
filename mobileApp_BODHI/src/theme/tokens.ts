@@ -49,6 +49,18 @@ export const Colors = {
   tabInactive:     '#8a8c91',
   tabActive:       '#702ae1',
   tabDark:         '#9ca3af',  // slate-400 in dark screens
+
+  // ── Missing Semantic & Background Colors ─────────────────────
+  danger:          '#ff3b30',
+  success:         '#34c759',
+  bgSurface:       '#f6f6fb',
+  bgCard:          '#ffffff',
+  bgGlassBorder:   'rgba(255,255,255,0.10)',
+  divider:         '#e1e2e8',
+  textInverse:     '#ffffff',
+  bgDeep:          '#05001F',
+  neonLimeSubtle: '#eaff80',
+  neonCyan: '#00f2fe',
 } as const;
 
 export const Fonts = {
@@ -72,6 +84,7 @@ export const Spacing = {
   lg:  16,
   xl:  20,
   xxl: 24,
+  xxxl: 32,
   px:  6,
 } as const;
 
