@@ -9,18 +9,20 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Users } from 'lucide-react-native';
 
 // ─── SCREEN IMPORTS ───
-import { AuthScreen } from '../screens/AuthScreen';
-import { VaultScreen } from '../screens/VaultScreen';
-import { SocialScreen } from '../screens/SocialScreen';
-import { AIVoiceScreen } from '../screens/AIVoiceScreen';
-import { MarketScreen } from '../screens/MarketScreen';
-import { PaperTradingScreen } from '../screens/PaperTradingScreen';
-import { PaymentScreen } from '../screens/PaymentScreen';
-import { VentureClubScreen } from '../screens/VentureClubScreen';
-// 🟢 FIXED: Import the actual TripWalletScreen (assuming you've created it!)
-import { TripWalletScreen } from '../screens/TripWalletScreen';
-import { ImmuneSystemAlertScreen } from '../screens/TripAndAlertScreens';
-import { TransactionHistoryScreen } from '../screens/TransactionHistoryScreen';
+import { AuthScreen }                    from '../screens/AuthScreen';
+import { VaultScreen }                   from '../screens/VaultScreen';
+import { SocialScreen }                  from '../screens/SocialScreen';
+import { AIVoiceScreen }                 from '../screens/AIVoiceScreen';
+import { MarketScreen }                  from '../screens/MarketScreen';
+import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
+import { PaymentScreen }                 from '../screens/PaymentScreen';
+import { VentureClubScreen }             from '../screens/VentureClubScreen';
+import { TripWalletScreen }              from '../screens/TripWalletScreen'; 
+import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
+import { TransactionHistoryScreen }      from '../screens/TransactionHistoryScreen';
+import { ScanPayScreen }                 from '../screens/ScanPayScreen';
+import { SendMoneyScreen }               from '../screens/SendMoneyScreen';
+import { RequestMoneyScreen }            from '../screens/RequestMoneyScreen';
 
 // ─── COMPONENT IMPORTS ───
 import { BodhiTabBar } from '../components/BodhiTabBar';
@@ -56,12 +58,15 @@ function RootNavigator() {
       <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
 
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
-      {/* 🟢 FIXED: Now points to the correct Trip Wallet component */}
       <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TransactionHistory" component={TransactionHistoryScreen} options={{ animation: 'slide_from_bottom' }} />
-
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
+
+      {/* ── Payment Features ── */}
+      <RootStack.Screen name="ScanPay" component={ScanPayScreen} options={{ animation: 'slide_from_bottom', headerShown: false }} />
+      <RootStack.Screen name="SendMoney" component={SendMoneyScreen} options={{ animation: 'slide_from_right', headerShown: false }} />
+      <RootStack.Screen name="RequestMoney" component={RequestMoneyScreen} options={{ animation: 'slide_from_right', headerShown: false }} />
     </RootStack.Navigator>
   );
 }

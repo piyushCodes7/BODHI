@@ -33,15 +33,27 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>upi</string>
+		<string>paytm</string>
+		<string>phonepe</string>
+		<string>tez</string>
+		<string>gpay</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>BODHI needs camera access to scan QR codes for payments.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>BODHI needs access to your contacts so you can send money to people you know.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UIAppFonts</key>

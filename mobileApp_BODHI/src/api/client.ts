@@ -42,8 +42,10 @@ export const InsuranceAPI = {
       type: 'application/pdf'
     } as any);
 
+    // Longer timeout for ingestion since embedding takes time
     const res = await apiClient.post('/insurance/documents', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,  // 2 minutes
     });
     return res.data;
   },
@@ -51,7 +53,7 @@ export const InsuranceAPI = {
     const res = await apiClient.post('/insurance/query', {
       question,
       document_id: documentId
-    });
+    }, { timeout: 60000 }); // 1 minute for LLM response
     return res.data;
   },
   listDocuments: async () => {

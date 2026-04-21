@@ -73,3 +73,7 @@ app.include_router(wallets.router)
 app.include_router(expenses.router)
 app.include_router(oauth_router, tags=["oauth"])
 app.include_router(ai.router)
+
+# ─── NEW: Transfers (P2P, QR, Requests, Razorpay) ───
+from routers import transfers
+app.include_router(transfers.router)

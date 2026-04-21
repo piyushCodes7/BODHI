@@ -1,0 +1,603 @@
+/**
+ * SendMoneyScreen.tsx
+ * Send money via contacts, phone number, or UPI ID.
+ * Integrates react-native-contacts for phone contacts.
+ */
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList,
+  ActivityIndicator, Alert, ScrollView, Platform, KeyboardAvoidingView,
+  Modal, Linking,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Contacts from 'react-native-contacts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  ArrowLeft, Search, Users, Phone, Zap, ChevronRight, CheckCircle, X, ExternalLink,
+} from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import { BASE_URL } from '../api/client';
+
+const API = `${BASE_URL}/transfers`;
+
+type Tab = 'contacts' | 'phone' | 'upi';
+
+interface ContactItem {
+  id: string;
+  name: string;
+  phone: string;
+  initials: string;
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+const AVATAR_COLORS = ['#7B2FBE', '#FF3366', '#FF9900', '#00BCD4', '#4CAF50', '#E91E63'];
+function avatarColor(name: string) {
+  let sum = 0;
+  for (const c of name) sum += c.charCodeAt(0);
+  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+}
+
+export function SendMoneyScreen() {
+  const navigation = useNavigation<any>();
+
+  const [activeTab, setActiveTab] = useState<Tab>('contacts');
+  const [contacts, setContacts] = useState<ContactItem[]>([]);
+  const [contactsPermission, setContactsPermission] = useState<'granted' | 'denied' | 'unknown'>('unknown');
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Manual input tabs
+  const [phoneInput, setPhoneInput] = useState('');
+  const [upiInput, setUpiInput] = useState('');
+
+  // Selected recipient → payment modal
+  const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null);
+  const [recipientLabel, setRecipientLabel] = useState('');
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paySuccess, setPaySuccess] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+
+  // ── Contacts ─────────────────────────────────────────────────────────────
+  const loadContacts = useCallback(async () => {
+    setIsLoadingContacts(true);
+    try {
+      const permission = await Contacts.requestPermission();
+      if (permission === 'authorized') {
+        setContactsPermission('granted');
+        const all = await Contacts.getAll();
+        const mapped: ContactItem[] = all
+          .filter(c => {
+            // Accept contact if it has any name and at least one phone number
+            const hasName = !!(c.displayName || c.givenName || c.familyName);
+            return hasName && c.phoneNumbers && c.phoneNumbers.length > 0;
+          })
+          .map(c => {
+            // Construct name with fallback: displayName → givenName + familyName → first phone
+            const name = (
+              c.displayName ||
+              `${c.givenName || ''} ${c.familyName || ''}`.trim() ||
+              c.phoneNumbers[0].number
+            );
+            // Clean phone: strip spaces, dashes, parentheses — keep + and digits
+            const rawPhone = c.phoneNumbers[0].number || '';
+            const phone = rawPhone.replace(/[\s\-().]/g, '');
+            return {
+              id: c.recordID,
+              name,
+              phone,
+              initials: getInitials(name),
+            };
+          })
+          .filter(c => c.phone.length > 0)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setContacts(mapped);
+      } else {
+        setContactsPermission('denied');
+      }
+    } catch (e) {
+      console.error('Contacts error:', e);
+      setContactsPermission('denied');
+    } finally {
+      setIsLoadingContacts(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'contacts') loadContacts();
+  }, [activeTab, loadContacts]);
+
+  const filteredContacts = contacts.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.phone.includes(searchQuery),
+  );
+
+  // ── Open payment modal ────────────────────────────────────────────────────
+  const openPayFor = (identifier: string, label: string) => {
+    setSelectedRecipient(identifier);
+    setRecipientLabel(label);
+    setAmount('');
+    setNote('');
+    setPaySuccess(false);
+    setShowPayModal(true);
+  };
+
+  // ── Send money (BODHI) ───────────────────────────────────────────────────
+  const handleSend = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      return;
+    }
+    if (!selectedRecipient) return;
+
+    setIsProcessing(true);
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      const res = await fetch(`${API}/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recipient_identifier: selectedRecipient,
+          amount: parseFloat(amount),
+          note: note || undefined,
+        }),
+      });
+
+      const rawText = await res.text();
+      let data: any;
+      try { data = JSON.parse(rawText); } catch { data = {}; }
+
+      if (!res.ok) {
+        throw new Error(data.detail || 'Payment failed. Please try again.');
+      }
+
+      setSuccessMsg(`₹${parseFloat(amount).toFixed(2)} sent to ${data.recipient_name}!`);
+      setPaySuccess(true);
+    } catch (err: any) {
+      Alert.alert('Payment Failed', err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // ── Send money (Native UPI) ──────────────────────────────────────────────
+  const handleNativeUPIPay = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      return;
+    }
+    if (!selectedRecipient) return;
+
+    setIsProcessing(true);
+    try {
+      const formattedAmount = parseFloat(amount).toFixed(2);
+      // Build standard UPI URI
+      let upiUrl = `upi://pay?pa=${encodeURIComponent(selectedRecipient)}&pn=${encodeURIComponent(recipientLabel)}&am=${formattedAmount}&cu=INR`;
+      if (note) {
+        upiUrl += `&tn=${encodeURIComponent(note)}`;
+      }
+
+      // Try specific Google Pay schemes first to avoid WhatsApp taking over
+      const gpayUrl = upiUrl.replace(/^upi:\/\//i, 'gpay://upi/');
+      const tezUrl = upiUrl.replace(/^upi:\/\//i, 'tez://upi/');
+
+      if (await Linking.canOpenURL(gpayUrl)) {
+        await Linking.openURL(gpayUrl);
+        setSuccessMsg(`Google Pay opened! Please complete the payment.`);
+        setPaySuccess(true);
+      } else if (await Linking.canOpenURL(tezUrl)) {
+        await Linking.openURL(tezUrl);
+        setSuccessMsg(`Google Pay opened! Please complete the payment.`);
+        setPaySuccess(true);
+      } else if (await Linking.canOpenURL(upiUrl)) {
+        // Fallback to generic UPI chooser
+        await Linking.openURL(upiUrl);
+        setSuccessMsg(`Payment intent opened. Please complete the payment!`);
+        setPaySuccess(true);
+      } else {
+        Alert.alert('Error', 'No UPI app found on your device (tried GPay and generic UPI). Please install Google Pay.');
+      }
+    } catch (err: any) {
+      Alert.alert('UPI Error', err.message || 'Could not open UPI app.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // ── Tabs ─────────────────────────────────────────────────────────────────
+  const TABS: { key: Tab; label: string; Icon: any }[] = [
+    { key: 'contacts', label: 'Contacts', Icon: Users },
+    { key: 'phone', label: 'Phone', Icon: Phone },
+    { key: 'upi', label: 'UPI / Email', Icon: Zap },
+  ];
+
+  const renderContactsTab = () => {
+    if (contactsPermission === 'denied') {
+      return (
+        <View style={styles.centered}>
+          <Users size={48} color="rgba(255,255,255,0.2)" />
+          <Text style={styles.permTitle}>Contacts Access Required</Text>
+          <Text style={styles.permSub}>Allow BODHI to access your contacts to send money easily.</Text>
+          <TouchableOpacity style={styles.permBtn} onPress={loadContacts}>
+            <Text style={styles.permBtnText}>Allow Access</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    if (isLoadingContacts) {
+      return <View style={styles.centered}><ActivityIndicator color="#A855F7" size="large" /></View>;
+    }
+    return (
+      <>
+        <View style={styles.searchBar}>
+          <Search size={16} color="rgba(255,255,255,0.4)" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search name or number…"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        <FlatList
+          data={filteredContacts}
+          keyExtractor={item => item.id}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={styles.centered}>
+              <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 32 }}>No contacts found</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.contactRow} onPress={() => openPayFor(item.phone, item.name)}>
+              <View style={[styles.avatar, { backgroundColor: avatarColor(item.name) }]}>
+                <Text style={styles.avatarText}>{item.initials}</Text>
+              </View>
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactName}>{item.name}</Text>
+                <Text style={styles.contactPhone}>{item.phone}</Text>
+              </View>
+              <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+            </TouchableOpacity>
+          )}
+        />
+      </>
+    );
+  };
+
+  const renderPhoneTab = () => (
+    <View style={styles.manualSection}>
+      <Text style={styles.inputLabel}>MOBILE NUMBER</Text>
+      <View style={styles.phoneRow}>
+        <View style={styles.countryCode}>
+          <Text style={styles.countryCodeText}>🇮🇳 +91</Text>
+        </View>
+        <TextInput
+          style={styles.phoneInput}
+          value={phoneInput}
+          onChangeText={setPhoneInput}
+          placeholder="Enter mobile number"
+          placeholderTextColor="rgba(255,255,255,0.3)"
+          keyboardType="phone-pad"
+          maxLength={10}
+        />
+      </View>
+      <TouchableOpacity
+        style={[styles.continueBtn, phoneInput.length < 10 && { opacity: 0.4 }]}
+        disabled={phoneInput.length < 10}
+        onPress={() => openPayFor(`+91${phoneInput}`, `+91 ${phoneInput}`)}
+      >
+        <LinearGradient colors={['#7B2FBE', '#4A00E0']} style={styles.continueBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <Text style={styles.continueBtnText}>Continue</Text>
+          <ChevronRight size={18} color="#FFF" />
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderUPITab = () => (
+    <View style={styles.manualSection}>
+      <Text style={styles.inputLabel}>UPI ID OR EMAIL</Text>
+      <TextInput
+        style={styles.upiInput}
+        value={upiInput}
+        onChangeText={setUpiInput}
+        placeholder="name@bank or user@example.com"
+        placeholderTextColor="rgba(255,255,255,0.3)"
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+      />
+      <TouchableOpacity
+        style={[styles.continueBtn, !upiInput && { opacity: 0.4 }]}
+        disabled={!upiInput}
+        onPress={() => openPayFor(upiInput.trim().toLowerCase(), upiInput.trim())}
+      >
+        <LinearGradient colors={['#7B2FBE', '#4A00E0']} style={styles.continueBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <Text style={styles.continueBtnText}>Continue</Text>
+          <ChevronRight size={18} color="#FFF" />
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.root}>
+      {/* Header */}
+      <LinearGradient colors={['#2A0066', '#660099']} style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <ArrowLeft size={22} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Send Money</Text>
+        <View style={{ width: 40 }} />
+      </LinearGradient>
+
+      {/* Tabs */}
+      <View style={styles.tabBar}>
+        {TABS.map(({ key, label, Icon }) => (
+          <TouchableOpacity
+            key={key}
+            style={[styles.tab, activeTab === key && styles.tabActive]}
+            onPress={() => { setActiveTab(key); setSearchQuery(''); }}
+          >
+            <Icon size={15} color={activeTab === key ? '#A855F7' : 'rgba(255,255,255,0.4)'} />
+            <Text style={[styles.tabLabel, activeTab === key && styles.tabLabelActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Content */}
+      <View style={{ flex: 1 }}>
+        {activeTab === 'contacts' && renderContactsTab()}
+        {activeTab === 'phone' && renderPhoneTab()}
+        {activeTab === 'upi' && renderUPITab()}
+      </View>
+
+      {/* Payment Modal */}
+      <Modal visible={showPayModal} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalSheet}>
+            {paySuccess ? (
+              <View style={styles.successContainer}>
+                <CheckCircle size={64} color="#34c759" />
+                <Text style={styles.successTitle}>Sent!</Text>
+                <Text style={styles.successSub}>{successMsg}</Text>
+                <TouchableOpacity style={styles.doneBtn} onPress={() => {
+                  setShowPayModal(false);
+                  navigation.goBack();
+                }}>
+                  <Text style={styles.doneBtnText}>Done</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setShowPayModal(false); setPaySuccess(false); }} style={{ marginTop: 12 }}>
+                  <Text style={{ color: '#A855F7', fontSize: 14 }}>Send to someone else</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Send Money</Text>
+                  <TouchableOpacity onPress={() => setShowPayModal(false)}>
+                    <X size={22} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.recipientTag}>
+                  <Text style={styles.recipientLabel}>To</Text>
+                  <Text style={styles.recipientValue}>{recipientLabel}</Text>
+                </View>
+
+                <Text style={styles.amtLabel}>ENTER AMOUNT</Text>
+                <View style={styles.amtRow}>
+                  <Text style={styles.rupee}>₹</Text>
+                  <TextInput
+                    style={styles.amtInput}
+                    value={amount}
+                    onChangeText={setAmount}
+                    keyboardType="decimal-pad"
+                    placeholder="0"
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    autoFocus
+                  />
+                </View>
+
+                {/* Quick amounts */}
+                <View style={styles.quickAmounts}>
+                  {[100, 500, 1000, 2000].map(q => (
+                    <TouchableOpacity key={q} style={styles.quickPill} onPress={() => setAmount(String(q))}>
+                      <Text style={styles.quickPillText}>+₹{q >= 1000 ? `${q / 1000}k` : q}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TextInput
+                  style={styles.noteInput}
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder="Add a note (optional)"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                />
+
+                <View style={{ gap: 12 }}>
+                  <TouchableOpacity
+                    onPress={handleNativeUPIPay}
+                    disabled={isProcessing || !amount}
+                    style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
+                  >
+                    <LinearGradient
+                      colors={['#4A00E0', '#8E2DE2']}
+                      style={styles.payBtn}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    >
+                      {isProcessing ? (
+                        <ActivityIndicator color="#FFF" />
+                      ) : (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Text style={[styles.payBtnText, { color: '#FFF' }]}>
+                            PAY VIA GPAY / UPI
+                          </Text>
+                          <ExternalLink size={18} color="#FFF" />
+                        </View>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={handleSend}
+                    disabled={isProcessing || !amount}
+                    style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
+                  >
+                    <LinearGradient
+                      colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.05)']}
+                      style={[styles.payBtn, { borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    >
+                      {isProcessing ? (
+                        <ActivityIndicator color="#FFF" />
+                      ) : (
+                        <Text style={[styles.payBtnText, { color: '#FFF' }]}>
+                          PAY VIA BODHI WALLET
+                        </Text>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#05050A' },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 20,
+  },
+  backBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
+  },
+  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+
+  tabBar: { flexDirection: 'row', backgroundColor: '#0C0C18', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },
+  tabActive: { borderBottomWidth: 2, borderBottomColor: '#A855F7' },
+  tabLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' },
+  tabLabelActive: { color: '#A855F7' },
+
+  // contacts
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12,
+    marginHorizontal: 16, marginVertical: 12,
+    paddingHorizontal: 14, paddingVertical: 12,
+  },
+  searchInput: { flex: 1, color: '#FFF', fontSize: 15 },
+
+  contactRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+  },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  avatarText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  contactInfo: { flex: 1 },
+  contactName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 2 },
+  contactPhone: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
+
+  // permission
+  permTitle: { color: '#FFF', fontSize: 20, fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  permSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  permBtn: { backgroundColor: '#A855F7', paddingHorizontal: 28, paddingVertical: 14, borderRadius: 30 },
+  permBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+
+  // manual entry
+  manualSection: { padding: 20 },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 10 },
+  phoneRow: {
+    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 20,
+  },
+  countryCode: {
+    paddingHorizontal: 14, paddingVertical: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+  },
+  countryCodeText: { color: '#FFF', fontSize: 15, fontWeight: '600' },
+  phoneInput: { flex: 1, paddingHorizontal: 14, paddingVertical: 16, color: '#FFF', fontSize: 15 },
+  upiInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    padding: 16, color: '#FFF', fontSize: 15, marginBottom: 20,
+  },
+  continueBtn: { borderRadius: 30, overflow: 'hidden' },
+  continueBtnGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
+  continueBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+
+  // modal
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
+  modalSheet: {
+    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    padding: 24, paddingBottom: 44,
+    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+  },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+
+  recipientTag: {
+    backgroundColor: 'rgba(168,85,247,0.1)', borderRadius: 12, padding: 12, marginBottom: 20,
+    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+  },
+  recipientLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  recipientValue: { color: '#A855F7', fontSize: 15, fontWeight: '700' },
+
+  amtLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textAlign: 'center' },
+  amtRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  rupee: { color: '#FFF', fontSize: 36, fontWeight: '300', marginRight: 8 },
+  amtInput: { color: '#FFF', fontSize: 56, fontWeight: '800', minWidth: 80, textAlign: 'center' },
+
+  quickAmounts: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 16 },
+  quickPill: {
+    backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  quickPillText: { color: '#A855F7', fontSize: 13, fontWeight: '600' },
+
+  noteInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12,
+    padding: 14, color: '#FFF', fontSize: 15, marginBottom: 20,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center' },
+  payBtnText: { fontSize: 16, fontWeight: '800', color: '#000' },
+
+  // success
+  successContainer: { alignItems: 'center', paddingVertical: 16 },
+  successTitle: { color: '#FFF', fontSize: 26, fontWeight: '800', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  doneBtn: { backgroundColor: '#34c759', paddingHorizontal: 48, paddingVertical: 16, borderRadius: 30 },
+  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+});

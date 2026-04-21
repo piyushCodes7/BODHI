@@ -17,7 +17,7 @@ interface GradientCardProps {
 export function GradientCard({ children, style, colors }: GradientCardProps) {
   return (
     <LinearGradient
-      colors={colors ?? Gradients.signatureNeon.colors}
+      colors={(colors ?? Gradients.signatureNeon.colors) as (string | number)[]}
       start={Gradients.signatureNeon.start}
       end={Gradients.signatureNeon.end}
       style={[styles.card, style]}

@@ -33,11 +33,13 @@ import { PaymentAPI } from '../api/client';
 const { width: W } = Dimensions.get('window');
 
 interface Props {
-  onNavigate: (tab: NavTab) => void;
-  activeTab: NavTab;
-  onInsurancePress: () => void;
-  onBack: () => void;
+  onNavigate?: (tab: NavTab) => void;
+  activeTab?: NavTab;
+  onInsurancePress?: () => void;
+  onBack?: () => void;
   currentUserId?: string;
+  route?: any;
+  navigation?: any;
 }
 
 type PaymentMode = 'home' | 'send' | 'qr' | 'confirm';
@@ -114,7 +116,7 @@ export const PaymentScreen: React.FC<Props> = ({
     try {
       if (currentUserId) {
         await PaymentAPI.createIntent({
-          user_id: currentUserId,
+          user_id: currentUserId ? Number(currentUserId) : 0,
           amount: Math.round(parseFloat(amount) * 100),
           currency: 'INR',
           description: note || `Payment to ${selectedContact?.name ?? phoneInput}`,

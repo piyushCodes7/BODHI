@@ -50,6 +50,9 @@ PODS:
   - hermes-engine/Pre-built (0.73.4)
   - libevent (2.1.12)
   - PromisesObjC (2.4.0)
+  - razorpay-core-pod (1.0.6)
+  - razorpay-pod (1.5.0):
+    - razorpay-core-pod
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -927,10 +930,17 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+  - react-native-contacts (8.0.10):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - react-native-document-picker (9.3.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+  - react-native-razorpay (2.3.1):
+    - razorpay-pod (= 1.5.0)
+    - React
   - react-native-safe-area-context (4.14.1):
     - React-Core
   - react-native-splash-screen (3.3.0):
@@ -1147,6 +1157,12 @@ PODS:
   - RNSVG (15.15.4):
     - React-Core
   - SocketRocket (0.6.1)
+  - VisionCamera (4.7.3):
+    - VisionCamera/Core (= 4.7.3)
+    - VisionCamera/React (= 4.7.3)
+  - VisionCamera/Core (4.7.3)
+  - VisionCamera/React (4.7.3):
+    - React-Core
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -1184,7 +1200,9 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-biometrics (from `../node_modules/react-native-biometrics`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
+  - react-native-contacts (from `../node_modules/react-native-contacts`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-razorpay (from `../node_modules/react-native-razorpay`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-sqlite-storage (from `../node_modules/react-native-sqlite-storage`)
@@ -1219,6 +1237,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1232,6 +1251,8 @@ SPEC REPOS:
     - GTMSessionFetcher
     - libevent
     - PromisesObjC
+    - razorpay-core-pod
+    - razorpay-pod
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1298,8 +1319,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-biometrics"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
+  react-native-contacts:
+    :path: "../node_modules/react-native-contacts"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
+  react-native-razorpay:
+    :path: "../node_modules/react-native-razorpay"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-splash-screen:
@@ -1368,6 +1393,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1389,6 +1416,8 @@ SPEC CHECKSUMS:
   hermes-engine: b2669ce35fc4ac14f523b307aff8896799829fe2
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  razorpay-core-pod: 6da5fb4ed280279d665507fdb50e213d793a5fe2
+  razorpay-pod: f634f1b8397eb54d547f25d35291f679545ddf17
   RCT-Folly: cd21f1661364f975ae76b3308167ad66b09f53f5
   RCTRequired: ab7f915c15569f04a49669e573e6e319a53f9faa
   RCTTypeSafety: 63b97ced7b766865057e7154db0e81ce4ee6cf1e
@@ -1412,7 +1441,9 @@ SPEC CHECKSUMS:
   React-Mapbuffer: f7ba4d5459e546d741791a55664388e97b31df7c
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: 74ee853d7978e54ab21397d9b005ea59d3875008
+  react-native-contacts: 1d71498fde0aff8b26704903e5aa025bcadfef5a
   react-native-document-picker: c17d9883ce3220bdc4812e802184328dd964a333
+  react-native-razorpay: 376ba84b614ef8a22b5701df4ffee10f4c116d14
   react-native-safe-area-context: 758e894ca5a9bd1868d2a9cfbca7326a2b6bf9dc
   react-native-splash-screen: 95994222cc95c236bd3cdc59fe45ed5f27969594
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
@@ -1448,8 +1479,9 @@ SPEC CHECKSUMS:
   RNScreens: b12996ef8ef492d56d126400e8aef6e613c13ef6
   RNSVG: 2ab771ec16936005bd57d18e930cbfe80ed5167e
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
+  VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: 1b901a6d6eeba4e8a2e8f308f708691cdb5db312
 
 PODFILE CHECKSUM: 88088eec66caa6a9af32cae7fb02073edac9fa6a
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.16.2

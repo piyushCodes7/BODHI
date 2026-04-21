@@ -110,19 +110,25 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
     setUploading(true); setPhase('processing'); setDocName(file.name);
     try {
       let docId: string | null = null;
-      try { const ingested = await InsuranceAPI.ingest(file.uri, file.name); docId = ingested.document_id; setDocumentId(docId); } catch { console.warn('Ingestion failed.'); }
+      try {
+        const ingested = await InsuranceAPI.ingest(file.uri, file.name);
+        docId = ingested.document_id;
+        setDocumentId(docId);
+        console.log('Document ingested:', docId, 'chunks:', ingested.chunk_count);
+      } catch (e) {
+        console.warn('Ingestion failed, will use general context:', e);
+      }
       const generated = await buildSlides(docId);
       setSlides(generated); setPhase('stories'); setCurrentSlide(0);
     } catch (e: any) { Alert.alert('Error', e.message ?? 'Something went wrong.'); setPhase('upload'); } finally { setUploading(false); }
   };
 
   const handleUseDemoDoc = async () => {
+    // For demo, directly build slides without a real document (uses general insurance knowledge fallback)
     setPhase('processing'); setDocName('Demo Policy');
     try {
-      const docs = await InsuranceAPI.listDocuments();
-      const docId = docs.length > 0 ? docs[0].document_id : null;
-      setDocumentId(docId);
-      const generated = await buildSlides(docId);
+      setDocumentId(null);
+      const generated = await buildSlides(null);
       setSlides(generated); setPhase('stories'); setCurrentSlide(0);
     } catch { Alert.alert('Error', 'Could not load demo. Please upload a document.'); setPhase('upload'); }
   };
@@ -349,16 +355,33 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
               <TouchableOpacity onPress={onClose}><Text style={styles.closeBtn}>✕</Text></TouchableOpacity>
             </View>
 
-            <ScrollView ref={chatScrollRef} style={styles.chatMessages} contentContainerStyle={styles.chatMessagesContent} showsVerticalScrollIndicator={false}>
+          <ScrollView ref={chatScrollRef} style={styles.chatMessages} contentContainerStyle={styles.chatMessagesContent} showsVerticalScrollIndicator={false}>
               {chatMessages.map(msg => (
                 <View key={msg.id} style={[styles.msgBubble, msg.role === 'user' ? styles.msgBubbleUser : styles.msgBubbleAI]}>
-                  {msg.loading ? <Text style={styles.typingText}>Thinking…</Text> : <Text style={[styles.msgText, msg.role === 'user' && styles.msgTextUser]}>{msg.text}</Text>}
+                  {msg.loading ? <ActivityIndicator size="small" color={Colors.neonLime} /> : <Text style={[styles.msgText, msg.role === 'user' && styles.msgTextUser]}>{msg.text}</Text>}
+                  {!msg.loading && msg.role === 'assistant' && msg.confidence && (
+                    <View style={[styles.msgConfidenceBadge, { borderColor: CONFIDENCE_COLORS[msg.confidence] }]}>
+                      <View style={[styles.msgConfidenceDot, { backgroundColor: CONFIDENCE_COLORS[msg.confidence] }]} />
+                      <Text style={[styles.msgConfidenceText, { color: CONFIDENCE_COLORS[msg.confidence] }]}>{msg.confidence}</Text>
+                    </View>
+                  )}
                 </View>
               ))}
             </ScrollView>
 
+            {/* Preset question chips */}
+            {chatMessages.length <= 1 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsScroll} contentContainerStyle={styles.presetsContainer}>
+                {PRESET_QUESTIONS.map(q => (
+                  <TouchableOpacity key={q} style={styles.presetChip} onPress={() => sendMessage(q)} disabled={chatLoading}>
+                    <Text style={styles.presetChipText}>{q}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
             <View style={styles.chatInputBar}>
-              <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} />
+              <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} multiline />
               <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]} onPress={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
                 <Text style={{ fontSize: 18, color: '#000', fontWeight: '700' }}>→</Text>
               </TouchableOpacity>
@@ -464,6 +487,18 @@ const styles = StyleSheet.create({
   chatInputBar: { flexDirection: 'row', alignItems: 'flex-end', backgroundColor: '#05001F', padding: 12, paddingHorizontal: 20, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingBottom: Platform.OS === 'ios' ? 28 : 16 },
   chatInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, fontSize: 15, color: '#FFF', maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   sendBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.neonLime, alignItems: 'center', justifyContent: 'center' },
+
+  presetsScroll: { maxHeight: 52, backgroundColor: '#05001F', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
+  presetsContainer: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, flexDirection: 'row', alignItems: 'center' },
+  presetChip: {
+    backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: 'rgba(168,85,247,0.35)',
+  },
+  presetChipText: { fontSize: 12, color: '#C084FC', fontWeight: '600' },
+
+  msgConfidenceBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 8, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, gap: 4 },
+  msgConfidenceDot: { width: 6, height: 6, borderRadius: 3 },
+  msgConfidenceText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4 },
 });
 
 export default InsuranceScreen;
