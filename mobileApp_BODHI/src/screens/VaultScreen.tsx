@@ -9,6 +9,8 @@ import {
   Image,
   StatusBar,
   Alert,
+  Modal,
+  FlatList,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +37,7 @@ import {
 
 import { Colors, Spacing, Radius } from '../theme/tokens';
 import { InsuranceScreen } from './InsuranceScreen';
+import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 
 const { width: W } = Dimensions.get('window');
 
@@ -50,16 +53,84 @@ const QUICK_SERVICES = [
   { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2' },
 ];
 
-const INSIGHTS = [
-  { id: '1', title: 'You spent', value: '₹2,540', sub: 'on Food this week', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
-  { id: '2', title: 'You can save', value: '₹1,250', sub: 'by reducing subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
-  { id: '3', title: 'Your net worth', value: '12%', sub: 'increased this month', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
-];
+// Constants removed, logic moved dynamically inside the component!
 
 export function VaultScreen() {
   const navigation = useNavigation<any>();
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [showInsurance, setShowInsurance] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<string | null>(null);
+
+  // ─── DYNAMIC INSIGHTS MATH ───
+  // Calculate specific insights purely using mathematical aggregations over your financial database!
+  const currentMonthTransactions = MOCK_TRANSACTIONS.filter((t) => {
+    // Assuming April 2026 is the "current" active mock month
+    return new Date(t.date).getMonth() === 3 && new Date(t.date).getFullYear() === 2026; 
+  });
+
+  const foodSpending = currentMonthTransactions
+    .filter(t => t.category === 'Food' || t.category === 'Groceries')
+    .reduce((acc, t) => acc + t.amount, 0);
+
+  const entertainmentSpending = currentMonthTransactions
+    .filter(t => t.category === 'Entertainment')
+    .reduce((acc, t) => acc + t.amount, 0);
+
+  const totalIncome = currentMonthTransactions.filter(t => t.type === 'CREDIT').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpenses = currentMonthTransactions.filter(t => t.type === 'DEBIT').reduce((acc, t) => acc + t.amount, 0);
+  const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : '0';
+
+  const dynamicInsights = [
+    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely this month', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
+    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'by cutting subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
+    { id: '3', type: 'SAVE', title: 'Savings Rate', value: `${savingsRate}%`, sub: 'of income kept this month', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
+  ];
+
+  const renderInsightDetails = () => {
+    if (!activeInsight) return null;
+    let filtered: any[] = [];
+    let title = '';
+
+    if (activeInsight === 'FOOD') {
+      title = "Food & Groceries Breakdown";
+      filtered = currentMonthTransactions.filter(t => t.category === 'Food' || t.category === 'Groceries');
+    } else if (activeInsight === 'SUBS') {
+      title = "Entertainment Breakdown";
+      filtered = currentMonthTransactions.filter(t => t.category === 'Entertainment');
+    } else {
+      title = "Monthly Cash Flow";
+      filtered = currentMonthTransactions;
+    }
+
+    return (
+      <View style={styles.modalBg}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{title}</Text>
+            <TouchableOpacity onPress={() => setActiveInsight(null)} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList 
+            data={filtered}
+            keyExtractor={(t) => t.id}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={styles.insightRow}>
+                <View>
+                  <Text style={styles.insightRowMerchant}>{item.merchant}</Text>
+                  <Text style={styles.insightRowCategory}>{new Date(item.date).toLocaleDateString()} • {item.category}</Text>
+                </View>
+                <Text style={[styles.insightRowAmount, { color: item.type === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
+                  {item.type === 'CREDIT' ? '+' : '-'}₹{item.amount.toLocaleString('en-IN')}
+                </Text>
+              </View>
+            )}
+          />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.root}>
@@ -191,7 +262,7 @@ export function VaultScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.insightsScroll}
           >
-            {INSIGHTS.map((insight) => (
+            {dynamicInsights.map((insight) => (
               <LinearGradient
                 key={insight.id}
                 colors={insight.bg}
@@ -206,7 +277,7 @@ export function VaultScreen() {
                 <Text style={styles.insightValue}>{insight.value}</Text>
                 <Text style={styles.insightSub}>{insight.sub}</Text>
 
-                <TouchableOpacity style={styles.insightLinkRow}>
+                <TouchableOpacity style={styles.insightLinkRow} onPress={() => setActiveInsight(insight.type)}>
                   <Text style={styles.insightLink}>View Details</Text>
                   <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
                 </TouchableOpacity>
@@ -273,6 +344,11 @@ export function VaultScreen() {
         visible={showInsurance}
         onClose={() => setShowInsurance(false)}
       />
+
+      {/* ── DYNAMIC INSIGHTS MODAL ── */}
+      <Modal visible={!!activeInsight} animationType="slide" transparent>
+        {renderInsightDetails()}
+      </Modal>
     </View>
   );
 }
