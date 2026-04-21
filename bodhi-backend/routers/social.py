@@ -31,7 +31,7 @@ from models.social import (
     SplitType,
 )
 
-router = APIRouter(prefix="/social", tags=["social"])
+router = APIRouter(tags=["social"])
 
 # ── POST Schemas ──
 class CreateGroupReq(BaseModel):

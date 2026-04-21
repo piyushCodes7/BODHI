@@ -299,10 +299,25 @@ export function SocialScreen({ navigation }: { navigation: any }) {
     try {
       setLoading(true);
       const response = await apiClient.get('/social/dashboard'); 
-      setVentures(response.data.investments);
-      setTrips(response.data.trips);
+      
+      // If backend returns empty lists, fall back to our beautiful mock data so the UI looks alive!
+      if (response.data?.investments?.length > 0) {
+        setVentures(response.data.investments);
+      } else {
+        setVentures(INIT_VENTURES);
+      }
+
+      if (response.data?.trips?.length > 0) {
+        setTrips(response.data.trips);
+      } else {
+        setTrips(INIT_TRIPS);
+      }
+
     } catch (error) {
       console.error("Error fetching social data:", error);
+      // Fallback on network/auth errors as well to keep the demo alive
+      setVentures(INIT_VENTURES);
+      setTrips(INIT_TRIPS);
     } finally {
       setLoading(false);
     }

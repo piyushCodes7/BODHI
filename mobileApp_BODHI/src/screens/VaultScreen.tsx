@@ -43,7 +43,7 @@ const QUICK_SERVICES = [
   { id: '1', label: 'Split Money', icon: Users, color: '#8A5CFF', route: 'TripWallet' },
   { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF3366', route: 'InsuranceStories' },
   { id: '3', label: 'Calculator', icon: Calculator, color: '#FF9900' },
-  { id: '4', label: 'Wallet', icon: CreditCard, color: '#00E676' },
+  { id: '4', label: 'History', icon: FileText, color: '#00E676', route: 'TransactionHistory' },
   { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3399FF' },
   { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFD700' },
   { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF' },
@@ -64,9 +64,9 @@ export function VaultScreen() {
   return (
     <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
+
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        
+
         {/* ── HERO SECTION (GRADIENT) ── */}
         <LinearGradient
           colors={['#2A0066', '#660099', '#FF0055']}
@@ -82,13 +82,13 @@ export function VaultScreen() {
               </View>
               <View style={styles.onlineDot} />
             </View>
-            
-            <Image 
-              source={require('../../assets/images/bodhi-logo.png')} 
-              style={styles.logo} 
-              resizeMode="contain" 
+
+            <Image
+              source={require('../../assets/images/bodhi-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
-            
+
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconBtn} onPress={() => Alert.alert('Notifications', 'Coming soon!')}>
                 <Bell size={20} color="#FFF" />
@@ -100,10 +100,10 @@ export function VaultScreen() {
           {/* Balance Area */}
           <View style={styles.balanceArea}>
             <Text style={styles.greeting}>Hello, Govind 👋</Text>
-            
+
             <View style={styles.rowCenter}>
               <Text style={styles.totalBalanceLabel}>TOTAL BALANCE</Text>
-              <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{top:10, bottom:10, left:10, right:10}}>
+              <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <EyeOff size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
               </TouchableOpacity>
             </View>
@@ -112,7 +112,7 @@ export function VaultScreen() {
               <Text style={styles.currencySymbol}>₹</Text>
               <Text style={styles.balanceMain}>{balanceVisible ? '1,00,000' : '******'}</Text>
               <Text style={styles.balanceDecimals}>{balanceVisible ? '.00' : ''}</Text>
-              
+
               <TouchableOpacity style={styles.hideBtn} onPress={() => setBalanceVisible(!balanceVisible)}>
                 <ShieldCheck size={12} color="#FFF" />
                 <Text style={styles.hideBtnText}>{balanceVisible ? 'Hide' : 'Show'}</Text>
@@ -133,8 +133,8 @@ export function VaultScreen() {
               { label: 'Add Money', icon: Plus },
               { label: 'Request', icon: ArrowDownToLine },
             ].map((action, idx) => (
-              <TouchableOpacity 
-                key={idx} 
+              <TouchableOpacity
+                key={idx}
                 style={styles.heroActionItem}
                 onPress={() => Alert.alert('Action', `${action.label} feature coming soon!`)}
               >
@@ -149,7 +149,7 @@ export function VaultScreen() {
 
         {/* ── MAIN CONTENT (DARK SURFACE) ── */}
         <View style={styles.contentSection}>
-          
+
           {/* Quick Services */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Quick Services</Text>
@@ -158,8 +158,8 @@ export function VaultScreen() {
 
           <View style={styles.servicesGrid}>
             {QUICK_SERVICES.map((item) => (
-              <TouchableOpacity 
-                key={item.id} 
+              <TouchableOpacity
+                key={item.id}
                 style={styles.serviceItem}
                 activeOpacity={0.7}
                 onPress={() => {
@@ -186,9 +186,9 @@ export function VaultScreen() {
             <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
           </View>
 
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.insightsScroll}
           >
             {INSIGHTS.map((insight) => (
@@ -205,7 +205,7 @@ export function VaultScreen() {
                 <Text style={styles.insightTitle}>{insight.title}</Text>
                 <Text style={styles.insightValue}>{insight.value}</Text>
                 <Text style={styles.insightSub}>{insight.sub}</Text>
-                
+
                 <TouchableOpacity style={styles.insightLinkRow}>
                   <Text style={styles.insightLink}>View Details</Text>
                   <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
@@ -250,15 +250,28 @@ export function VaultScreen() {
             <View style={styles.dot} />
           </View>
 
+          {/* DEDICATED TRANSACTION HISTORY BUTTON */}
+          <TouchableOpacity 
+            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]} 
+            onPress={() => navigation.navigate('TransactionHistory')}
+            activeOpacity={0.8}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <FileText size={20} color="#C8FF00" />
+              <Text style={{ color: '#C8FF00', fontSize: 16, fontWeight: '700' }}>View Transaction History</Text>
+            </View>
+            <ChevronRight size={20} color="#C8FF00" style={{ position: 'absolute', right: 20 }} />
+          </TouchableOpacity>
+
           {/* Bottom spacer for tab bar */}
           <View style={{ height: 100 }} />
         </View>
       </ScrollView>
 
       {/* ── INSURANCE MODAL MOUNTED HERE ── */}
-      <InsuranceScreen 
-        visible={showInsurance} 
-        onClose={() => setShowInsurance(false)} 
+      <InsuranceScreen
+        visible={showInsurance}
+        onClose={() => setShowInsurance(false)}
       />
     </View>
   );
@@ -266,10 +279,10 @@ export function VaultScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#05050A' },
-  
+
   heroSection: {
     paddingTop: 60,
-    paddingBottom: 20, 
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -318,7 +331,7 @@ const styles = StyleSheet.create({
   },
   heroActionLabel: { color: '#FFF', fontSize: 11, fontWeight: '500' },
 
-  contentSection: { paddingHorizontal: 20, paddingTop: 10 }, 
+  contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },
   sectionTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
   viewAll: { color: '#A855F7', fontSize: 13, fontWeight: '600' },
