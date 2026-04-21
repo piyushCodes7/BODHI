@@ -61,17 +61,32 @@ export function AuthScreen({ navigation }: any) {
     setIsLoading(true);
     try {
       if (authMode === 'login') {
-        const formData = new URLSearchParams();
-        formData.append('username', email.trim().toLowerCase()); 
-        formData.append('password', password);
+        // Robust form encoding for React Native instead of URLSearchParams
+        const formBody = [];
+        const details: any = {
+          username: email.trim().toLowerCase(),
+          password: password,
+        };
+        for (const property in details) {
+          const encodedKey = encodeURIComponent(property);
+          const encodedValue = encodeURIComponent(details[property]);
+          formBody.push(encodedKey + "=" + encodedValue);
+        }
 
         const response = await fetch(`${API_URL}/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData.toString(),
+          body: formBody.join('&'),
         });
 
-        const data = await response.json();
+        const rawText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+        }
+
         if (!response.ok) throw new Error(data.detail || 'Incorrect credentials');
 
         await AsyncStorage.setItem('bodhi_access_token', data.access_token);
@@ -92,7 +107,13 @@ export function AuthScreen({ navigation }: any) {
           }),
         });
 
-        const data = await response.json();
+        const rawText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+        }
         
         if (!response.ok) {
           let errorMsg = 'Could not create account';
@@ -135,7 +156,14 @@ export function AuthScreen({ navigation }: any) {
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       
-      const data = await response.json();
+      const rawText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (e) {
+        throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+      }
+
       if (!response.ok) throw new Error(data.detail || 'Failed to send reset code.');
 
       setAuthMode('reset'); 
@@ -154,7 +182,8 @@ export function AuthScreen({ navigation }: any) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/forgot-password`, {
+      // Endpoint should be /reset-password based on auth.py
+      const response = await fetch(`${API_URL}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -164,7 +193,14 @@ export function AuthScreen({ navigation }: any) {
         }),
       });
 
-      const data = await response.json();
+      const rawText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (e) {
+        throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+      }
+
       if (!response.ok) throw new Error(data.detail || 'Invalid or expired code.');
 
       Alert.alert('Success 🎉', 'Your password has been reset!');

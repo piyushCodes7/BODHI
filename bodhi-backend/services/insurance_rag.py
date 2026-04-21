@@ -1,31 +1,11 @@
 """
-/app/insurance/rag.py
+services/insurance_rag.py
 
-Insurance document RAG (Retrieval-Augmented Generation) pipeline.
-
-Pipeline
---------
-1. Upload PDF → extract text (PyMuPDF primary; mock-OCR fallback).
-2. Chunk text with overlap into fixed-size windows.
-3. Embed each chunk via a sentence-transformer model (or mock in tests).
-4. Store chunks + embeddings in an in-process vector store.
-5. Query: embed question → cosine-similarity retrieval → top-K chunks.
-6. Generate: strict JSON response from an LLM, grounded strictly in context.
-
-LLM contract
-------------
-The system prompt forbids the model from using outside knowledge.
-Output is always a JSON object with keys:
-  - simple_explanation : str
-  - clause_reference   : str | null
-  - confidence_level   : "High" | "Medium" | "Low"
-  - fallback           : str | null  (populated when answer not in docs)
-
-Confidence mapping
-------------------
-  cosine similarity ≥ 0.80  → High
-  cosine similarity ≥ 0.50  → Medium
-  cosine similarity <  0.50  → Low   (and fallback is set)
+Insurance document RAG pipeline using:
+  - PyMuPDF for PDF text extraction
+  - Gemini text-embedding-004 for embeddings (no local ML model needed)
+  - In-memory cosine-similarity vector store
+  - Gemini 1.5 Flash for strictly-grounded generation
 """
 
 from __future__ import annotations
@@ -38,7 +18,6 @@ import os
 import re
 import uuid
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -46,17 +25,19 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Config (env-overridable)
 # ---------------------------------------------------------------------------
-CHUNK_SIZE: int = int(os.getenv("RAG_CHUNK_SIZE", "400"))          # tokens ≈ chars / 4
+CHUNK_SIZE: int = int(os.getenv("RAG_CHUNK_SIZE", "600"))
 CHUNK_OVERLAP: int = int(os.getenv("RAG_CHUNK_OVERLAP", "80"))
-TOP_K: int = int(os.getenv("RAG_TOP_K", "4"))
-CONFIDENCE_HIGH: float = float(os.getenv("RAG_CONF_HIGH", "0.80"))
-CONFIDENCE_MED: float = float(os.getenv("RAG_CONF_MED", "0.50"))
-EMBEDDING_DIM: int = 384   # matches all-MiniLM-L6-v2
+TOP_K: int = int(os.getenv("RAG_TOP_K", "5"))
+CONFIDENCE_HIGH: float = float(os.getenv("RAG_CONF_HIGH", "0.75"))
+CONFIDENCE_MED: float = float(os.getenv("RAG_CONF_MED", "0.45"))
 
 FALLBACK_MESSAGE = (
     "I was unable to find a specific answer to your question within the "
     "provided insurance document. Please consult your insurer or a licensed advisor."
 )
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
 
 # ---------------------------------------------------------------------------
 # RAG response schema
@@ -81,21 +62,20 @@ class RAGResponse:
 # Text extraction
 # ---------------------------------------------------------------------------
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """
-    Primary: PyMuPDF (fitz).
-    Fallback: mock OCR returning a placeholder string (test/CI environments).
-    """
     try:
         import fitz  # PyMuPDF
-
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         pages: list[str] = []
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text("text")
-            # Annotate with page number so clause_reference can cite it
-            pages.append(f"[Page {page_num}]\n{text.strip()}")
+            if text.strip():
+                pages.append(f"[Page {page_num}]\n{text.strip()}")
         doc.close()
-        return "\n\n".join(pages)
+        full = "\n\n".join(pages)
+        if not full.strip():
+            raise ValueError("No text extracted")
+        logger.info("Extracted %d chars from %d pages", len(full), len(pages))
+        return full
     except ImportError:
         logger.warning("PyMuPDF not installed; using mock OCR fallback")
         return _mock_ocr(pdf_bytes)
@@ -105,15 +85,10 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 
 
 def _mock_ocr(pdf_bytes: bytes) -> str:
-    """
-    Deterministic mock for tests: returns a tiny synthetic insurance doc.
-    The content is keyed by a hash of the bytes so different PDFs produce
-    different (but stable) results.
-    """
     digest = hashlib.sha256(pdf_bytes).hexdigest()[:8]
     return (
         f"[Page 1]\n"
-        f"INSURANCE POLICY DOCUMENT (mock OCR — digest {digest})\n\n"
+        f"INSURANCE POLICY DOCUMENT (mock — digest {digest})\n\n"
         f"Clause 1.1 — Coverage: This policy covers hospitalisation expenses "
         f"up to INR 5,00,000 per annum.\n\n"
         f"Clause 2.3 — Exclusions: Pre-existing conditions are excluded for "
@@ -132,7 +107,7 @@ class Chunk:
     chunk_id: str
     document_id: str
     text: str
-    page_hint: str | None   # e.g. "Page 2" parsed from the [Page N] marker
+    page_hint: str | None
     char_start: int
     char_end: int
 
@@ -143,11 +118,6 @@ def chunk_text(
     chunk_size: int = CHUNK_SIZE,
     overlap: int = CHUNK_OVERLAP,
 ) -> list[Chunk]:
-    """
-    Split `text` into overlapping character windows.
-    Attempts to break on sentence boundaries ('. ') within a tolerance.
-    Extracts [Page N] markers to populate `page_hint`.
-    """
     chunks: list[Chunk] = []
     pos = 0
     text_len = len(text)
@@ -155,36 +125,34 @@ def chunk_text(
     while pos < text_len:
         end = min(pos + chunk_size, text_len)
 
-        # Try to snap end to sentence boundary within last 20% of window
+        # Snap to sentence boundary
         snap_start = max(pos, end - chunk_size // 5)
         boundary = text.rfind(". ", snap_start, end)
         if boundary != -1:
-            end = boundary + 2  # include ". "
+            end = boundary + 2
 
         window = text[pos:end]
 
-        # Extract page hint from nearest [Page N] marker
         page_hint: str | None = None
         match = re.search(r"\[Page (\d+)\]", window)
         if match:
             page_hint = f"Page {match.group(1)}"
         else:
-            # Walk backwards in text to find the last page marker before pos
             preceding = text[:pos]
-            back_match = list(re.finditer(r"\[Page (\d+)\]", preceding))
-            if back_match:
-                page_hint = f"Page {back_match[-1].group(1)}"
+            back_matches = list(re.finditer(r"\[Page (\d+)\]", preceding))
+            if back_matches:
+                page_hint = f"Page {back_matches[-1].group(1)}"
 
-        chunks.append(
-            Chunk(
+        stripped = window.strip()
+        if stripped:
+            chunks.append(Chunk(
                 chunk_id=str(uuid.uuid4()),
                 document_id=document_id,
-                text=window.strip(),
+                text=stripped,
                 page_hint=page_hint,
                 char_start=pos,
                 char_end=end,
-            )
-        )
+            ))
 
         pos = end - overlap
         if pos <= 0:
@@ -194,7 +162,7 @@ def chunk_text(
 
 
 # ---------------------------------------------------------------------------
-# Embedding  (real or mock)
+# Embedding (Gemini text-embedding-004 or deterministic mock fallback)
 # ---------------------------------------------------------------------------
 def _cosine_similarity(a: list[float], b: list[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b))
@@ -205,50 +173,61 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
     return dot / (mag_a * mag_b)
 
 
-class EmbeddingModel:
-    """
-    Wraps sentence-transformers with a keyword-frequency mock fallback.
-    The mock is deterministic and sufficient for unit tests.
-    """
+MOCK_DIM = 384
 
-    def __init__(self) -> None:
-        self._model = None
-        self._use_mock = False
-        self._load()
 
-    def _load(self) -> None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            self._model = SentenceTransformer("all-MiniLM-L6-v2")
-            logger.info("Sentence-transformer loaded: all-MiniLM-L6-v2")
-        except Exception as exc:
-            logger.warning("Sentence-transformer unavailable (%s); using mock embeddings", exc)
-            self._use_mock = True
+def _mock_embed(text: str) -> list[float]:
+    vec = [0.0] * MOCK_DIM
+    words = re.findall(r"\w+", text.lower())
+    for word in words:
+        idx = hash(word) % MOCK_DIM
+        vec[idx] += 1.0
+    mag = math.sqrt(sum(v * v for v in vec)) or 1.0
+    return [v / mag for v in vec]
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
-        if self._use_mock:
-            return [self._mock_embed(t) for t in texts]
-        embeddings = self._model.encode(texts, normalize_embeddings=True)
-        return [e.tolist() for e in embeddings]
 
-    @staticmethod
-    def _mock_embed(text: str) -> list[float]:
-        """
-        Deterministic keyword-frequency vector of dimension EMBEDDING_DIM.
-        Good enough for retrieval tests; not production-quality.
-        """
-        vec = [0.0] * EMBEDDING_DIM
-        words = re.findall(r"\w+", text.lower())
-        for word in words:
-            idx = hash(word) % EMBEDDING_DIM
-            vec[idx] += 1.0
-        # L2 normalise
-        mag = math.sqrt(sum(v * v for v in vec)) or 1.0
-        return [v / mag for v in vec]
+def _embed_with_gemini(texts: list[str]) -> list[list[float]]:
+    """Use Gemini's embedding API. Falls back to mock on any failure."""
+    if not GEMINI_API_KEY:
+        logger.warning("No GEMINI_API_KEY — using mock embeddings")
+        return [_mock_embed(t) for t in texts]
+    try:
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        results = []
+        # Batch in groups of 100
+        for i in range(0, len(texts), 100):
+            batch = texts[i:i + 100]
+            resp = client.models.embed_content(
+                model="models/gemini-embedding-001",
+                contents=batch,
+            )
+            for emb_obj in resp.embeddings:
+                results.append(emb_obj.values)
+        return results
+    except Exception as exc:
+        logger.warning("Gemini embedding failed (%s); using mock", exc)
+        return [_mock_embed(t) for t in texts]
+
+
+def _embed_query_with_gemini(query: str) -> list[float]:
+    if not GEMINI_API_KEY:
+        return _mock_embed(query)
+    try:
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        resp = client.models.embed_content(
+            model="models/gemini-embedding-001",
+            contents=query,
+        )
+        return resp.embeddings[0].values
+    except Exception as exc:
+        logger.warning("Gemini query embedding failed (%s); using mock", exc)
+        return _mock_embed(query)
 
 
 # ---------------------------------------------------------------------------
-# Vector store (in-process; replace with pgvector / Pinecone in prod)
+# Vector store
 # ---------------------------------------------------------------------------
 @dataclass
 class VectorStore:
@@ -279,20 +258,21 @@ class VectorStore:
 
 
 # ---------------------------------------------------------------------------
-# LLM caller
+# LLM: strict generation grounded in document context only
 # ---------------------------------------------------------------------------
-_SYSTEM_PROMPT = """You are an insurance document assistant for the Bodhi app.
-Your ONLY source of knowledge is the document excerpts provided below.
-You MUST NOT use outside knowledge, training data, or general insurance expertise.
-If the answer cannot be found in the excerpts, you must set fallback to the standard message.
+_SYSTEM_PROMPT = """You are an insurance document assistant for the BODHI app.
 
-Respond ONLY with a valid JSON object — no markdown, no prose, no code fences.
-The JSON must have exactly these keys:
-  "simple_explanation" : string — plain-English answer using only the excerpts.
-  "clause_reference"   : string or null — exact clause/page reference from the text.
-  "confidence_level"   : "High", "Medium", or "Low".
-  "fallback"           : string or null — standard fallback message if not found, else null.
-"""
+STRICT RULES — you MUST follow all of them:
+1. Your ONLY source of knowledge is the DOCUMENT EXCERPTS provided below.
+2. You MUST NOT use outside knowledge, training data, or general insurance expertise.
+3. If someone asks about anything unrelated to the insurance document (weather, math, general chat), respond with: {"simple_explanation": "I can only answer questions about your uploaded insurance policy document.", "clause_reference": null, "confidence_level": "Low", "fallback": "Please ask a question related to your insurance policy."}
+4. If the answer cannot be found in the excerpts, populate fallback.
+5. Respond ONLY with a valid JSON object — no markdown, no prose, no code fences.
+6. The JSON must have EXACTLY these four keys:
+   "simple_explanation" : string (plain English, friendly tone)
+   "clause_reference"   : string or null
+   "confidence_level"   : "High", "Medium", or "Low"
+   "fallback"           : string or null"""
 
 _FALLBACK_RESPONSE = RAGResponse(
     simple_explanation="The requested information could not be located in the document.",
@@ -301,61 +281,58 @@ _FALLBACK_RESPONSE = RAGResponse(
     fallback=FALLBACK_MESSAGE,
 )
 
+_OFF_TOPIC_RESPONSE = RAGResponse(
+    simple_explanation="I can only answer questions about your uploaded insurance policy document.",
+    clause_reference=None,
+    confidence_level="Low",
+    fallback="Please ask a question related to your insurance policy.",
+)
+
 
 def _extract_json_object(raw: str) -> dict[str, Any]:
-    """Extract and parse the first JSON object from model output."""
     cleaned = raw.strip()
-
-    # Handle fenced markdown responses defensively.
     if cleaned.startswith("```"):
-        cleaned = cleaned.strip("`")
-        cleaned = cleaned.replace("json\n", "", 1).strip()
-
+        cleaned = re.sub(r"^```[a-z]*\n?", "", cleaned)
+        cleaned = cleaned.rstrip("`").strip()
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start == -1 or end == -1 or end < start:
-        raise ValueError("No JSON object found in model response")
-
-    return json.loads(cleaned[start : end + 1])
+        raise ValueError(f"No JSON object found in: {cleaned[:200]}")
+    return json.loads(cleaned[start: end + 1])
 
 
 def _call_llm(context: str, question: str, confidence_level: str) -> RAGResponse:
-    """
-    Call Gemini with a grounded prompt.
-    Falls back to a structured error response on any failure.
-    """
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key:
-        logger.warning("GEMINI_API_KEY not set; returning mock LLM response")
+    if not GEMINI_API_KEY:
+        logger.warning("GEMINI_API_KEY not set; using mock LLM")
         return _mock_llm_response(context, question, confidence_level)
 
     try:
-        import google.generativeai as genai
+        from google import genai as google_genai
+        from google.genai import types
 
-        genai.configure(api_key=gemini_key)
+        client = google_genai.Client(api_key=GEMINI_API_KEY)
 
         user_message = (
             f"DOCUMENT EXCERPTS:\n{context}\n\n"
             f"QUESTION: {question}\n\n"
-            f"Confidence level based on retrieval: {confidence_level}\n\n"
-            f"Answer strictly from the excerpts above."
+            f"Retrieval confidence: {confidence_level}\n\n"
+            f"Answer strictly from the excerpts. Return valid JSON only."
         )
 
-        model = genai.GenerativeModel(
-            model_name=os.getenv("LLM_MODEL", "gemini-1.5-flash"),
-            system_instruction=_SYSTEM_PROMPT,
-        )
-
-        response = model.generate_content(
-            user_message,
-            generation_config={
-                "temperature": 0.0,
-                "response_mime_type": "application/json",
-            },
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=user_message,
+            config=types.GenerateContentConfig(
+                system_instruction=_SYSTEM_PROMPT,
+                temperature=0.0,
+                response_mime_type="application/json",
+            ),
         )
 
         raw = (response.text or "").strip()
+        logger.debug("LLM raw: %s", raw[:500])
         data = _extract_json_object(raw)
+
         return RAGResponse(
             simple_explanation=data.get("simple_explanation", ""),
             clause_reference=data.get("clause_reference"),
@@ -369,14 +346,8 @@ def _call_llm(context: str, question: str, confidence_level: str) -> RAGResponse
 
 
 def _mock_llm_response(context: str, question: str, confidence_level: str) -> RAGResponse:
-    """
-    Deterministic mock for test/dev environments.
-    Returns the first non-empty sentence from context as the explanation.
-    """
     sentences = [s.strip() for s in context.split(".") if len(s.strip()) > 20]
     explanation = sentences[0] + "." if sentences else "See document for details."
-
-    # Try to find a clause reference in the context
     clause_match = re.search(r"Clause\s+[\d.]+", context)
     page_match = re.search(r"\[Page (\d+)\]", context)
     clause_ref: str | None = None
@@ -384,9 +355,7 @@ def _mock_llm_response(context: str, question: str, confidence_level: str) -> RA
         clause_ref = clause_match.group(0)
     elif page_match:
         clause_ref = f"Page {page_match.group(1)}"
-
     fallback = FALLBACK_MESSAGE if confidence_level == "Low" else None
-
     return RAGResponse(
         simple_explanation=explanation,
         clause_reference=clause_ref,
@@ -396,18 +365,11 @@ def _mock_llm_response(context: str, question: str, confidence_level: str) -> RA
 
 
 # ---------------------------------------------------------------------------
-# RAG pipeline
+# RAG pipeline singleton
 # ---------------------------------------------------------------------------
 class InsuranceRAG:
-    """
-    Singleton-style RAG pipeline. Owns the vector store and embedding model.
-    In production replace the in-process vector store with pgvector.
-    """
-
     def __init__(self) -> None:
-        self.embedding_model = EmbeddingModel()
         self.vector_store = VectorStore()
-        # document_id → metadata
         self._documents: dict[str, dict[str, Any]] = {}
 
     def ingest(
@@ -416,19 +378,16 @@ class InsuranceRAG:
         document_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """
-        Full ingestion: extract → chunk → embed → store.
-        Returns ingestion summary.
-        """
         document_id = document_id or str(uuid.uuid4())
-
-        # Remove old chunks for this doc (re-ingestion)
         self.vector_store.clear_document(document_id)
 
         text = extract_text_from_pdf(pdf_bytes)
         chunks = chunk_text(text, document_id)
+        if not chunks:
+            raise ValueError("No text could be extracted from this PDF.")
+
         texts = [c.text for c in chunks]
-        embeddings = self.embedding_model.embed(texts)
+        embeddings = _embed_with_gemini(texts)
         self.vector_store.add(chunks, embeddings)
 
         self._documents[document_id] = {
@@ -445,14 +404,13 @@ class InsuranceRAG:
         return self._documents[document_id]
 
     def query(self, question: str, document_id: str | None = None) -> RAGResponse:
-        """
-        Retrieve top-K chunks and generate a grounded JSON response.
-        If document_id is specified, only chunks from that doc are considered.
-        """
-        q_embedding = self.embedding_model.embed([question])[0]
+        # No document ingested at all
+        if not self.vector_store.chunks:
+            return _FALLBACK_RESPONSE
+
+        q_embedding = _embed_query_with_gemini(question)
         candidates = self.vector_store.query(q_embedding, top_k=TOP_K * 2)
 
-        # Filter by document if requested
         if document_id:
             candidates = [(c, s) for c, s in candidates if c.document_id == document_id]
 
@@ -463,7 +421,6 @@ class InsuranceRAG:
 
         top_score = candidates[0][1]
 
-        # Map similarity score → confidence
         if top_score >= CONFIDENCE_HIGH:
             confidence = "High"
         elif top_score >= CONFIDENCE_MED:
@@ -471,10 +428,9 @@ class InsuranceRAG:
         else:
             confidence = "Low"
 
-        # Build context string for the LLM
         context_parts: list[str] = []
         for chunk, score in candidates:
-            header = f"[{chunk.page_hint or 'Unknown page'} | score={score:.3f}]"
+            header = f"[{chunk.page_hint or 'Unknown page'} | similarity={score:.3f}]"
             context_parts.append(f"{header}\n{chunk.text}")
         context = "\n\n---\n\n".join(context_parts)
 

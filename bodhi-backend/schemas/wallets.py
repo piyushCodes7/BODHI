@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from models.wallets import GroupWalletStatus, MemberRole, ProposalStatus
+from models.social import TripStatus as TripWalletStatus
 
 _ORM = ConfigDict(from_attributes=True, populate_by_name=True)
 PositivePaise = Annotated[int, Field(gt=0, description="Amount in paise")]
@@ -181,3 +182,7 @@ class TripCloseResponse(BaseModel):
     remaining_balance: int
     refunds: list[MemberRefundDetail]
     closed_at: datetime
+
+# Rebuild to resolve any forward references (required with `from __future__ import annotations`)
+TripWalletRead.model_rebuild()
+TripCloseResponse.model_rebuild()

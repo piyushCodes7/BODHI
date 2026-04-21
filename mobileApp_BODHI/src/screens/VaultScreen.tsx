@@ -11,9 +11,16 @@ import {
   Alert,
   Modal,
   FlatList,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import RazorpayCheckout from 'react-native-razorpay';
+import { BASE_URL } from '../api/client';
 import {
   Bell,
   ShieldCheck,
@@ -148,6 +155,101 @@ export function VaultScreen() {
     );
   };
 
+  const [balance, setBalance] = useState('0.00');
+  const [userName, setUserName] = useState('');
+  const [showAddMoney, setShowAddMoney] = useState(false);
+  const [amountToAdd, setAmountToAdd] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBalance();
+    }, [])
+  );
+
+  const fetchBalance = async () => {
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      const res = await fetch(`${BASE_URL}/transfers/balance`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance.toFixed(2));
+        setUserName(data.full_name.split(' ')[0] || 'User');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddMoney = async () => {
+    if (!amountToAdd || parseFloat(amountToAdd) <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      // 1. Create order
+      const res = await fetch(`${BASE_URL}/transfers/razorpay/create-order`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: parseFloat(amountToAdd),
+          currency: 'INR',
+          description: 'BODHI Wallet Top-up'
+        })
+      });
+      
+      const orderData = await res.json();
+      if (!res.ok) throw new Error(orderData.detail || 'Failed to create order');
+
+      // 2. Open Razorpay
+      const options = {
+        description: 'BODHI Wallet Top-up',
+        image: 'https://i.imgur.com/3g7nmJC.png',
+        currency: orderData.currency,
+        key: orderData.key_id,
+        amount: orderData.amount,
+        name: 'BODHI',
+        order_id: orderData.order_id,
+        theme: { color: '#8A5CFF' }
+      };
+
+      RazorpayCheckout.open(options).then(async (data: any) => {
+        // 3. Verify on success
+        const verifyRes = await fetch(`${BASE_URL}/transfers/razorpay/verify-and-credit`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: data.razorpay_order_id,
+            razorpay_payment_id: data.razorpay_payment_id,
+            razorpay_signature: data.razorpay_signature,
+            amount: parseFloat(amountToAdd)
+          })
+        });
+        
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok) {
+          Alert.alert('Success', verifyData.message);
+          setAmountToAdd('');
+          setShowAddMoney(false);
+          fetchBalance(); // Refresh balance
+        } else {
+          Alert.alert('Verification Failed', verifyData.detail || 'Payment was not credited.');
+        }
+      }).catch((error: any) => {
+        Alert.alert('Payment Failed', error.description || 'Payment was cancelled or failed.');
+      });
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
@@ -186,8 +288,7 @@ export function VaultScreen() {
 
           {/* Balance Area */}
           <View style={styles.balanceArea}>
-            <Text style={styles.greeting}>Hello, Govind 👋</Text>
-
+            <Text style={styles.greeting}>Hello, {userName || 'Govind'} 👋</Text>
             <View style={styles.rowCenter}>
               <Text style={styles.totalBalanceLabel}>TOTAL BALANCE</Text>
               <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -197,9 +298,8 @@ export function VaultScreen() {
 
             <View style={styles.balanceRow}>
               <Text style={styles.currencySymbol}>₹</Text>
-              <Text style={styles.balanceMain}>{balanceVisible ? '1,00,000' : '******'}</Text>
-              <Text style={styles.balanceDecimals}>{balanceVisible ? '.00' : ''}</Text>
-
+              <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '******'}</Text>
+              <Text style={styles.balanceDecimals}>{balanceVisible ? `.${balance.split('.')[1] || '00'}` : ''}</Text>
               <TouchableOpacity style={styles.hideBtn} onPress={() => setBalanceVisible(!balanceVisible)}>
                 <ShieldCheck size={12} color="#FFF" />
                 <Text style={styles.hideBtnText}>{balanceVisible ? 'Hide' : 'Show'}</Text>
@@ -215,15 +315,23 @@ export function VaultScreen() {
           {/* Hero Actions */}
           <View style={styles.heroActionsRow}>
             {[
-              { label: 'Scan & Pay', icon: ScanLine },
-              { label: 'Send Money', icon: Send },
-              { label: 'Add Money', icon: Plus },
-              { label: 'Request', icon: ArrowDownToLine },
+              { label: 'Scan & Pay', icon: ScanLine, screen: 'ScanPay' },
+              { label: 'Send Money', icon: Send, screen: 'SendMoney' },
+              { label: 'Add Money', icon: Plus, screen: null },
+              { label: 'Request', icon: ArrowDownToLine, screen: 'RequestMoney' },
             ].map((action, idx) => (
               <TouchableOpacity
                 key={idx}
                 style={styles.heroActionItem}
-                onPress={() => Alert.alert('Action', `${action.label} feature coming soon!`)}
+                onPress={() => {
+                  if (action.label === 'Add Money') {
+                    setShowAddMoney(true);
+                  } else if (action.screen) {
+                    navigation.navigate(action.screen);
+                  } else {
+                    Alert.alert('Coming Soon', `${action.label} will be available soon!`);
+                  }
+                }}
               >
                 <View style={styles.heroActionCircle}>
                   <action.icon size={22} color="#FFF" />
@@ -365,6 +473,55 @@ export function VaultScreen() {
       <Modal visible={!!activeInsight} animationType="slide" transparent>
         {renderInsightDetails()}
       </Modal>
+
+      {/* ── ADD MONEY MODAL ── */}
+      <Modal visible={showAddMoney} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Money to Wallet</Text>
+              <TouchableOpacity onPress={() => setShowAddMoney(false)}>
+                <EyeOff size={22} color="transparent" />
+                <Text style={{ color: '#FFF', fontSize: 16 }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>AMOUNT (₹)</Text>
+            <TextInput
+              style={styles.input}
+              value={amountToAdd}
+              onChangeText={setAmountToAdd}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              autoFocus
+            />
+
+            <TouchableOpacity
+              onPress={handleAddMoney}
+              disabled={isProcessing || !amountToAdd}
+              style={{ opacity: isProcessing || !amountToAdd ? 0.6 : 1, marginTop: 16 }}
+            >
+              <LinearGradient
+                colors={['#8E2DE2', '#4A00E0']}
+                style={styles.payBtn}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              >
+                {isProcessing ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <Text style={[styles.payBtnText, { color: '#FFF' }]}>
+                    PROCEED TO PAY
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -458,6 +615,22 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
   dotActive: { width: 16, backgroundColor: '#A855F7' },
 
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+  modalSheet: {
+    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    padding: 24, paddingBottom: 40,
+    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+  },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+  inputLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16,
+    color: '#FFF', fontSize: 18, fontWeight: '600', marginBottom: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
+  payBtnText: { fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
   // Insight Details Modal Specs
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },

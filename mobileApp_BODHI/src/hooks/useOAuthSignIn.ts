@@ -39,7 +39,7 @@ export function useOAuthSignIn() {
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo = await GoogleSignin.signIn();
-      const idToken = userInfo.idToken;
+      const idToken = (userInfo as any).idToken || (userInfo as any).data?.idToken;
 
       if (!idToken) throw new Error('Google Sign-In did not return an id_token.');
 
