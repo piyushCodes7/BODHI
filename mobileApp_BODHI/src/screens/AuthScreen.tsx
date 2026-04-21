@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { 
-  Smartphone, 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  ChevronRight, 
+import {
+  Smartphone,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ChevronRight,
   ShieldCheck,
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
@@ -36,7 +36,7 @@ export function AuthScreen({ navigation }: any) {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Form State
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -49,7 +49,7 @@ export function AuthScreen({ navigation }: any) {
 
   const handleOAuthSuccess = (accessToken: string, isNewUser: boolean) => {
     console.log("OAuth Success Token:", accessToken);
-    navigation.replace('Main'); 
+    navigation.replace('Main');
   };
 
   const handleStandardAuth = async () => {
@@ -90,7 +90,7 @@ export function AuthScreen({ navigation }: any) {
         if (!response.ok) throw new Error(data.detail || 'Incorrect credentials');
 
         await AsyncStorage.setItem('bodhi_access_token', data.access_token);
-        
+
         navigation.replace('Main');
 
       } else if (authMode === 'signup') {
@@ -147,7 +147,7 @@ export function AuthScreen({ navigation }: any) {
       Alert.alert('Email Required', 'Please enter your email address above.');
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/forgot-password`, {
@@ -155,7 +155,6 @@ export function AuthScreen({ navigation }: any) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
-      
       const rawText = await response.text();
       let data;
       try {
@@ -166,7 +165,7 @@ export function AuthScreen({ navigation }: any) {
 
       if (!response.ok) throw new Error(data.detail || 'Failed to send reset code.');
 
-      setAuthMode('reset'); 
+      setAuthMode('reset');
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
@@ -186,10 +185,10 @@ export function AuthScreen({ navigation }: any) {
       const response = await fetch(`${API_URL}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: email.trim().toLowerCase(), 
-          otp, 
-          new_password: newPassword 
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp,
+          new_password: newPassword
         }),
       });
 
@@ -204,7 +203,7 @@ export function AuthScreen({ navigation }: any) {
       if (!response.ok) throw new Error(data.detail || 'Invalid or expired code.');
 
       Alert.alert('Success 🎉', 'Your password has been reset!');
-      setAuthMode('login'); 
+      setAuthMode('login');
       setOtp('');
       setNewPassword('');
     } catch (error: any) {
@@ -218,10 +217,10 @@ export function AuthScreen({ navigation }: any) {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Image 
-        source={require('../../assets/images/bodhi-logo.png')} 
+      <Image
+        source={require('../../assets/images/bodhi-logo.png')}
         style={styles.logoImage}
-        resizeMode="contain" 
+        resizeMode="contain"
       />
       <Text style={styles.tagline}>
         Your money. <Text style={styles.taglineHighlight}>Alive.</Text>
@@ -231,7 +230,7 @@ export function AuthScreen({ navigation }: any) {
 
   const renderToggle = () => (
     <View style={styles.toggleContainer}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.toggleBtn}
         onPress={() => setAuthMode('login')}
         activeOpacity={0.8}
@@ -248,8 +247,8 @@ export function AuthScreen({ navigation }: any) {
           <Text style={styles.toggleText}>Login</Text>
         )}
       </TouchableOpacity>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.toggleBtn}
         onPress={() => setAuthMode('signup')}
         activeOpacity={0.8}
@@ -279,19 +278,19 @@ export function AuthScreen({ navigation }: any) {
         end={{ x: 1, y: 1 }}
       />
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {renderHeader()}
-          
+
           <View style={styles.glassCard}>
-            
+
             {/* ─── Standard Login / Signup Flow ─── */}
             {(authMode === 'login' || authMode === 'signup') && (
               <>
@@ -303,7 +302,7 @@ export function AuthScreen({ navigation }: any) {
                       <View style={styles.inputWrapper}>
                         <TextInput
                           style={styles.input}
-                          placeholder="e.g., Govind Jindal"
+                          placeholder="e.g., Jane Doe"
                           placeholderTextColor="rgba(255,255,255,0.4)"
                           value={name}
                           onChangeText={setName}
@@ -350,8 +349,8 @@ export function AuthScreen({ navigation }: any) {
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
                     />
-                    <TouchableOpacity 
-                      style={styles.eyeBtn} 
+                    <TouchableOpacity
+                      style={styles.eyeBtn}
                       onPress={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff size={18} color="#A855F7" /> : <Eye size={18} color="#A855F7" />}
@@ -392,10 +391,10 @@ export function AuthScreen({ navigation }: any) {
                     <View style={styles.dividerLine} />
                   </View>
                   <View style={styles.socialRow}>
-                    
+
                     {/* Your existing functioning Social Component */}
                     <SocialAuthButtons onSuccess={handleOAuthSuccess} />
-                    
+
                     <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Phone', 'Coming soon!')}>
                       <Smartphone size={22} color="#FFF" />
                     </TouchableOpacity>
@@ -405,7 +404,7 @@ export function AuthScreen({ navigation }: any) {
                   <View style={styles.securityFooter}>
                     <ShieldCheck size={14} color="#A855F7" />
                     <Text style={styles.securityText}>
-                      Your data is <Text style={{color: Colors.neonLime, fontWeight: '700'}}>100% secure</Text> with bank-level encryption
+                      Your data is <Text style={{ color: Colors.neonLime, fontWeight: '700' }}>100% secure</Text> with bank-level encryption
                     </Text>
                   </View>
                 </View>
@@ -516,20 +515,20 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingTop: 60, paddingBottom: 40 },
   header: { alignItems: 'center', marginBottom: 30 },
-  
+
   logoImage: { width: 180, height: 60, marginBottom: 12, tintColor: '#FFF' },
   tagline: { fontSize: 15, fontWeight: '500', color: '#FFF' },
   taglineHighlight: { color: Colors.neonLime, fontWeight: '800' },
 
   // ── GLASS CARD ──
-  glassCard: { 
-    backgroundColor: 'rgba(15, 10, 30, 0.6)', 
-    borderRadius: 30, 
-    padding: Spacing.xl, 
+  glassCard: {
+    backgroundColor: 'rgba(15, 10, 30, 0.6)',
+    borderRadius: 30,
+    padding: Spacing.xl,
     borderWidth: 1,
     borderColor: 'rgba(255, 50, 150, 0.3)',
   },
-  
+
   // ── TOGGLE ──
   toggleContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
   toggleBtn: { flex: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', height: 44 },
@@ -541,7 +540,7 @@ const styles = StyleSheet.create({
   form: { marginBottom: Spacing.sm },
   flowTitle: { fontSize: 24, fontWeight: '800', color: '#FFF', marginBottom: 8, textAlign: 'center' },
   flowSub: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 24, textAlign: 'center', lineHeight: 20 },
-  
+
   inputLabel: { fontSize: 11, fontWeight: '800', color: '#FFF', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.md, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   inputIcon: { marginLeft: 16, marginRight: 12 },
@@ -561,11 +560,11 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
   dividerText: { marginHorizontal: 12, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
   socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginBottom: Spacing.xl },
-  
+
   // NOTE: If your SocialAuthButtons look out of place, go into your SocialAuthButtons.tsx file 
   // and update their background color to 'rgba(255,255,255,0.05)' to match this dark theme!
   socialBtn: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  
+
   securityFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   securityText: { color: 'rgba(255,255,255,0.5)', fontSize: 11, marginLeft: 6 },
 });

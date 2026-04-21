@@ -130,9 +130,11 @@ export function GroupTripWalletScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
-        <Text style={{ fontSize: 22 }}>🛒</Text>
-      </TouchableOpacity>
+      <View style={styles.fabShadowWrapper}>
+        <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
+          <Text style={{ fontSize: 22 }}>🛒</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -193,13 +195,15 @@ export function ImmuneSystemAlertScreen({ navigation }: any) {
 
       {/* Actions */}
       <View style={aStyles.actions}>
-        <TouchableOpacity
-          style={aStyles.cancelBtn}
-          activeOpacity={0.88}
-          onPress={() => navigation?.goBack()}
-        >
-          <Text style={aStyles.cancelBtnText}>✕  Cancel</Text>
-        </TouchableOpacity>
+        <View style={aStyles.buttonShadowWrapper}>
+          <TouchableOpacity
+            style={aStyles.cancelBtn}
+            activeOpacity={0.88}
+            onPress={() => navigation?.goBack()}
+          >
+            <Text style={aStyles.cancelBtnText}>✕  Cancel</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={aStyles.proceedBtn} activeOpacity={0.8}>
           <Text style={aStyles.proceedBtnText}>✓  Proceed</Text>
         </TouchableOpacity>
@@ -467,20 +471,25 @@ const styles = StyleSheet.create({
     color:       Colors.textMuted,
   },
 
-  fab: {
+  fabShadowWrapper: {
     position:        'absolute',
     bottom:          110,
     right:           S.xxl,
     width:           56,
     height:          56,
     borderRadius:    28,
-    backgroundColor: Colors.neonLime,
-    alignItems:      'center',
-    justifyContent:  'center',
     shadowColor:     Colors.neonLime,
     shadowOpacity:   0.4,
     shadowRadius:    16,
     elevation:       12,
+  },
+  fab: {
+    width:           '100%',
+    height:          '100%',
+    borderRadius:    28,
+    backgroundColor: Colors.neonLime,
+    alignItems:      'center',
+    justifyContent:  'center',
   },
 });
 
@@ -634,15 +643,20 @@ const aStyles = StyleSheet.create({
     gap:         S.lg,
     zIndex:      10,
   },
-  cancelBtn: {
-    backgroundColor: Colors.neonLime,
+  buttonShadowWrapper: {
+    width:           '100%',
     borderRadius:    Radius.lg,
-    paddingVertical: 22,
-    alignItems:      'center',
     shadowColor:     Colors.neonLime,
     shadowOpacity:   0.4,
     shadowRadius:    20,
     elevation:       10,
+  },
+  cancelBtn: {
+    width:           '100%',
+    backgroundColor: Colors.neonLime,
+    borderRadius:    Radius.lg,
+    paddingVertical: 22,
+    alignItems:      'center',
   },
   cancelBtnText: {
     fontFamily:  Fonts.headline,

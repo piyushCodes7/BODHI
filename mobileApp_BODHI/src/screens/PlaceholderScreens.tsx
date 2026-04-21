@@ -7,8 +7,11 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, StatusBar } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { Colors, Spacing, Radius, FontSize } from '../theme/tokens';
+import { useNavigation } from '@react-navigation/native';
+import { ArrowLeft } from 'lucide-react-native';
 
 // ─── Shared Placeholder Shell ─────────────────────────────────────────────────
 
@@ -22,42 +25,123 @@ interface PlaceholderProps {
 
 const PlaceholderShell: React.FC<PlaceholderProps> = ({
   icon, title, subtitle, ctaLabel, onCta,
-}) => (
-  <View style={placeholderStyles.root}>
-    <Text style={placeholderStyles.icon}>{icon}</Text>
-    <Text style={placeholderStyles.title}>{title}</Text>
-    <Text style={placeholderStyles.subtitle}>{subtitle}</Text>
-    {ctaLabel && onCta && (
-      <TouchableOpacity style={placeholderStyles.ctaBtn} onPress={onCta}>
-        <Text style={placeholderStyles.ctaText}>{ctaLabel}</Text>
+}) => {
+  const navigation = useNavigation();
+  return (
+    <LinearGradient 
+      colors={['#05001F', '#0D0149', '#05001F']} 
+      style={placeholderStyles.root}
+    >
+      <StatusBar barStyle="light-content" />
+      
+      <TouchableOpacity 
+        style={placeholderStyles.backButton} 
+        onPress={() => navigation.goBack()}
+      >
+        <ArrowLeft size={24} color="#FFF" />
       </TouchableOpacity>
-    )}
-  </View>
-);
+
+      <View style={placeholderStyles.content}>
+        <View style={placeholderStyles.iconContainer}>
+          <Text style={placeholderStyles.icon}>{icon}</Text>
+        </View>
+        
+        <Text style={placeholderStyles.title}>{title}</Text>
+        <Text style={placeholderStyles.subtitle}>{subtitle}</Text>
+        
+        {ctaLabel && onCta && (
+          <TouchableOpacity 
+            style={placeholderStyles.ctaBtn} 
+            onPress={onCta}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[Colors.neonLime, '#A3FF00']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={placeholderStyles.ctaGradient}
+            >
+              <Text style={placeholderStyles.ctaText}>{ctaLabel}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+      </View>
+    </LinearGradient>
+  );
+};
 
 const placeholderStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.bgDeep,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xl,
-    gap: Spacing.md,
   },
-  icon:     { fontSize: 56 },
-  title:    { color: Colors.textPrimary,   fontSize: FontSize.xl,  fontWeight: '700', textAlign: 'center' },
-  subtitle: { color: Colors.textSecondary, fontSize: FontSize.md,  textAlign: 'center', lineHeight: 22 },
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  icon: { 
+    fontSize: 56 
+  },
+  title: { 
+    color: '#FFF',
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+    letterSpacing: -0.5,
+  },
+  subtitle: { 
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 20,
+    marginBottom: Spacing.xl,
+  },
   ctaBtn: {
-    marginTop: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
-    backgroundColor: Colors.neonLime,
     borderRadius: Radius.full,
+    overflow: 'hidden',
+    shadowColor: Colors.neonLime,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  ctaGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaText: {
-    color: Colors.textInverse,
-    fontWeight: '700',
-    fontSize: FontSize.md,
+    color: '#000',
+    fontWeight: '800',
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });
 
@@ -86,8 +170,6 @@ export const SecuritySettingsScreen: React.FC = () => (
   />
 );
 
-// ─── PaperTradeScreen ─────────────────────────────────────────────────────────
-
 export const PaperTradeScreen: React.FC = () => (
   <PlaceholderShell
     icon="📈"
@@ -98,5 +180,34 @@ export const PaperTradeScreen: React.FC = () => (
   />
 );
 
-// Re-export as default for PaperTradeScreen (used in stack)
+export const VentureClubScreen: React.FC = () => (
+  <PlaceholderShell
+    icon="💎"
+    title="Venture Club"
+    subtitle="Gain access to exclusive early-stage deals and private equity rounds."
+    ctaLabel="Join Waitlist"
+    onCta={() => Alert.alert('Coming Soon', 'Venture Club access is currently invite-only.')}
+  />
+);
+
+export const TravelBookingScreen: React.FC = () => (
+  <PlaceholderShell
+    icon="✈️"
+    title="Travel Booking"
+    subtitle="Book luxury flights and stays directly with your BODHI rewards."
+    ctaLabel="Explore Deals"
+    onCta={() => Alert.alert('Coming Soon', 'Travel concierge launching in Phase 4.')}
+  />
+);
+
+export const MarketScreen: React.FC = () => (
+  <PlaceholderShell
+    icon="📊"
+    title="Market Insights"
+    subtitle="Real-time global market data and predictive AI analytics."
+    ctaLabel="View Market"
+    onCta={() => Alert.alert('Coming Soon', 'Market data integration in progress.')}
+  />
+);
+
 export default PaperTradeScreen;

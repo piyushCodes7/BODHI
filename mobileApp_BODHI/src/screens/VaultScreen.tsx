@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,22 +9,24 @@ import {
   Image,
   StatusBar,
   Alert,
-  Modal,
   FlatList,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Modal,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import RazorpayCheckout from 'react-native-razorpay';
 import { BASE_URL } from '../api/client';
+import { BlurView } from '@react-native-community/blur';
 import {
   Bell,
   ShieldCheck,
   EyeOff,
+  Eye,
   Info,
   ScanLine,
   Send,
@@ -47,6 +49,7 @@ import {
 import { Colors, Spacing, Radius } from '../theme/tokens';
 import { InsuranceScreen } from './InsuranceScreen';
 import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
+import { NotificationAPI, UsersAPI } from '../api/client';
 
 const { width: W } = Dimensions.get('window');
 
@@ -66,9 +69,76 @@ const QUICK_SERVICES = [
 
 export function VaultScreen() {
   const navigation = useNavigation<any>();
-  const [balanceVisible, setBalanceVisible] = useState(true);
+  const [balanceVisible, setBalanceVisible] = useState(false);
   const [showInsurance, setShowInsurance] = useState(false);
   const [activeInsight, setActiveInsight] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [userName, setUserName] = useState('User');
+  const [userInitial, setUserInitial] = useState('U');
+  const [hasPassword, setHasPassword] = useState(true);
+
+  // Razorpay / Balance State
+  const [balance, setBalance] = useState('0.00');
+  const [showAddMoney, setShowAddMoney] = useState(false);
+  const [amountToAdd, setAmountToAdd] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Password Modal State
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  // Fetch user data from storage
+  const fetchUserData = useCallback(async () => {
+    try {
+      const storedName = await AsyncStorage.getItem('user_full_name');
+      if (storedName) {
+        setUserName(storedName.split(' ')[0]); // Use first name
+        setUserInitial(storedName.charAt(0).toUpperCase());
+      }
+      // Also fetch from backend to get live security status
+      const profile = await UsersAPI.fetchProfile();
+      setHasPassword(profile.has_password);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  }, []);
+
+  // Fetch balance from backend
+  const fetchBalance = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      const res = await fetch(`${BASE_URL}/transfers/balance`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance.toFixed(2));
+        setUserName(data.full_name.split(' ')[0] || 'User');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  // Fetch unread notifications count
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const notifications = await NotificationAPI.fetchNotifications();
+      const unread = notifications.filter((n: any) => !n.is_read).length;
+      setUnreadCount(unread);
+    } catch (error) {
+      console.error("Failed to fetch unread count:", error);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUnreadCount();
+      fetchUserData();
+      fetchBalance();
+    }, [fetchUnreadCount, fetchUserData, fetchBalance])
+  );
 
   // ─── DYNAMIC INSIGHTS MATH ───
   // Scans the entire Mock Database (3-month average calculation)
@@ -117,7 +187,7 @@ export function VaultScreen() {
               <Text style={styles.modalCloseText}>Done</Text>
             </TouchableOpacity>
           </View>
-          <FlatList 
+          <FlatList
             data={filtered}
             keyExtractor={(t) => t.id}
             showsVerticalScrollIndicator={false}
@@ -140,7 +210,7 @@ export function VaultScreen() {
                       </Text>
                     </View>
                   </View>
-                  
+
                   <View style={styles.insightRowRight}>
                     <Text style={[styles.insightRowAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
                       {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -155,31 +225,29 @@ export function VaultScreen() {
     );
   };
 
-  const [balance, setBalance] = useState('0.00');
-  const [userName, setUserName] = useState('');
-  const [showAddMoney, setShowAddMoney] = useState(false);
-  const [amountToAdd, setAmountToAdd] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const handleToggleBalance = () => {
+    if (balanceVisible) {
+      setBalanceVisible(false);
+    } else {
+      setPassword('');
+      setIsPasswordModalVisible(true);
+    }
+  };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchBalance();
-    }, [])
-  );
-
-  const fetchBalance = async () => {
+  const verifyBalancePassword = async () => {
+    if (hasPassword && !password) {
+      Alert.alert("Required", "Please enter your password to view the balance.");
+      return;
+    }
+    setIsVerifying(true);
     try {
-      const token = await AsyncStorage.getItem('bodhi_access_token');
-      const res = await fetch(`${BASE_URL}/transfers/balance`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setBalance(data.balance.toFixed(2));
-        setUserName(data.full_name.split(' ')[0] || 'User');
-      }
-    } catch (e) {
-      console.error(e);
+      await UsersAPI.verifyPassword(password);
+      setBalanceVisible(true);
+      setIsPasswordModalVisible(false);
+    } catch (error: any) {
+      Alert.alert("Verification Failed", error.response?.data?.detail || "Incorrect password.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -265,12 +333,16 @@ export function VaultScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.avatarContainer}>
+            <TouchableOpacity 
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Profile')}
+              style={styles.avatarContainer}
+            >
               <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>G</Text>
+                <Text style={styles.avatarText}>{userInitial}</Text>
               </View>
               <View style={styles.onlineDot} />
-            </View>
+            </TouchableOpacity>
 
             <Image
               source={require('../../assets/images/bodhi-logo.png')}
@@ -279,20 +351,25 @@ export function VaultScreen() {
             />
 
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconBtn} onPress={() => Alert.alert('Notifications', 'Coming soon!')}>
+              <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
                 <Bell size={20} color="#FFF" />
-                <View style={styles.notifBadge} />
+                {unreadCount > 0 && <View style={styles.notifBadge} />}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Balance Area */}
           <View style={styles.balanceArea}>
-            <Text style={styles.greeting}>Hello, {userName || 'Govind'} 👋</Text>
+            <Text style={styles.greeting}>Hello, {userName || 'User'} 👋</Text>
+
             <View style={styles.rowCenter}>
               <Text style={styles.totalBalanceLabel}>TOTAL BALANCE</Text>
-              <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <EyeOff size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
+              <TouchableOpacity onPress={handleToggleBalance} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                {balanceVisible ? (
+                  <Eye size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
+                ) : (
+                  <EyeOff size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
+                )}
               </TouchableOpacity>
             </View>
 
@@ -300,7 +377,8 @@ export function VaultScreen() {
               <Text style={styles.currencySymbol}>₹</Text>
               <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '******'}</Text>
               <Text style={styles.balanceDecimals}>{balanceVisible ? `.${balance.split('.')[1] || '00'}` : ''}</Text>
-              <TouchableOpacity style={styles.hideBtn} onPress={() => setBalanceVisible(!balanceVisible)}>
+
+              <TouchableOpacity style={styles.hideBtn} onPress={handleToggleBalance}>
                 <ShieldCheck size={12} color="#FFF" />
                 <Text style={styles.hideBtnText}>{balanceVisible ? 'Hide' : 'Show'}</Text>
               </TouchableOpacity>
@@ -446,8 +524,8 @@ export function VaultScreen() {
           </View>
 
           {/* DEDICATED TRANSACTION HISTORY BUTTON */}
-          <TouchableOpacity 
-            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]} 
+          <TouchableOpacity
+            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]}
             onPress={() => navigation.navigate('TransactionHistory')}
             activeOpacity={0.8}
           >
@@ -484,8 +562,7 @@ export function VaultScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Money to Wallet</Text>
               <TouchableOpacity onPress={() => setShowAddMoney(false)}>
-                <EyeOff size={22} color="transparent" />
-                <Text style={{ color: '#FFF', fontSize: 16 }}>✕</Text>
+                <Text style={{ color: '#FFF', fontSize: 24 }}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -522,12 +599,145 @@ export function VaultScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* ─── Security Password Modal ─── */}
+      <Modal
+        visible={isPasswordModalVisible}
+        transparent
+        animationType="fade"
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <ShieldCheck size={24} color={Colors.neonLime} />
+              <Text style={styles.modalTitle}>Security Check</Text>
+              <Text style={styles.modalSub}>
+                {hasPassword 
+                  ? 'Enter your password to reveal your account balance.' 
+                  : 'Confirm to reveal your account balance.'}
+              </Text>
+            </View>
+
+            {hasPassword && (
+              <View style={styles.modalInputWrapper}>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter Password"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  autoFocus
+                />
+              </View>
+            )}
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setIsPasswordModalVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalConfirm} 
+                onPress={verifyBalancePassword}
+                disabled={isVerifying}
+              >
+                {isVerifying ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <Text style={styles.modalConfirmText}>
+                    {hasPassword ? 'Verify' : 'Confirm'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05050A' },
+  root: {
+    flex: 1,
+    backgroundColor: '#05001F',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    borderRadius: 32,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 12,
+  },
+  modalSub: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  modalInputWrapper: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 24,
+  },
+  modalInput: {
+    height: 56,
+    paddingHorizontal: 20,
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancel: {
+    flex: 1,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalConfirm: {
+    flex: 1.5,
+    height: 50,
+    backgroundColor: Colors.neonLime,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalConfirmText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 
   heroSection: {
     paddingTop: 60,
@@ -638,7 +848,7 @@ const styles = StyleSheet.create({
   modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
   modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
-  
+
   insightRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   insightRowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
   insightIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 12 },

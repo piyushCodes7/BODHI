@@ -189,6 +189,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
               <View style={styles.orbContainer}>
                 <View style={styles.orbRing1} />
                 <View style={styles.orbRing2} />
+                <View style={styles.orbShadowLayer} />
                 <LinearGradient colors={['#4A00E0', '#FF007F']} style={styles.orbCore} start={{x:0, y:0}} end={{x:1, y:1}}>
                    <View style={styles.orbInnerCutout}>
                      <Diamond size={28} color={Colors.neonLime} />
@@ -253,18 +254,20 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
               </View>
 
               {/* Main Upload Action */}
-              <TouchableOpacity style={styles.uploadMainBtn} onPress={handleUpload} disabled={uploading}>
-                 <View style={styles.uploadIconCircle}>
-                    <CloudUpload size={22} color="#FFF" />
-                 </View>
-                 <View style={styles.uploadBtnTextWrap}>
-                    <Text style={styles.uploadBtnTitle}>UPLOAD POLICY PDF</Text>
-                    <Text style={styles.uploadBtnSub}>We support PDF up to 25MB</Text>
-                 </View>
-                 <View style={styles.uploadArrowCircle}>
-                    <ChevronRight size={20} color="#000" />
-                 </View>
-              </TouchableOpacity>
+              <View style={styles.buttonShadowWrapper}>
+                <TouchableOpacity style={styles.uploadMainBtn} onPress={handleUpload} disabled={uploading}>
+                   <View style={styles.uploadIconCircle}>
+                      <CloudUpload size={22} color="#FFF" />
+                   </View>
+                   <View style={styles.uploadBtnTextWrap}>
+                      <Text style={styles.uploadBtnTitle}>UPLOAD POLICY PDF</Text>
+                      <Text style={styles.uploadBtnSub}>We support PDF up to 25MB</Text>
+                   </View>
+                   <View style={styles.uploadArrowCircle}>
+                      <ChevronRight size={20} color="#000" />
+                   </View>
+                </TouchableOpacity>
+              </View>
 
               {/* Divider */}
               <View style={styles.dividerRow}>
@@ -406,7 +409,17 @@ const styles = StyleSheet.create({
   orbContainer: { alignItems: 'center', justifyContent: 'center', height: 160, marginTop: 20, marginBottom: 20 },
   orbRing1: { position: 'absolute', width: 140, height: 140, borderRadius: 70, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', opacity: 0.5 },
   orbRing2: { position: 'absolute', width: 190, height: 190, borderRadius: 95, borderWidth: 1, borderColor: 'rgba(168,85,247,0.1)', opacity: 0.3 },
-  orbCore: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 20, elevation: 10 },
+  orbShadowLayer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 50,
+    backgroundColor: '#1A0033',
+    shadowColor: '#A855F7',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  orbCore: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
   orbInnerCutout: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#1A0033', alignItems: 'center', justifyContent: 'center' },
 
   mainTitle: { fontSize: 32, fontWeight: '800', color: '#FFF', textAlign: 'center', lineHeight: 38, marginBottom: 16, letterSpacing: -0.5 },
@@ -421,7 +434,16 @@ const styles = StyleSheet.create({
   featureBadge: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
   featureBadgeText: { fontSize: 10, fontWeight: '600' },
 
-  uploadMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.neonLime, borderRadius: 20, padding: 12, shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+  buttonShadowWrapper: {
+    width: '100%',
+    borderRadius: 20,
+    shadowColor: Colors.neonLime,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  uploadMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.neonLime, borderRadius: 20, padding: 12 },
   uploadIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
   uploadBtnTextWrap: { flex: 1 },
   uploadBtnTitle: { fontSize: 15, fontWeight: '800', color: '#000', marginBottom: 2 },

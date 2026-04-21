@@ -32,16 +32,16 @@ export function GradientCard({ children, style, colors }: GradientCardProps) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: Radius.lg,
-    overflow:     'hidden',
-    position:     'relative',
+    overflow: 'hidden',
+    position: 'relative',
   },
   blob: {
-    position:      'absolute',
-    top:           -40,
-    right:         -40,
-    width:         140,
-    height:        140,
-    borderRadius:  70,
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     backgroundColor: 'rgba(255,255,255,0.10)',
   },
   content: {

@@ -52,6 +52,9 @@ async def generate_bodhi_speech(text: str) -> str:
                 error_msg += f" | Body: {e.response.text}"
             print(error_msg)
             raise HTTPException(status_code=502, detail="Bodhi's voice circuits are currently offline.")
+        except Exception as e:
+            print(f"❌ UNEXPECTED TTS CRASH: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 async def transcribe_audio(file_bytes: bytes, filename: str) -> str:
@@ -97,3 +100,6 @@ async def transcribe_audio(file_bytes: bytes, filename: str) -> str:
                 error_msg += f" | Body: {e.response.text}"
             print(error_msg)
             raise HTTPException(status_code=502, detail="Bodhi's ears are currently offline.")
+        except Exception as e:
+            print(f"❌ UNEXPECTED STT CRASH: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
