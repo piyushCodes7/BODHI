@@ -1,6 +1,6 @@
 /**
- * OnboardingScreen.tsx
- * BODHI – Cyber-Glass Onboarding
+ * OnboardingScreen.tsx (Minimalist Redesign)
+ * BODHI
  */
 
 import React, { useCallback, useRef, useState } from 'react';
@@ -13,81 +13,47 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import Animated, {
-  Extrapolation,
-  SharedValue,
-  interpolate,
   runOnJS,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
 
 import { GlassCard, OnboardingStep } from './GlassCard';
 import { MomentumArc } from './MomentumArc';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STEPS: OnboardingStep[] = [
   {
     id: 0,
     title: 'Money that moves\nwith you',
-    subtitle: 'Track spending, savings, and goals — all in one cosmic dashboard built for how you actually live.',
-    emoji: '🌌',
-    accentColor: '#22C55E',
-    tag: 'WELCOME TO BODHI',
+    subtitle: 'Track group expenses, settle trips instantly, and manage your insurance policies—all in one place.',
+    image: require('../../assets/images/step0_travel.png'), 
+    accentColor: '#111827',
   },
   {
     id: 1,
     title: 'Micro-Investment\nClubs',
     subtitle: 'Pool funds with your friends to invest together. Vote on trades, split the profits, and grow as a squad.',
-    emoji: '🤝',
-    accentColor: '#06B6D4',
-    tag: 'MULTIPLAYER FINANCE',
+    image: require('../../assets/images/step1_invest.png'),
+    accentColor: '#111827',
   },
   {
     id: 2,
     title: 'Your Financial\nImmune System',
-    subtitle: 'Powered by Saheli. It runs invisibly in the background, only surfacing when it detects something worth your attention.',
-    emoji: '🛡️',
-    accentColor: '#7C3AED',
-    tag: 'INVISIBLE AI',
+    subtitle: 'A proactive AI that runs invisibly in the background. It surfaces exactly once when it detects something worth your attention.',
+    image: require('../../assets/images/step2_ai.png'),
+    accentColor: '#111827',
   },
   {
     id: 3,
-    title: 'Execute with\nPrecision',
-    subtitle: 'Lightning-fast execution directly to the exchange. No delays, no hidden fees. Just pure momentum.',
-    emoji: '⚡',
-    accentColor: '#F59E0B',
-    tag: 'LIVE MARKETS',
+    title: 'Simulate &\nExecute',
+    subtitle: 'Master the markets with our simulator, then execute live trades directly to the exchange with pure momentum.',
+    image: require('../../assets/images/step3_trade.png'),
+    accentColor: '#111827',
   },
 ];
-
-const BackgroundCanvas = () => (
-  <View style={StyleSheet.absoluteFillObject}>
-    <Svg width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-      <Defs>
-        <RadialGradient id="bgGlow" cx="50%" cy="0%" r="80%">
-          <Stop offset="0%" stopColor="#1E1B4B" stopOpacity="1" />
-          <Stop offset="100%" stopColor="#000000" stopOpacity="1" />
-        </RadialGradient>
-      </Defs>
-      <Rect width="100%" height="100%" fill="url(#bgGlow)" />
-    </Svg>
-  </View>
-);
-
-const StepIndicator = ({ index, scrollOffset }: { index: number; scrollOffset: SharedValue<number> }) => {
-  const animatedStyle = useAnimatedStyle(() => {
-    const inputRange = [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH];
-    const width = interpolate(scrollOffset.value, inputRange, [8, 24, 8], Extrapolation.CLAMP);
-    const opacity = interpolate(scrollOffset.value, inputRange, [0.3, 1, 0.3], Extrapolation.CLAMP);
-    return { width, opacity };
-  });
-
-  return <Animated.View style={[styles.dot, animatedStyle]} />;
-};
 
 export const OnboardingScreen = ({ onFinish }: { onFinish: () => void }) => {
   const scrollOffset = useSharedValue(0);
@@ -105,18 +71,24 @@ export const OnboardingScreen = ({ onFinish }: { onFinish: () => void }) => {
   });
 
   const handleNext = useCallback(() => {
-  if (currentIndex < STEPS.length - 1) {
-    flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
-  } else {
-    // This triggers the transition to the main app!
-    onFinish();
-  }
-}, [currentIndex, onFinish]);
+    if (currentIndex < STEPS.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    } else {
+      onFinish();
+    }
+  }, [currentIndex, onFinish]);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <BackgroundCanvas />
+      {/* Light background means dark status bar text */}
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      {/* Header with Skip Button */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onFinish} activeOpacity={0.6} hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}>
+          <Text style={styles.skipText}>Skip</Text>
+        </TouchableOpacity>
+      </View>
 
       <Animated.FlatList
         ref={flatListRef}
@@ -134,17 +106,10 @@ export const OnboardingScreen = ({ onFinish }: { onFinish: () => void }) => {
       />
 
       <View style={styles.bottomHUD}>
-        <View style={styles.pagination}>
-          {STEPS.map((_, index) => (
-            <StepIndicator key={index} index={index} scrollOffset={scrollOffset} />
-          ))}
-        </View>
-
         <View style={styles.arcContainer}>
           <MomentumArc scrollOffset={scrollOffset} totalSteps={STEPS.length} />
-          <TouchableOpacity style={styles.actionButton} activeOpacity={0.8} onPress={handleNext}>
-            <Text style={styles.actionText}>{currentIndex === STEPS.length - 1 ? 'START' : 'NEXT'}</Text>
-          </TouchableOpacity>
+          {/* The button is now invisible on top of the SVG, handling the touch area */}
+          <TouchableOpacity style={styles.actionButton} activeOpacity={0.8} onPress={handleNext} />
         </View>
       </View>
     </View>
@@ -152,11 +117,10 @@ export const OnboardingScreen = ({ onFinish }: { onFinish: () => void }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
-  bottomHUD: { position: 'absolute', bottom: Platform.OS === 'ios' ? 40 : 20, width: '100%', alignItems: 'center', justifyContent: 'flex-end', pointerEvents: 'box-none' },
-  pagination: { flexDirection: 'row', marginBottom: 32, alignItems: 'center', justifyContent: 'center' },
-  dot: { height: 8, borderRadius: 4, backgroundColor: '#FFFFFF', marginHorizontal: 4 },
-  arcContainer: { alignItems: 'center', justifyContent: 'center', width: 240, height: 240 },
-  actionButton: { position: 'absolute', width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)', alignItems: 'center', justifyContent: 'center' },
-  actionText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+  container: { flex: 1, backgroundColor: '#FFFFFF' }, // Pure white background
+  header: { width: '100%', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 32, paddingTop: Platform.OS === 'ios' ? 60 : 40, zIndex: 10 },
+  skipText: { fontSize: 18, fontWeight: '500', color: '#4B5563' },
+  bottomHUD: { position: 'absolute', bottom: Platform.OS === 'ios' ? 50 : 30, width: '100%', alignItems: 'center' },
+  arcContainer: { alignItems: 'center', justifyContent: 'center', width: 100, height: 100 },
+  actionButton: { position: 'absolute', width: 70, height: 70, borderRadius: 35 },
 });
