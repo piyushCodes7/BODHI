@@ -17,6 +17,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 import {
   Send,
   Sparkles,
@@ -245,7 +246,14 @@ const startRecording = async () => {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are GAP, Bodhi's AI financial assistant. You help Indian users manage their money. Answer in a friendly, concise way (2-3 sentences max), and ans in a funny snarky way. If the question is in Hindi, reply in Hindi. If in English, reply in English. .\n\nUser: ${userQuestion}`,
+              text: `You are GAP, Bodhi's AI financial assistant. You help Indian users manage their money. Answer in a friendly, concise way (2-3 sentences max), and ans in a funny snarky way. If the question is in Hindi, reply in Hindi. If in English, reply in English. 
+              
+              CRITICAL INTERNAL MEMORY - The user's transaction history is as follows:
+              ${JSON.stringify(MOCK_TRANSACTIONS)}
+              
+              Answer questions utilizing the transaction history above. If they ask about their wallet, reference these transactions.
+              
+              User: ${userQuestion}`,
             }],
           }],
         }),

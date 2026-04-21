@@ -1,30 +1,31 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { NavigationContainer }           from '@react-navigation/native';
-import { createNativeStackNavigator }    from '@react-navigation/native-stack';
-import { createBottomTabNavigator }      from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider }              from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // 🟢 ADDED: Missing import for your tab icon
-import { Users }                         from 'lucide-react-native';
+import { Users } from 'lucide-react-native';
 
 // ─── SCREEN IMPORTS ───
-import { AuthScreen }                    from '../screens/AuthScreen';
-import { VaultScreen }                   from '../screens/VaultScreen';
-import { SocialScreen }                  from '../screens/SocialScreen';
-import { AIVoiceScreen }                 from '../screens/AIVoiceScreen';
-import { MarketScreen }                  from '../screens/MarketScreen';
-import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
-import { PaymentScreen }                 from '../screens/PaymentScreen';
-import { VentureClubScreen }             from '../screens/VentureClubScreen';
+import { AuthScreen } from '../screens/AuthScreen';
+import { VaultScreen } from '../screens/VaultScreen';
+import { SocialScreen } from '../screens/SocialScreen';
+import { AIVoiceScreen } from '../screens/AIVoiceScreen';
+import { MarketScreen } from '../screens/MarketScreen';
+import { PaperTradingScreen } from '../screens/PaperTradingScreen';
+import { PaymentScreen } from '../screens/PaymentScreen';
+import { VentureClubScreen } from '../screens/VentureClubScreen';
 // 🟢 FIXED: Import the actual TripWalletScreen (assuming you've created it!)
-import { TripWalletScreen }              from '../screens/TripWalletScreen'; 
-import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
+import { TripWalletScreen } from '../screens/TripWalletScreen';
+import { ImmuneSystemAlertScreen } from '../screens/TripAndAlertScreens';
+import { TransactionHistoryScreen } from '../screens/TransactionHistoryScreen';
 
 // ─── COMPONENT IMPORTS ───
-import { BodhiTabBar }                   from '../components/BodhiTabBar';
+import { BodhiTabBar } from '../components/BodhiTabBar';
 
-const Tab       = createBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator();
 const AuthStack = createNativeStackNavigator();
 
@@ -34,17 +35,17 @@ function MainTabNavigator() {
       tabBar={(props) => <BodhiTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen name="Vault"  component={VaultScreen}   />
-      <Tab.Screen 
-        name="Social" 
-        component={SocialScreen} 
+      <Tab.Screen name="Vault" component={VaultScreen} />
+      <Tab.Screen
+        name="Social"
+        component={SocialScreen}
         options={{
           tabBarIcon: ({ color, size }) => (<Users color={color} size={size} />)
         }}
       />
-      <Tab.Screen name="AI"     component={AIVoiceScreen} />
-      <Tab.Screen name="Trade"  component={PaperTradingScreen} /> 
-      <Tab.Screen name="Market" component={MarketScreen}  />
+      <Tab.Screen name="AI" component={AIVoiceScreen} />
+      <Tab.Screen name="Trade" component={PaperTradingScreen} />
+      <Tab.Screen name="Market" component={MarketScreen} />
     </Tab.Navigator>
   );
 }
@@ -53,12 +54,13 @@ function RootNavigator() {
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
-      
+
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
       {/* 🟢 FIXED: Now points to the correct Trip Wallet component */}
       <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
-      
+      <RootStack.Screen name="TransactionHistory" component={TransactionHistoryScreen} options={{ animation: 'slide_from_bottom' }} />
+
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
     </RootStack.Navigator>
   );
