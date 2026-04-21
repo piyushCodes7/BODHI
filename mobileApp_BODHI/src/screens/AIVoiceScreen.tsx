@@ -468,7 +468,7 @@ const startRecording = async () => {
               <Sparkles size={12} color={Colors.neonLime} />
               <Text style={styles.transcriptionLabel}>LIVE TRANSCRIBE</Text>
             </View>
-            {isProcessing ? (
+            {isProcessing && !transcription ? (
               <ActivityIndicator
                 size="small"
                 color={Colors.neonLime}
