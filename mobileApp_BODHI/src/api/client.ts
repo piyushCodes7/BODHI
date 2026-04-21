@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@env';
 
 // Falls back to localhost if the env var is missing for any reason
-const BASE_URL = API_BASE_URL || 'http://localhost:8000';
+const BASE_URL = API_BASE_URL || 'http://10.0.17.2:8000';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
