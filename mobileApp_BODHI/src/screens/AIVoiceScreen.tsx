@@ -17,6 +17,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 import {
   Send,
@@ -27,7 +28,7 @@ import {
   Mic,
   Bell,
   StopCircle,
-  ShieldClose, 
+  ShieldClose,
   Globe,
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
@@ -55,7 +56,22 @@ export function AIVoiceScreen() {
   const [transcription, setTranscription] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [userName, setUserName] = useState('User');
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const storedName = await AsyncStorage.getItem('user_full_name');
+        if (storedName) {
+          setUserName(storedName.split(' ')[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user name:", error);
+      }
+    };
+    fetchUserName();
+  }, []);
 
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
 
@@ -144,7 +160,7 @@ export function AIVoiceScreen() {
   }, [isRecording]);
 
   // ─── Start recording ────────────────────────────────────────────
-const startRecording = async () => {
+  const startRecording = async () => {
     try {
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.requestMultiple([
@@ -163,7 +179,7 @@ const startRecording = async () => {
 
       setIsRecording(true);
       // 🟢 Tweak: Gives immediate visual feedback to the user
-      setTranscription('Listening...'); 
+      setTranscription('Listening...');
 
       const uri = await audioRecorderPlayer.startRecorder();
       console.log('Recording started at:', uri);
@@ -171,7 +187,7 @@ const startRecording = async () => {
       // 🟢 THE FIX: This empty listener absorbs the native events 
       // and stops the "rn-recordback" warning from spamming your console.
       audioRecorderPlayer.addRecordBackListener((e) => {
-        return; 
+        return;
       });
 
     } catch (err) {
@@ -231,7 +247,7 @@ const startRecording = async () => {
 
       // ─── Step 2: Gemini AI ─────────────────────────────────────
       console.log('🧠 Sending to Gemini:', userQuestion);
-      
+
       if (!GEMINI_API_KEY) {
         console.error('❌ GEMINI_API_KEY is missing! Did you restart Metro after adding it to .env?');
         setTranscription('API Key missing. Restart Metro.');
@@ -239,7 +255,7 @@ const startRecording = async () => {
       }
 
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-      
+
       const geminiResponse = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -277,7 +293,7 @@ const startRecording = async () => {
 
       // ─── Step 3: Fetch Base64 from Sarvam ----------
       console.log('🗣️ Fetching TTS Base64...');
-      
+
       const ttsResponse = await fetch('https://api.sarvam.ai/text-to-speech', {
         method: 'POST',
         headers: {
@@ -296,7 +312,7 @@ const startRecording = async () => {
       });
 
       const ttsData = await ttsResponse.json();
-      
+
       if (ttsData.audios && ttsData.audios.length > 0) {
         console.log('✅ Base64 received successfully. Injecting into WebView Player...');
         // The WebView in the render output will auto-play this!
@@ -423,19 +439,21 @@ const startRecording = async () => {
             ]}
           />
 
-          <View style={styles.orbShadowWrapper}>
+          <View style={styles.orbWrapper}>
+            {/* 🟢 STABILIZATION FIX: Decoupled shadow layer */}
+            <View style={styles.orbShadowLayer} />
+
             <LinearGradient
               colors={
                 isRecording
-                  ? [Colors.neonLime, '#00A3FF']
-                  : ['#4A00E0', '#FF007F']
+                  ? [Colors.neonLime, '#1A0033']
+                  : ['#4A0033', '#1A0033']
               }
               style={styles.orb}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.orbInner}>
-                {/* ─── Animated waveform bars ─── */}
                 <View style={styles.waveform}>
                   {barAnims.map((anim, i) => (
                     <Animated.View
@@ -457,15 +475,15 @@ const startRecording = async () => {
 
         {/* ─── Text Block ─── */}
         <View style={styles.textBlock}>
-          <Text style={styles.greeting}>Hi Govind! 👋</Text>
+          <Text style={styles.greeting}>Hi {userName}! 👋</Text>
           <Text style={styles.headline}>Ask anything about</Text>
           <Text style={styles.headlineAccent}>your money</Text>
           <Text style={styles.subtitle}>
             {isRecording
               ? 'Listening...'
               : isProcessing
-              ? 'Processing intent...'
-              : 'Tap the orb to speak...'}
+                ? 'Processing intent...'
+                : 'Tap the orb to speak...'}
           </Text>
         </View>
 
@@ -555,8 +573,8 @@ const startRecording = async () => {
                   inputText.length > 0
                     ? Colors.neonLime
                     : isRecording
-                    ? '#FF3366'
-                    : 'rgba(255,255,255,0.1)',
+                      ? '#FF3366'
+                      : 'rgba(255,255,255,0.1)',
               },
             ]}
             onPress={inputText.length > 0 ? handleSendText : toggleRecording}
@@ -634,8 +652,18 @@ const styles = StyleSheet.create({
   },
   ring1: { width: 180, height: 180, opacity: 0.5 },
   ring2: { width: 260, height: 260, opacity: 0.2 },
-  orbShadowWrapper: {
+  orbWrapper: {
+    width: 140,
+    height: 140,
     borderRadius: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  orbShadowLayer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 70,
+    backgroundColor: '#1A0033', // Solid background for shadow anchor
     shadowColor: '#A855F7',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,

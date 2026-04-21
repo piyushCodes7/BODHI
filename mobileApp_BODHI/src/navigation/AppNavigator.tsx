@@ -23,6 +23,13 @@ import { TransactionHistoryScreen }      from '../screens/TransactionHistoryScre
 import { ScanPayScreen }                 from '../screens/ScanPayScreen';
 import { SendMoneyScreen }               from '../screens/SendMoneyScreen';
 import { RequestMoneyScreen }            from '../screens/RequestMoneyScreen';
+import { NotificationScreen }            from '../screens/NotificationScreen';
+import { ProfileScreen }                 from '../screens/ProfileScreen';
+import { 
+  BankAccountsScreen, 
+  SecuritySettingsScreen, 
+  TravelBookingScreen 
+} from '../screens/PlaceholderScreens';
 
 // ─── COMPONENT IMPORTS ───
 import { BodhiTabBar } from '../components/BodhiTabBar';
@@ -61,6 +68,11 @@ function RootNavigator() {
       <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TransactionHistory" component={TransactionHistoryScreen} options={{ animation: 'slide_from_bottom' }} />
+      <RootStack.Screen name="Notifications" component={NotificationScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="Profile" component={ProfileScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="BankAccounts" component={BankAccountsScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="SecuritySettings" component={SecuritySettingsScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="TravelBooking" component={TravelBookingScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
 
       {/* ── Payment Features ── */}

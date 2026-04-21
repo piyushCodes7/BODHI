@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@env';
 
 // Falls back to localhost if the env var is missing for any reason
-const BASE_URL = API_BASE_URL || 'http://10.0.17.2:8000';
+const BASE_URL = API_BASE_URL || 'http://10.30.15.187:8000';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -58,6 +58,40 @@ export const InsuranceAPI = {
   },
   listDocuments: async () => {
     const res = await apiClient.get('/insurance/documents');
+    return res.data;
+  }
+};
+
+export const UsersAPI = {
+  fetchProfile: async () => {
+    const res = await apiClient.get('/users/me');
+    return res.data;
+  },
+  updateProfile: async (data: { full_name?: string; phone?: string; current_password: str }) => {
+    const res = await apiClient.put('/users/me', data);
+    return res.data;
+  },
+  deleteAccount: async (password: string) => {
+    const res = await apiClient.delete('/users/me', { data: { password } });
+    return res.data;
+  },
+  verifyPassword: async (password: string) => {
+    const res = await apiClient.post('/users/verify', { password });
+    return res.data;
+  }
+};
+
+export const NotificationAPI = {
+  fetchNotifications: async () => {
+    const res = await apiClient.get('/notifications/');
+    return res.data;
+  },
+  markAsRead: async (id: string) => {
+    const res = await apiClient.patch(`/notifications/${id}/read`);
+    return res.data;
+  },
+  markAllAsRead: async () => {
+    const res = await apiClient.post('/notifications/read-all');
     return res.data;
   }
 };

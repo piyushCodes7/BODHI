@@ -52,7 +52,7 @@ class GroupWallet(Base):
     total_contributed: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
 
     # 🟢 FIXED: Mapped[str]
-    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    created_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
@@ -73,7 +73,7 @@ class GroupMember(Base):
     group_id: Mapped[str] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="CASCADE"), nullable=False)
     
     # 🟢 FIXED: Mapped[str] and String(36)
-    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     
     role: Mapped[MemberRole] = mapped_column(SAEnum(MemberRole, name="member_role_enum"), nullable=False, default=MemberRole.MEMBER)
     contributed_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
@@ -98,7 +98,7 @@ class GroupVoteProposal(Base):
     group_id: Mapped[str] = mapped_column(String(36), ForeignKey("group_wallets.id", ondelete="CASCADE"), nullable=False)
     
     # 🟢 FIXED: Mapped[str] and String(36)
-    proposed_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
+    proposed_by: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

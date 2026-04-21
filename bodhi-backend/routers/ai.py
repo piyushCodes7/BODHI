@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import base64
 import tempfile
 import os
+import traceback
 from services.sarvam_service import generate_bodhi_speech, transcribe_audio
 from services.brain_service import process_user_intent
 
@@ -72,25 +73,30 @@ async def transcribe_speech(file: UploadFile = File(...)):
 @router.post("/command", response_model=AICommandResponse)
 async def process_voice_command(file: UploadFile = File(...)):
     """Unified endpoint: Audio -> Text -> Intent -> Response Text + Voice."""
-    print(f"🚀 Processing full AI Command for {file.filename}...")
-    
-    # 1. Transcription (STT)
-    audio_bytes = await file.read()
-    transcript = await transcribe_audio(audio_bytes, file.filename or "audio.mp4")
-    print(f"  [1/3] Transcribed: '{transcript}'")
-    
-    # 2. Brain Analysis (LLM)
-    brain_result = await process_user_intent(transcript)
-    print(f"  [2/3] Brain Result: {brain_result['intent']} - '{brain_result['text_response'][:50]}...'")
-    
-    # 3. Voice Generation (TTS) - Optional/Auto
-    audio_response = await generate_bodhi_speech(brain_result['text_response'])
-    print(f"  [3/3] Audio response generated.")
-    
-    return {
-        "transcript": transcript,
-        "intent": brain_result["intent"],
-        "text_response": brain_result["text_response"],
-        "suggested_action": brain_result.get("suggested_action"),
-        "audio_base64": audio_response
-    }
+    try:
+        print(f"🚀 Processing full AI Command for {file.filename}...")
+        
+        # 1. Transcription (STT)
+        audio_bytes = await file.read()
+        transcript = await transcribe_audio(audio_bytes, file.filename or "audio.mp4")
+        print(f"  [1/3] Transcribed: '{transcript}'")
+        
+        # 2. Brain Analysis (LLM)
+        brain_result = await process_user_intent(transcript)
+        print(f"  [2/3] Brain Result: {brain_result['intent']} - '{brain_result['text_response'][:50]}...'")
+        
+        # 3. Voice Generation (TTS) - Optional/Auto
+        audio_response = await generate_bodhi_speech(brain_result['text_response'])
+        print(f"  [3/3] Audio response generated.")
+        
+        return {
+            "transcript": transcript,
+            "intent": brain_result["intent"],
+            "text_response": brain_result["text_response"],
+            "suggested_action": brain_result.get("suggested_action"),
+            "audio_base64": audio_response
+        }
+    except Exception as e:
+        print(f"❌ CRASH in process_voice_command: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

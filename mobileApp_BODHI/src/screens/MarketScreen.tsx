@@ -353,21 +353,23 @@ export function MarketScreen() {
         )}
 
         {/* ── CALCULATE BUTTON ── */}
-        <TouchableOpacity
-          style={[styles.calcBtn, loading && { opacity: 0.7 }]}
-          onPress={simulate}
-          activeOpacity={0.88}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#000" />
-          ) : (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={18} color="#000" />
-              <Text style={styles.calcBtnText}>CALCULATE ALPHA</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.buttonShadowWrapper}>
+          <TouchableOpacity
+            style={[styles.calcBtn, loading && { opacity: 0.7 }]}
+            onPress={simulate}
+            activeOpacity={0.88}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Sparkles size={18} color="#000" />
+                <Text style={styles.calcBtnText}>CALCULATE ALPHA</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
         {/* ─── Results Section ─────────────────────────────────────── */}
         {sim && (
@@ -492,7 +494,16 @@ const styles = StyleSheet.create({
   changeBtnText: { fontSize: 13, fontWeight: '700', color: '#A855F7' },
 
   // ── CALCULATE BUTTON ──
-  calcBtn: { backgroundColor: Colors.neonLime, borderRadius: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 8, marginTop: 10 },
+  buttonShadowWrapper: {
+    borderRadius: 24,
+    shadowColor: Colors.neonLime,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 8,
+    marginTop: 10,
+  },
+  calcBtn: { backgroundColor: Colors.neonLime, borderRadius: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
   calcBtnText: { fontSize: 16, fontWeight: '800', color: '#000', letterSpacing: 1 },
 
   // ── RESULTS ──

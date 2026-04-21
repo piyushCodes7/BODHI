@@ -7,7 +7,7 @@ class PortfolioItem(Base):
     __tablename__ = "portfolio_items"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(36), ForeignKey("users.id"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
     symbol = Column(String, index=True)
     quantity = Column(Integer, default=0)
     average_buy_price = Column(Float, default=0.0)
@@ -18,7 +18,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(36), ForeignKey("users.id"))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"))
     type = Column(String)  # "BUY" or "SELL"
     symbol = Column(String)
     quantity = Column(Integer)
@@ -27,4 +27,4 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     
     owner = relationship("User")
-    status = Column(String, default="EXECUTED") # Can be "EXECUTED", "PENDING_AMO", or "REJECTED
+    status = Column(String, default="EXECUTED") # Can be "EXECUTED", "PENDING_AMO", or "REJECTED"
