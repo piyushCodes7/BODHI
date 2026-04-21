@@ -32,7 +32,9 @@ import {
   Landmark,
   ChevronRight,
   Users,
-  Calculator
+  Calculator,
+  ArrowDownRight,
+  ArrowUpRight
 } from 'lucide-react-native';
 
 import { Colors, Spacing, Radius } from '../theme/tokens';
@@ -62,28 +64,25 @@ export function VaultScreen() {
   const [activeInsight, setActiveInsight] = useState<string | null>(null);
 
   // ─── DYNAMIC INSIGHTS MATH ───
-  // Calculate specific insights purely using mathematical aggregations over your financial database!
-  const currentMonthTransactions = MOCK_TRANSACTIONS.filter((t) => {
-    // Assuming April 2026 is the "current" active mock month
-    return new Date(t.date).getMonth() === 3 && new Date(t.date).getFullYear() === 2026; 
-  });
+  // Scans the entire Mock Database (3-month average calculation)
+  const sourceTransactions = MOCK_TRANSACTIONS;
 
-  const foodSpending = currentMonthTransactions
+  const foodSpending = sourceTransactions
     .filter(t => t.category === 'Food' || t.category === 'Groceries')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const entertainmentSpending = currentMonthTransactions
+  const entertainmentSpending = sourceTransactions
     .filter(t => t.category === 'Entertainment')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalIncome = currentMonthTransactions.filter(t => t.type === 'CREDIT').reduce((acc, t) => acc + t.amount, 0);
-  const totalExpenses = currentMonthTransactions.filter(t => t.type === 'DEBIT').reduce((acc, t) => acc + t.amount, 0);
+  const totalIncome = sourceTransactions.filter(t => t.type === 'CREDIT').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpenses = sourceTransactions.filter(t => t.type === 'DEBIT').reduce((acc, t) => acc + t.amount, 0);
   const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : '0';
 
   const dynamicInsights = [
-    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely this month', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
-    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'by cutting subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
-    { id: '3', type: 'SAVE', title: 'Savings Rate', value: `${savingsRate}%`, sub: 'of income kept this month', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
+    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely over 90 days', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
+    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'annually cutting subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
+    { id: '3', type: 'SAVE', title: 'Savings Rate', value: `${savingsRate}%`, sub: 'of income kept over 90 days', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
   ];
 
   const renderInsightDetails = () => {
@@ -93,13 +92,13 @@ export function VaultScreen() {
 
     if (activeInsight === 'FOOD') {
       title = "Food & Groceries Breakdown";
-      filtered = currentMonthTransactions.filter(t => t.category === 'Food' || t.category === 'Groceries');
+      filtered = sourceTransactions.filter(t => t.category === 'Food' || t.category === 'Groceries');
     } else if (activeInsight === 'SUBS') {
       title = "Entertainment Breakdown";
-      filtered = currentMonthTransactions.filter(t => t.category === 'Entertainment');
+      filtered = sourceTransactions.filter(t => t.category === 'Entertainment');
     } else {
-      title = "Monthly Cash Flow";
-      filtered = currentMonthTransactions;
+      title = "Quarterly Cash Flow";
+      filtered = sourceTransactions;
     }
 
     return (
@@ -115,17 +114,34 @@ export function VaultScreen() {
             data={filtered}
             keyExtractor={(t) => t.id}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.insightRow}>
-                <View>
-                  <Text style={styles.insightRowMerchant}>{item.merchant}</Text>
-                  <Text style={styles.insightRowCategory}>{new Date(item.date).toLocaleDateString()} • {item.category}</Text>
+            renderItem={({ item }) => {
+              const isCredit = item.type === 'CREDIT';
+              return (
+                <View style={styles.insightRow}>
+                  <View style={styles.insightRowLeft}>
+                    <View style={[styles.insightIconWrap, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
+                      {isCredit ? (
+                        <ArrowDownRight size={18} color="#C8FF00" />
+                      ) : (
+                        <ArrowUpRight size={18} color="#FFF" />
+                      )}
+                    </View>
+                    <View style={styles.insightTextWrap}>
+                      <Text style={styles.insightRowMerchant} numberOfLines={1}>{item.merchant}</Text>
+                      <Text style={styles.insightRowCategory} numberOfLines={1}>
+                        {new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {item.category}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.insightRowRight}>
+                    <Text style={[styles.insightRowAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
+                      {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[styles.insightRowAmount, { color: item.type === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
-                  {item.type === 'CREDIT' ? '+' : '-'}₹{item.amount.toLocaleString('en-IN')}
-                </Text>
-              </View>
-            )}
+              );
+            }}
           />
         </View>
       </View>
@@ -441,4 +457,21 @@ const styles = StyleSheet.create({
   paginationDots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
   dotActive: { width: 16, backgroundColor: '#A855F7' },
+
+  // Insight Details Modal Specs
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
+  modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  
+  insightRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  insightRowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
+  insightIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  insightTextWrap: { flex: 1 },
+  insightRowMerchant: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  insightRowCategory: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
+  insightRowRight: { alignItems: 'flex-end', flexShrink: 0 },
+  insightRowAmount: { fontSize: 16, fontWeight: '800' }
 });
