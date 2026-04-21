@@ -1,18 +1,11 @@
 /**
- * MomentumArc.tsx
- * BODHI – Cyber-Glass Onboarding
+ * MomentumArc.tsx (Minimalist Redesign)
+ * BODHI
  */
 
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Svg, {
-  Circle,
-  Defs,
-  LinearGradient,
-  Stop,
-  RadialGradient,
-  Ellipse,
-} from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import Animated, {
   Extrapolation,
   SharedValue,
@@ -23,11 +16,10 @@ import Animated, {
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const RADIUS = 108;
-const STROKE_WIDTH = 3;
-const TRACK_STROKE_WIDTH = 1;
+const RADIUS = 42; 
+const STROKE_WIDTH = 4;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const SVG_SIZE = (RADIUS + STROKE_WIDTH) * 2 + 16;
+const SVG_SIZE = (RADIUS + STROKE_WIDTH) * 2 + 10;
 const CENTER = SVG_SIZE / 2;
 
 interface MomentumArcProps {
@@ -35,10 +27,7 @@ interface MomentumArcProps {
   totalSteps: number;
 }
 
-export const MomentumArc: React.FC<MomentumArcProps> = ({
-  scrollOffset,
-  totalSteps,
-}) => {
+export const MomentumArc: React.FC<MomentumArcProps> = ({ scrollOffset, totalSteps }) => {
   const arcProps = useAnimatedProps(() => {
     const progress = interpolate(
       scrollOffset.value,
@@ -46,65 +35,38 @@ export const MomentumArc: React.FC<MomentumArcProps> = ({
       [0, 1],
       Extrapolation.CLAMP
     );
+    // Ensure there's a starting sliver
+    const safeProgress = Math.max(progress, 0.05);
     return {
-      strokeDashoffset: CIRCUMFERENCE * (1 - progress),
+      strokeDashoffset: CIRCUMFERENCE * (1 - safeProgress),
     };
-  });
-
-  const glowProps = useAnimatedProps(() => {
-    const opacity = interpolate(
-      scrollOffset.value,
-      [0, SCREEN_WIDTH * (totalSteps - 1)],
-      [0.08, 0.28],
-      Extrapolation.CLAMP
-    );
-    return { fillOpacity: opacity };
   });
 
   return (
     <View style={styles.wrapper}>
       <Svg width={SVG_SIZE} height={SVG_SIZE} style={styles.svg}>
-        <Defs>
-          <LinearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#7C3AED" stopOpacity="1" />
-            <Stop offset="45%" stopColor="#06B6D4" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#22C55E" stopOpacity="1" />
-          </LinearGradient>
-          <RadialGradient id="arcGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <Stop offset="0%" stopColor="#22C55E" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-
-        <AnimatedCircle cx={CENTER} cy={CENTER} r={RADIUS} fill="url(#arcGlow)" stroke="none" animatedProps={glowProps} />
+        {/* Outer Track (Light Gray) */}
+        <Circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="#E5E7EB" strokeWidth={STROKE_WIDTH} />
         
-        <Circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeWidth={TRACK_STROKE_WIDTH} />
+        {/* Inner Button (Solid Dark) */}
+        <Circle cx={CENTER} cy={CENTER} r={RADIUS - 8} fill="#111827" />
 
-        {[0, 90, 180, 270].map((deg) => {
-          const rad = ((deg - 90) * Math.PI) / 180;
-          const x1 = CENTER + (RADIUS - 6) * Math.cos(rad);
-          const y1 = CENTER + (RADIUS - 6) * Math.sin(rad);
-          const x2 = CENTER + (RADIUS + 6) * Math.cos(rad);
-          const y2 = CENTER + (RADIUS + 6) * Math.sin(rad);
-          return (
-            <Ellipse
-              key={deg}
-              cx={(x1 + x2) / 2}
-              cy={(y1 + y2) / 2}
-              rx={1}
-              ry={3}
-              fill="rgba(255,255,255,0.12)"
-              transform={`rotate(${deg}, ${(x1 + x2) / 2}, ${(y1 + y2) / 2})`}
-            />
-          );
-        })}
+        {/* Arrow Icon */}
+        <Path 
+          d="M48 50h14M55 43l7 7-7 7" 
+          stroke="#FCD34D" // Yellow arrow matching your mockup
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+        />
 
+        {/* Progress Arc (Solid Dark) */}
         <AnimatedCircle
           cx={CENTER}
           cy={CENTER}
           r={RADIUS}
           fill="none"
-          stroke="url(#arcGradient)"
+          stroke="#111827"
           strokeWidth={STROKE_WIDTH}
           strokeDasharray={CIRCUMFERENCE}
           strokeLinecap="round"
