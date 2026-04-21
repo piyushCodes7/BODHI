@@ -69,8 +69,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({ step, index, scrollOffset 
 };
 
 const styles = StyleSheet.create({
-  page: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT, alignItems: 'center', paddingTop: SCREEN_HEIGHT * 0.15, paddingHorizontal: 32 },
-  imageWrapper: { alignItems: 'center', marginBottom: 48 },
+  page: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT, alignItems: 'center', justifyContent: 'center', paddingBottom: 160, paddingHorizontal: 32 },
+  imageWrapper: { alignItems: 'center', marginBottom: 32 },
   circleBackdrop: { width: 280, height: 280, borderRadius: 140, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }, // Light gray circle
   image: { width: 240, height: 240 },
   textBlock: { alignItems: 'center' },
