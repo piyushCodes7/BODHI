@@ -9,6 +9,8 @@ import {
   Image,
   StatusBar,
   Alert,
+  Modal,
+  FlatList,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +37,7 @@ import {
 
 import { Colors, Spacing, Radius } from '../theme/tokens';
 import { InsuranceScreen } from './InsuranceScreen';
+import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 
 const { width: W } = Dimensions.get('window');
 
@@ -43,30 +46,98 @@ const QUICK_SERVICES = [
   { id: '1', label: 'Split Money', icon: Users, color: '#8A5CFF', route: 'TripWallet' },
   { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF3366', route: 'InsuranceStories' },
   { id: '3', label: 'Calculator', icon: Calculator, color: '#FF9900' },
-  { id: '4', label: 'Wallet', icon: CreditCard, color: '#00E676' },
+  { id: '4', label: 'History', icon: FileText, color: '#00E676', route: 'TransactionHistory' },
   { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3399FF' },
   { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFD700' },
   { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF' },
   { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2' },
 ];
 
-const INSIGHTS = [
-  { id: '1', title: 'You spent', value: '₹2,540', sub: 'on Food this week', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
-  { id: '2', title: 'You can save', value: '₹1,250', sub: 'by reducing subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
-  { id: '3', title: 'Your net worth', value: '12%', sub: 'increased this month', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
-];
+// Constants removed, logic moved dynamically inside the component!
 
 export function VaultScreen() {
   const navigation = useNavigation<any>();
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [showInsurance, setShowInsurance] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<string | null>(null);
+
+  // ─── DYNAMIC INSIGHTS MATH ───
+  // Calculate specific insights purely using mathematical aggregations over your financial database!
+  const currentMonthTransactions = MOCK_TRANSACTIONS.filter((t) => {
+    // Assuming April 2026 is the "current" active mock month
+    return new Date(t.date).getMonth() === 3 && new Date(t.date).getFullYear() === 2026; 
+  });
+
+  const foodSpending = currentMonthTransactions
+    .filter(t => t.category === 'Food' || t.category === 'Groceries')
+    .reduce((acc, t) => acc + t.amount, 0);
+
+  const entertainmentSpending = currentMonthTransactions
+    .filter(t => t.category === 'Entertainment')
+    .reduce((acc, t) => acc + t.amount, 0);
+
+  const totalIncome = currentMonthTransactions.filter(t => t.type === 'CREDIT').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpenses = currentMonthTransactions.filter(t => t.type === 'DEBIT').reduce((acc, t) => acc + t.amount, 0);
+  const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : '0';
+
+  const dynamicInsights = [
+    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely this month', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
+    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'by cutting subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
+    { id: '3', type: 'SAVE', title: 'Savings Rate', value: `${savingsRate}%`, sub: 'of income kept this month', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
+  ];
+
+  const renderInsightDetails = () => {
+    if (!activeInsight) return null;
+    let filtered: any[] = [];
+    let title = '';
+
+    if (activeInsight === 'FOOD') {
+      title = "Food & Groceries Breakdown";
+      filtered = currentMonthTransactions.filter(t => t.category === 'Food' || t.category === 'Groceries');
+    } else if (activeInsight === 'SUBS') {
+      title = "Entertainment Breakdown";
+      filtered = currentMonthTransactions.filter(t => t.category === 'Entertainment');
+    } else {
+      title = "Monthly Cash Flow";
+      filtered = currentMonthTransactions;
+    }
+
+    return (
+      <View style={styles.modalBg}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{title}</Text>
+            <TouchableOpacity onPress={() => setActiveInsight(null)} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList 
+            data={filtered}
+            keyExtractor={(t) => t.id}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={styles.insightRow}>
+                <View>
+                  <Text style={styles.insightRowMerchant}>{item.merchant}</Text>
+                  <Text style={styles.insightRowCategory}>{new Date(item.date).toLocaleDateString()} • {item.category}</Text>
+                </View>
+                <Text style={[styles.insightRowAmount, { color: item.type === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
+                  {item.type === 'CREDIT' ? '+' : '-'}₹{item.amount.toLocaleString('en-IN')}
+                </Text>
+              </View>
+            )}
+          />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
+
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        
+
         {/* ── HERO SECTION (GRADIENT) ── */}
         <LinearGradient
           colors={['#2A0066', '#660099', '#FF0055']}
@@ -82,13 +153,13 @@ export function VaultScreen() {
               </View>
               <View style={styles.onlineDot} />
             </View>
-            
-            <Image 
-              source={require('../../assets/images/bodhi-logo.png')} 
-              style={styles.logo} 
-              resizeMode="contain" 
+
+            <Image
+              source={require('../../assets/images/bodhi-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
-            
+
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconBtn} onPress={() => Alert.alert('Notifications', 'Coming soon!')}>
                 <Bell size={20} color="#FFF" />
@@ -100,10 +171,10 @@ export function VaultScreen() {
           {/* Balance Area */}
           <View style={styles.balanceArea}>
             <Text style={styles.greeting}>Hello, Govind 👋</Text>
-            
+
             <View style={styles.rowCenter}>
               <Text style={styles.totalBalanceLabel}>TOTAL BALANCE</Text>
-              <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{top:10, bottom:10, left:10, right:10}}>
+              <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <EyeOff size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
               </TouchableOpacity>
             </View>
@@ -112,7 +183,7 @@ export function VaultScreen() {
               <Text style={styles.currencySymbol}>₹</Text>
               <Text style={styles.balanceMain}>{balanceVisible ? '1,00,000' : '******'}</Text>
               <Text style={styles.balanceDecimals}>{balanceVisible ? '.00' : ''}</Text>
-              
+
               <TouchableOpacity style={styles.hideBtn} onPress={() => setBalanceVisible(!balanceVisible)}>
                 <ShieldCheck size={12} color="#FFF" />
                 <Text style={styles.hideBtnText}>{balanceVisible ? 'Hide' : 'Show'}</Text>
@@ -133,8 +204,8 @@ export function VaultScreen() {
               { label: 'Add Money', icon: Plus },
               { label: 'Request', icon: ArrowDownToLine },
             ].map((action, idx) => (
-              <TouchableOpacity 
-                key={idx} 
+              <TouchableOpacity
+                key={idx}
                 style={styles.heroActionItem}
                 onPress={() => Alert.alert('Action', `${action.label} feature coming soon!`)}
               >
@@ -149,7 +220,7 @@ export function VaultScreen() {
 
         {/* ── MAIN CONTENT (DARK SURFACE) ── */}
         <View style={styles.contentSection}>
-          
+
           {/* Quick Services */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Quick Services</Text>
@@ -158,8 +229,8 @@ export function VaultScreen() {
 
           <View style={styles.servicesGrid}>
             {QUICK_SERVICES.map((item) => (
-              <TouchableOpacity 
-                key={item.id} 
+              <TouchableOpacity
+                key={item.id}
                 style={styles.serviceItem}
                 activeOpacity={0.7}
                 onPress={() => {
@@ -186,12 +257,12 @@ export function VaultScreen() {
             <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
           </View>
 
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.insightsScroll}
           >
-            {INSIGHTS.map((insight) => (
+            {dynamicInsights.map((insight) => (
               <LinearGradient
                 key={insight.id}
                 colors={insight.bg}
@@ -205,8 +276,8 @@ export function VaultScreen() {
                 <Text style={styles.insightTitle}>{insight.title}</Text>
                 <Text style={styles.insightValue}>{insight.value}</Text>
                 <Text style={styles.insightSub}>{insight.sub}</Text>
-                
-                <TouchableOpacity style={styles.insightLinkRow}>
+
+                <TouchableOpacity style={styles.insightLinkRow} onPress={() => setActiveInsight(insight.type)}>
                   <Text style={styles.insightLink}>View Details</Text>
                   <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
                 </TouchableOpacity>
@@ -250,26 +321,44 @@ export function VaultScreen() {
             <View style={styles.dot} />
           </View>
 
+          {/* DEDICATED TRANSACTION HISTORY BUTTON */}
+          <TouchableOpacity 
+            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]} 
+            onPress={() => navigation.navigate('TransactionHistory')}
+            activeOpacity={0.8}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <FileText size={20} color="#C8FF00" />
+              <Text style={{ color: '#C8FF00', fontSize: 16, fontWeight: '700' }}>View Transaction History</Text>
+            </View>
+            <ChevronRight size={20} color="#C8FF00" style={{ position: 'absolute', right: 20 }} />
+          </TouchableOpacity>
+
           {/* Bottom spacer for tab bar */}
           <View style={{ height: 100 }} />
         </View>
       </ScrollView>
 
       {/* ── INSURANCE MODAL MOUNTED HERE ── */}
-      <InsuranceScreen 
-        visible={showInsurance} 
-        onClose={() => setShowInsurance(false)} 
+      <InsuranceScreen
+        visible={showInsurance}
+        onClose={() => setShowInsurance(false)}
       />
+
+      {/* ── DYNAMIC INSIGHTS MODAL ── */}
+      <Modal visible={!!activeInsight} animationType="slide" transparent>
+        {renderInsightDetails()}
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#05050A' },
-  
+
   heroSection: {
     paddingTop: 60,
-    paddingBottom: 20, 
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -318,7 +407,7 @@ const styles = StyleSheet.create({
   },
   heroActionLabel: { color: '#FFF', fontSize: 11, fontWeight: '500' },
 
-  contentSection: { paddingHorizontal: 20, paddingTop: 10 }, 
+  contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },
   sectionTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
   viewAll: { color: '#A855F7', fontSize: 13, fontWeight: '600' },

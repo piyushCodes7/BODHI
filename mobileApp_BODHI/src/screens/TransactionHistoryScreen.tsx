@@ -1,0 +1,177 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MOCK_TRANSACTIONS, Transaction } from '../data/mockTransactions';
+
+export function TransactionHistoryScreen() {
+  const navigation = useNavigation();
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const renderTransaction = ({ item }: { item: Transaction }) => {
+    const isCredit = item.type === 'CREDIT';
+    
+    return (
+      <TouchableOpacity 
+        style={styles.txRow}
+        activeOpacity={0.7}
+        onPress={() => setSelectedTx(item)}
+      >
+        <View style={styles.txLeft}>
+          <View style={[styles.iconWrap, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
+            {isCredit ? (
+              <ArrowDownRight size={20} color="#C8FF00" />
+            ) : (
+              <ArrowUpRight size={20} color="#FFF" />
+            )}
+          </View>
+          <View style={styles.txTextWrap}>
+            <Text style={styles.txMerchant} numberOfLines={1}>{item.merchant}</Text>
+            <Text style={styles.txCategory} numberOfLines={1}>
+              {new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {item.account_last4 || item.category}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.txRight}>
+          <Text style={[styles.txAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
+            {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={{top:15, bottom:15, left:15, right:15}}>
+          <ChevronLeft size={24} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.title}>History</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* List */}
+      <FlatList
+        data={MOCK_TRANSACTIONS}
+        keyExtractor={(item) => item.id}
+        renderItem={renderTransaction}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+
+      {/* Transaction Details Modal */}
+      <Modal visible={!!selectedTx} animationType="slide" transparent>
+        <View style={styles.modalBg}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Receipt Detail</Text>
+              <TouchableOpacity onPress={() => setSelectedTx(null)} style={styles.modalCloseBtn}>
+                <Text style={styles.modalCloseText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {selectedTx && (
+              <View style={styles.receiptMain}>
+                <View style={[styles.receiptIcon, { backgroundColor: selectedTx.type === 'CREDIT' ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
+                  {selectedTx.type === 'CREDIT' ? <ArrowDownRight size={32} color="#C8FF00" /> : <ArrowUpRight size={32} color="#FFF" />}
+                </View>
+                <Text style={styles.receiptMerchant}>{selectedTx.merchant}</Text>
+                <Text style={[styles.receiptAmount, { color: selectedTx.type === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
+                  {selectedTx.type === 'CREDIT' ? '+' : '-'}₹{selectedTx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </Text>
+
+                <View style={styles.receiptDivider} />
+
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Transaction Date</Text>
+                  <Text style={styles.receiptResult}>{new Date(selectedTx.date).toLocaleString('en-IN')}</Text>
+                </View>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Reference ID</Text>
+                  <Text style={styles.receiptResult}>{selectedTx.id.toUpperCase()}-BODHI</Text>
+                </View>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Category</Text>
+                  <Text style={styles.receiptResult}>{selectedTx.category}</Text>
+                </View>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Account</Text>
+                  <Text style={styles.receiptResult}>•••• {selectedTx.account_last4 || 'N/A'}</Text>
+                </View>
+
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#05001F' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: { fontSize: 18, fontWeight: '700', color: '#FFF' },
+  listContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },
+  
+  txRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#12121A',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  txLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  txTextWrap: { flex: 1 },
+  txMerchant: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  txCategory: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '500' },
+  txRight: { alignItems: 'flex-end', flexShrink: 0 },
+  txAmount: { fontSize: 16, fontWeight: '800' },
+
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
+  modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  receiptMain: { alignItems: 'center' },
+  receiptIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  receiptMerchant: { color: '#FFF', fontSize: 20, fontWeight: '700', marginBottom: 6 },
+  receiptAmount: { fontSize: 28, fontWeight: '800', marginBottom: 24 },
+  receiptDivider: { width: '100%', height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
+  receiptRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16 },
+  receiptLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '500' },
+  receiptResult: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+});
