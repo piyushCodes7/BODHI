@@ -1,19 +1,69 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  RefreshControl,
+  ActivityIndicator
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MOCK_TRANSACTIONS, Transaction } from '../data/mockTransactions';
+import { TransactionAPI } from '../api/client';
 
 export function TransactionHistoryScreen() {
   const navigation = useNavigation();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchTransactions = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
+    try {
+      const realTxs = await TransactionAPI.listManualTransactions();
+
+      const translatedTxs: Transaction[] = realTxs.map((tx: any) => ({
+        id: tx.id,
+        amount: tx.amount,
+        merchant: tx.merchant,
+        category: tx.category,
+        date: tx.created_at,
+        type: tx.type as 'CREDIT' | 'DEBIT',
+        account_last4: 'Manual'
+      }));
+
+      const combined = [...translatedTxs, ...MOCK_TRANSACTIONS].sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      setTransactions(combined);
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    fetchTransactions(false);
+  };
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const isCredit = item.type === 'CREDIT';
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.txRow}
         activeOpacity={0.7}
         onPress={() => setSelectedTx(item)}
@@ -47,7 +97,7 @@ export function TransactionHistoryScreen() {
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={{top:15, bottom:15, left:15, right:15}}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
           <ChevronLeft size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.title}>History</Text>
@@ -55,13 +105,27 @@ export function TransactionHistoryScreen() {
       </View>
 
       {/* List */}
-      <FlatList
-        data={MOCK_TRANSACTIONS}
-        keyExtractor={(item) => item.id}
-        renderItem={renderTransaction}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading && !isRefreshing ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator color="#C8FF00" size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={transactions}
+          keyExtractor={(item) => item.id}
+          renderItem={renderTransaction}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              tintColor="#C8FF00"
+              colors={["#C8FF00"]}
+            />
+          }
+        />
+      )}
 
       {/* Transaction Details Modal */}
       <Modal visible={!!selectedTx} animationType="slide" transparent>
@@ -73,7 +137,7 @@ export function TransactionHistoryScreen() {
                 <Text style={styles.modalCloseText}>Done</Text>
               </TouchableOpacity>
             </View>
-            
+
             {selectedTx && (
               <View style={styles.receiptMain}>
                 <View style={[styles.receiptIcon, { backgroundColor: selectedTx.type === 'CREDIT' ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
@@ -133,7 +197,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 18, fontWeight: '700', color: '#FFF' },
   listContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },
-  
+
   txRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

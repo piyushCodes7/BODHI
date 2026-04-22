@@ -25,6 +25,7 @@ class AICommandResponse(BaseModel):
     text_response: str
     suggested_action: str | None
     audio_base64: str | None
+    transaction_data: dict | None = None  # Populated when intent == 'add_transaction'
 
 @router.post("/speak", response_model=SpeechResponse)
 async def get_bodhi_voice(request: SpeechRequest):
@@ -79,22 +80,34 @@ async def process_voice_command(file: UploadFile = File(...)):
         # 1. Transcription (STT)
         audio_bytes = await file.read()
         transcript = await transcribe_audio(audio_bytes, file.filename or "audio.mp4")
-        print(f"  [1/3] Transcribed: '{transcript}'")
+        print(f"  [1/3] Transcribed Text: '{transcript}'")
         
+        if not transcript or transcript.strip() == "":
+            print("  ⚠️ Empty transcript received.")
+            return {
+                "transcript": "",
+                "intent": "general_chat",
+                "text_response": "I couldn't quite hear you. Could you repeat that?",
+                "suggested_action": None,
+                "audio_base64": None,
+                "transaction_data": None
+            }
+
         # 2. Brain Analysis (LLM)
         brain_result = await process_user_intent(transcript)
-        print(f"  [2/3] Brain Result: {brain_result['intent']} - '{brain_result['text_response'][:50]}...'")
+        print(f"  [2/3] Brain Intent: {brain_result.get('intent')} | Action: {brain_result.get('suggested_action')}")
         
         # 3. Voice Generation (TTS) - Optional/Auto
         audio_response = await generate_bodhi_speech(brain_result['text_response'])
-        print(f"  [3/3] Audio response generated.")
+        print(f"  [3/3] Audio response generated successfully.")
         
         return {
             "transcript": transcript,
             "intent": brain_result["intent"],
             "text_response": brain_result["text_response"],
             "suggested_action": brain_result.get("suggested_action"),
-            "audio_base64": audio_response
+            "audio_base64": audio_response,
+            "transaction_data": brain_result.get("transaction_data"),
         }
     except Exception as e:
         print(f"❌ CRASH in process_voice_command: {str(e)}")

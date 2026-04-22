@@ -73,11 +73,23 @@ export function AuthScreen({ navigation }: any) {
           formBody.push(encodedKey + "=" + encodedValue);
         }
 
-        const response = await fetch(`${API_URL}/token`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formBody.join('&'),
-        });
+        // AbortController gives fetch() an actual timeout (unlike axios, fetch has none by default)
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30000); // 30s
+        let response;
+        try {
+          response = await fetch(`${API_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formBody.join('&'),
+            signal: controller.signal,
+          });
+        } catch (fetchErr: any) {
+          if (fetchErr.name === 'AbortError') throw new Error('Connection timed out. Please check your network.');
+          throw new Error('Network request failed. Make sure you are connected to the same Wi-Fi as the server.');
+        } finally {
+          clearTimeout(timer);
+        }
 
         const rawText = await response.text();
         let data;
@@ -90,6 +102,8 @@ export function AuthScreen({ navigation }: any) {
         if (!response.ok) throw new Error(data.detail || 'Incorrect credentials');
 
         await AsyncStorage.setItem('bodhi_access_token', data.access_token);
+        // Also persist the user's full name for display across the app
+        if (data.full_name) await AsyncStorage.setItem('user_full_name', data.full_name);
 
         navigation.replace('Main');
 

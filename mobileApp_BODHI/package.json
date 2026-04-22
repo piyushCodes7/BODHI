@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "start": "react-native start",
+    "android": "node update-ip.js && react-native run-android",
+    "ios": "node update-ip.js && react-native run-ios",
+    "start": "node update-ip.js && react-native start",
     "ts": "tsc --noEmit"
   },
   "dependencies": {
