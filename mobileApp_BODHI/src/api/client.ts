@@ -23,7 +23,6 @@ export const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000, // 30s — real device over Wi-Fi can be slow on cold start
 });
-node update-ip.js 
 // Interceptor: Automatically attach the JWT token to every single request
 apiClient.interceptors.request.use(
   async (config) => {
@@ -90,6 +89,29 @@ export const UsersAPI = {
   },
   verifyPassword: async (password: string) => {
     const res = await apiClient.post('/users/verify', { password });
+    return res.data;
+  },
+  verifyUpin: async (u_pin: string) => {
+    const res = await apiClient.post('/auth/verify-upin', { u_pin });
+    return res.data;
+  }
+};
+
+export const AuthAPI = {
+  sendRegisterOtp: async (data: { email?: string; phone?: string }) => {
+    const res = await apiClient.post('/auth/send-register-otp', data);
+    return res.data;
+  },
+  verifyRegisterOtp: async (data: { email?: string; phone?: string; otp: string }) => {
+    const res = await apiClient.post('/auth/verify-register-otp', data);
+    return res.data;
+  },
+  requestPasswordReset: async (email: string) => {
+    const res = await apiClient.post('/auth/forgot-password', { email });
+    return res.data;
+  },
+  confirmPasswordReset: async (data: any) => {
+    const res = await apiClient.post('/auth/reset-password', data);
     return res.data;
   }
 };

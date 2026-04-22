@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
@@ -35,6 +36,7 @@ import { Colors, Radius, Spacing } from '../theme/tokens';
 import RNFS from 'react-native-fs';
 import { WebView } from 'react-native-webview';
 
+import { UsersAPI, NotificationAPI } from '../api/client';
 import { SARVAM_API_KEY, GEMINI_API_KEY, API_BASE_URL } from '@env';
 
 const NUM_BARS = 5;
@@ -51,6 +53,7 @@ const BAR_COLORS = [
 
 export function AIVoiceScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
 
   const [inputText, setInputText] = useState('');
   const [transcription, setTranscription] = useState('');
@@ -59,18 +62,31 @@ export function AIVoiceScreen() {
   const [userName, setUserName] = useState('User');
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
 
+  const [profile, setProfile] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserData = async () => {
       try {
-        const storedName = await AsyncStorage.getItem('user_full_name');
-        if (storedName) {
-          setUserName(storedName.split(' ')[0]);
+        // Fetch real-time profile
+        const profileData = await UsersAPI.fetchProfile();
+        setProfile(profileData);
+        if (profileData.full_name) {
+          setUserName(profileData.full_name.split(' ')[0]);
         }
+
+        // Fetch notifications to get unread count
+        const notifications = await NotificationAPI.fetchNotifications();
+        const unread = notifications.filter((n: any) => !n.is_read).length;
+        setUnreadCount(unread);
       } catch (error) {
-        console.error("Failed to fetch user name:", error);
+        console.error("Failed to fetch user data in AI screen:", error);
+        // Fallback to AsyncStorage if API fails
+        const storedName = await AsyncStorage.getItem('user_full_name');
+        if (storedName) setUserName(storedName.split(' ')[0]);
       }
     };
-    fetchUserName();
+    fetchUserData();
   }, []);
 
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
@@ -378,12 +394,21 @@ export function AIVoiceScreen() {
       >
         {/* ─── Header ─── */}
         <View style={styles.header}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity 
+            style={styles.avatarContainer}
+            onPress={() => (navigation as any).navigate('Profile')}
+          >
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>G</Text>
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarText}>
+                  {(profile?.full_name || userName || 'U').charAt(0).toUpperCase()}
+                </Text>
+              )}
             </View>
             <View style={styles.onlineDot} />
-          </View>
+          </TouchableOpacity>
 
           <Image
             source={require('../../assets/images/bodhi-logo.png')}
@@ -392,9 +417,12 @@ export function AIVoiceScreen() {
           />
 
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity 
+              style={styles.iconBtn}
+              onPress={() => (navigation as any).navigate('Notifications')}
+            >
               <Bell size={22} color="#FFF" />
-              <View style={styles.notifBadge} />
+              {unreadCount > 0 && <View style={styles.notifBadge} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -608,10 +636,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: Colors.neonLime,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImage: { width: '100%', height: '100%' },
   avatarText: { fontSize: 20, fontWeight: '800', color: '#000' },
   onlineDot: {
     position: 'absolute',
