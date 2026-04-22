@@ -16,7 +16,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
-import { ShieldCheck, Camera, CheckCircle2, Landmark, Fingerprint, Plane, Bell, ChevronRight, UserCog, User, Mail, Phone, ChevronLeft, LogOut, Trash2 } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ShieldCheck, Camera, CheckCircle2, Landmark, Fingerprint, Plane, Bell, ChevronRight, UserCog, User, Users, Mail, Phone, ChevronLeft, LogOut, Trash2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
@@ -28,6 +29,8 @@ export function ProfileScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
   const [originalData, setOriginalData] = useState<any>(null);
 
   // Modal State
@@ -42,6 +45,8 @@ export function ProfileScreen() {
       setFullName(data.full_name);
       setEmail(data.email);
       setPhone(data.phone || '');
+      setAge(data.age ? String(data.age) : '');
+      setGender(data.gender || '');
       setOriginalData(data);
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -94,10 +99,12 @@ export function ProfileScreen() {
         await UsersAPI.updateProfile({
           full_name: fullName,
           phone: phone,
+          age: parseInt(age) || 0,
+          gender: gender,
           current_password: password
         });
         await AsyncStorage.setItem('user_full_name', fullName);
-        setOriginalData({ ...originalData, full_name: fullName, phone });
+        setOriginalData({ ...originalData, full_name: fullName, phone, age: parseInt(age), gender });
         setIsModalVisible(false);
         Alert.alert("Success", "Profile updated successfully!");
       } else {
@@ -111,13 +118,29 @@ export function ProfileScreen() {
         });
       }
     } catch (error: any) {
-      Alert.alert("Failed", error.response?.data?.detail || "Operation failed.");
+      console.error("Profile Action Error:", error.response?.data);
+      let errorMsg = "Operation failed.";
+      const detail = error.response?.data?.detail;
+      
+      if (typeof detail === 'string') {
+        errorMsg = detail;
+      } else if (Array.isArray(detail)) {
+        // Handle FastAPI validation errors
+        errorMsg = detail.map(d => `${d.loc[d.loc.length-1]}: ${d.msg}`).join('\n');
+      }
+      
+      Alert.alert("Failed", errorMsg);
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  const isDirty = originalData && (fullName !== originalData.full_name || phone !== (originalData.phone || ''));
+  const isDirty = originalData && (
+    fullName !== originalData.full_name || 
+    phone !== (originalData.phone || '') ||
+    age !== (originalData.age ? String(originalData.age) : '') ||
+    gender !== (originalData.gender || '')
+  );
 
   if (loading) {
     return (
@@ -216,6 +239,53 @@ export function ProfileScreen() {
                 />
               </View>
               {isDirty && phone !== (originalData.phone || '') && (
+                <CheckCircle2 size={18} color={Colors.neonLime} />
+              )}
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.divider} />
+
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldIcon}>
+                <View style={{ transform: [{ scale: 0.9 }] }}>
+                  <User size={20} color={Colors.neonLime} />
+                </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>AGE</Text>
+                <TextInput
+                  style={styles.fieldInput}
+                  value={age}
+                  onChangeText={setAge}
+                  placeholder="e.g., 25"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  keyboardType="number-pad"
+                />
+              </View>
+              {isDirty && age !== (originalData.age ? String(originalData.age) : '') && (
+                <CheckCircle2 size={18} color={Colors.neonLime} />
+              )}
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.fieldRow}>
+              <View style={styles.fieldIcon}>
+                <Users size={20} color={Colors.neonLime} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>GENDER</Text>
+                <TextInput
+                  style={styles.fieldInput}
+                  value={gender}
+                  onChangeText={setGender}
+                  placeholder="e.g., Female"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                />
+              </View>
+              {isDirty && gender !== (originalData.gender || '') && (
                 <CheckCircle2 size={18} color={Colors.neonLime} />
               )}
             </View>
@@ -350,23 +420,24 @@ export function ProfileScreen() {
           <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ShieldCheck size={24} color={modalType === 'delete' ? '#FF4B4B' : Colors.neonLime} />
-              <Text style={styles.modalTitle}>Security Check</Text>
+              <Text style={styles.modalTitle}>{modalType === 'delete' ? 'Delete Account' : 'Authorize Update'}</Text>
               <Text style={styles.modalSub}>
                 {modalType === 'delete' 
-                  ? 'Please enter your password to confirm account deletion. This action is irreversible.'
-                  : 'Enter password to authorize profile changes.'}
+                  ? 'Please enter your M-PIN to confirm account deletion. This action is irreversible.'
+                  : 'Enter your M-PIN to authorize profile changes.'}
               </Text>
             </View>
 
             <View style={styles.modalInputWrapper}>
               <TextInput
-                style={styles.modalInput}
-                placeholder="Enter Password"
+                style={[styles.modalInput, { letterSpacing: 8, fontWeight: '800' }]}
+                placeholder="M-PIN"
                 placeholderTextColor="rgba(255,255,255,0.4)"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
                 autoFocus
+                keyboardType="default"
               />
             </View>
 
@@ -397,7 +468,6 @@ export function ProfileScreen() {
 }
 
 // ─── Styles ───
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#05001F' },

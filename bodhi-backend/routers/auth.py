@@ -3,22 +3,62 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel, EmailStr
+from typing import Optional
+import re
 
 from database import get_db
 from models.core import User
-from services.auth_service import get_password_hash, verify_password, create_access_token, timedelta, ACCESS_TOKEN_EXPIRE_MINUTES
-from services.auth_service import send_otp_email
+from services.auth_service import (
+    get_password_hash, 
+    verify_password, 
+    create_access_token, 
+    timedelta, 
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    send_otp_email,
+    send_otp_sms,
+    get_current_user
+)
+import random
+from datetime import datetime, timezone, timedelta
 
 router = APIRouter()
+
+def normalize_identifier(email: Optional[str] = None, phone: Optional[str] = None) -> str:
+    if email:
+        return email.lower().strip()
+    if phone:
+        # Keep only the last 10 digits to match regardless of +91 or 0 prefix
+        clean = re.sub(r'\D', '', phone)
+        return clean[-10:]
+    return ""
 
 class UserCreate(BaseModel):
     email: EmailStr      
     password: str
     full_name: str
     phone_number: str
+    m_pin: str
+    u_pin: str
+    age: int
+    gender: str
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
+class UpinVerify(BaseModel):
+    u_pin: str
+
+class OtpRequest(BaseModel):
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+
+class OtpVerify(BaseModel):
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    otp: str
+
+# In-memory storage for registration OTPs (In prod, use Redis!)
+register_otps = {}
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -29,17 +69,21 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
         
     # Create new user with ₹1,00,000 starting balance
-    hashed_password = get_password_hash(user_data.password)
+    hashed_mpin = get_password_hash(user_data.m_pin)
     new_user = User(
             email=user_data.email,
             full_name=user_data.full_name,
             phone=user_data.phone_number,
-            hashed_password=get_password_hash(user_data.password) # Keep your existing password hash logic
+            hashed_password=hashed_mpin, # M-PIN is used for primary login
+            m_pin=hashed_mpin,
+            u_pin=get_password_hash(user_data.u_pin),
+            age=user_data.age,
+            gender=user_data.gender
         )
     
     db.add(new_user)
     await db.commit()
-    return {"message": "User created successfully. Please log in."}
+    return {"message": "User created successfully. Welcome to BODHI!"}
 
 # Note: OAuth2PasswordRequestForm expects form data (username & password), not JSON!
 @router.post("/token")
@@ -67,9 +111,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
         "token_type": "bearer",
         "full_name": user.full_name,
     }
-
-import random
-from datetime import datetime, timezone
 
 @router.post("/forgot-password")
 async def request_password_reset(request: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
@@ -116,3 +157,63 @@ async def confirm_password_reset(request: PasswordResetConfirm, db: AsyncSession
     
     await db.commit()
     return {"message": "Password updated successfully"}
+
+@router.post("/send-register-otp")
+async def send_register_otp(request: OtpRequest):
+    identifier = normalize_identifier(request.email, request.phone)
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or Phone is required")
+        
+    otp = str(random.randint(100000, 999999))
+    register_otps[identifier] = {
+        "otp": otp,
+        "expiry": datetime.now(timezone.utc) + timedelta(minutes=10)
+    }
+    
+    print(f"\n🚀 [OTP DEBUG] Code for {identifier}: {otp}\n")
+    
+    if request.email:
+        # 🚀 SEND EMAIL
+        success = send_otp_email(request.email, otp)
+    else:
+        # 🚀 SEND SMS
+        success = send_otp_sms(request.phone, otp)
+        
+    if not success:
+        # 🧪 DEV BYPASS: Log it but don't fail the request.
+        # This allows the user to use the code from the terminal.
+        print("\n⚠️ [DEV NOTICE] OTP could not be sent. USE THIS CODE FROM THE TERMINAL TO PROCEED.\n")
+        return {"message": "OTP logic active. Please check the backend console for the code (Dev Mode)."}
+        
+    return {"message": "OTP sent successfully"}
+
+@router.post("/verify-register-otp")
+async def verify_register_otp(request: OtpVerify):
+    identifier = normalize_identifier(request.email, request.phone)
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or Phone is required")
+        
+    stored_data = register_otps.get(identifier)
+    
+    if not stored_data:
+        raise HTTPException(status_code=400, detail="No OTP sent to this recipient")
+        
+    if datetime.now(timezone.utc) > stored_data["expiry"]:
+        del register_otps[identifier]
+        raise HTTPException(status_code=400, detail="OTP has expired")
+        
+    if stored_data["otp"] != request.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    # Valid! Clean up
+    del register_otps[identifier]
+    return {"message": "OTP verified successfully"}
+@router.post("/verify-upin")
+async def verify_upin(request: UpinVerify, user: User = Depends(get_current_user)):
+    if not user.u_pin:
+        return {"success": True, "message": "No U-PIN set for this user."}
+        
+    if not verify_password(request.u_pin, user.u_pin):
+        raise HTTPException(status_code=400, detail="Invalid U-PIN")
+        
+    return {"success": True, "message": "U-PIN verified"}

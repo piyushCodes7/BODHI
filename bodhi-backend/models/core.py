@@ -103,6 +103,10 @@ class User(Base):
     )
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     email_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    m_pin: Mapped[str | None] = mapped_column(String(255), nullable=True) # Account Password / PIN
+    u_pin: Mapped[str | None] = mapped_column(String(255), nullable=True) # Transaction PIN
+    age: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
     # 🟢 --- NEW OAUTH COLUMNS END --- 🟢
 
     balance: Mapped[float] = mapped_column(Float, nullable=False, default=100000.0)
