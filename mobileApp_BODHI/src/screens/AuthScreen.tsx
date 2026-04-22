@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,13 @@ import {
   Lock,
   ChevronRight,
   ShieldCheck,
+  User,
+  ChevronDown,
+  CheckCircle2,
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing } from '../theme/tokens';
 import { SocialAuthButtons } from '../components/SocialAuthButtons';
-import { BASE_URL } from '../api/client';
+import { BASE_URL, AuthAPI } from '../api/client';
 
 // Automatically route to auth endpoints based on the global BASE_URL
 const API_URL = `${BASE_URL}/auth`;
@@ -37,15 +40,85 @@ export function AuthScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Wizard State
+  const [currentStep, setCurrentStep] = useState(0);
+
   // Form State
   const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mPin, setMPin] = useState('');
+  const [uPin, setUPin] = useState('');
   const [otp, setOtp] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [isGenderOpen, setIsGenderOpen] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
   // ─── HANDLERS ────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    let interval: any;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const startResendTimer = () => setResendTimer(60);
+
+
+  const handleSendOtp = async (target: 'email' | 'phone') => {
+    try {
+      const val = target === 'email' ? email : phone;
+      if (!val) {
+        Alert.alert("Error", `Please enter ${target} first`);
+        return;
+      }
+      
+      setIsLoading(true);
+      if (target === 'email') {
+        await AuthAPI.sendRegisterOtp({ email });
+        setIsEmailVerified(true);
+      } else {
+        await AuthAPI.sendRegisterOtp({ phone });
+        setIsPhoneVerified(true);
+      }
+      startResendTimer();
+      Alert.alert("Sent!", `OTP has been sent to your ${target}`);
+    } catch (error: any) {
+      Alert.alert("Error", error.response?.data?.detail || "Failed to send OTP");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (target: 'email' | 'phone') => {
+    try {
+      if (!otp || otp.length !== 6) {
+        Alert.alert("Error", "Please enter a valid 6-digit code");
+        return;
+      }
+
+      setIsLoading(true);
+      if (target === 'email') {
+        const res = await AuthAPI.verifyRegisterOtp({ email, otp });
+        setOtp(''); // Clear for next use
+        setResendTimer(0); // Clear timer
+        setCurrentStep(2); // Move straight to Step 2 (Security)
+      }
+    } catch (error: any) {
+      Alert.alert("Invalid Code", error.response?.data?.detail || "Verification failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleOAuthSuccess = (accessToken: string, isNewUser: boolean) => {
     console.log("OAuth Success Token:", accessToken);
@@ -53,9 +126,17 @@ export function AuthScreen({ navigation }: any) {
   };
 
   const handleStandardAuth = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter your email and password.');
-      return;
+    // Validate based on mode
+    if (authMode === 'signup') {
+      if (!email || !mPin || !uPin) {
+        Alert.alert('Error', 'Please enter your Email, M-PIN and U-PIN.');
+        return;
+      }
+    } else {
+      if (!email || !password) {
+        Alert.alert('Error', 'Please enter your email and password.');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -115,9 +196,13 @@ export function AuthScreen({ navigation }: any) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: email.trim().toLowerCase(),
-            password: password,
+            password: mPin, // Using M-PIN as the login password
             full_name: name,
-            phone_number: phone
+            phone_number: phone,
+            m_pin: mPin,
+            u_pin: uPin,
+            age: parseInt(age) || 0,
+            gender: gender
           }),
         });
 
@@ -128,7 +213,7 @@ export function AuthScreen({ navigation }: any) {
         } catch (e) {
           throw new Error(`Server error: ${rawText.substring(0, 100)}`);
         }
-        
+
         if (!response.ok) {
           let errorMsg = 'Could not create account';
           if (data.detail) {
@@ -146,8 +231,9 @@ export function AuthScreen({ navigation }: any) {
           throw new Error(errorMsg);
         }
 
-        Alert.alert('Success', 'Account created! Please log in.');
+        Alert.alert('Success', 'Account created! Welcome to BODHI.');
         setAuthMode('login');
+        setCurrentStep(0);
       }
     } catch (error: any) {
       Alert.alert('Authentication Failed', error.message);
@@ -306,9 +392,11 @@ export function AuthScreen({ navigation }: any) {
           <View style={styles.glassCard}>
 
             {/* ─── Standard Login / Signup Flow ─── */}
-            {(authMode === 'login' || authMode === 'signup') && (
+            {authMode === 'login' && (
               <>
-                {renderToggle()}
+                <Text style={styles.flowTitle}>Login to BODHI</Text>
+                <Text style={styles.flowSub}>Enter your credentials to access your account</Text>
+
                 <View style={styles.form}>
                   {authMode === 'signup' && (
                     <>
@@ -371,13 +459,14 @@ export function AuthScreen({ navigation }: any) {
                     </TouchableOpacity>
                   </View>
 
-                  {authMode === 'login' ? (
-                    <TouchableOpacity style={styles.forgotBtn} onPress={() => setAuthMode('forgot')}>
-                      <Text style={styles.forgotText}>Forgot password?</Text>
+                  <View style={styles.linksRow}>
+                    <TouchableOpacity onPress={() => setAuthMode('signup')}>
+                      <Text style={styles.linkText}>Sign Up</Text>
                     </TouchableOpacity>
-                  ) : (
-                    <View style={{ height: Spacing.xl }} />
-                  )}
+                    <TouchableOpacity onPress={() => setAuthMode('forgot')}>
+                      <Text style={styles.linkText}>Forgot password?</Text>
+                    </TouchableOpacity>
+                  </View>
 
                   <TouchableOpacity activeOpacity={0.8} onPress={handleStandardAuth} disabled={isLoading}>
                     <LinearGradient
@@ -405,10 +494,7 @@ export function AuthScreen({ navigation }: any) {
                     <View style={styles.dividerLine} />
                   </View>
                   <View style={styles.socialRow}>
-
-                    {/* Your existing functioning Social Component */}
                     <SocialAuthButtons onSuccess={handleOAuthSuccess} />
-
                     <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Phone', 'Coming soon!')}>
                       <Smartphone size={22} color="#FFF" />
                     </TouchableOpacity>
@@ -423,6 +509,257 @@ export function AuthScreen({ navigation }: any) {
                   </View>
                 </View>
               </>
+            )}
+
+            {/* ─── Sign Up Multi-Step Wizard ─── */}
+            {authMode === 'signup' && (
+              <View style={styles.form}>
+
+                {/* Progress Bar */}
+                <View style={styles.stepIndicator}>
+                  {[0, 1, 2].map((s) => (
+                    <View
+                      key={s}
+                      style={[
+                        styles.stepDot,
+                        currentStep >= s && { backgroundColor: Colors.neonLime, shadowColor: Colors.neonLime, shadowRadius: 4, elevation: 4 }
+                      ]}
+                    />
+                  ))}
+                </View>
+
+                {/* Step Titles */}
+                <Text style={styles.flowTitle}>
+                  {currentStep === 0 && "About You"}
+                  {currentStep === 1 && "Verifying Email"}
+                  {currentStep === 2 && "Secure Your Assets"}
+                </Text>
+                <Text style={styles.flowSub}>
+                  {currentStep === 0 && "Help us personalize your financial journey"}
+                  {currentStep === 1 && "Ensure your account is reachable"}
+                  {currentStep === 2 && "Set your secret access codes"}
+                </Text>
+
+                {/* STEP 0: BIO */}
+                {currentStep === 0 && (
+                  <>
+                    <Text style={styles.inputLabel}>FULL NAME</Text>
+                    <View style={styles.inputWrapper}>
+                      <User size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="e.g., Jane Doe"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={name}
+                        onChangeText={setName}
+                        autoCapitalize="words"
+                      />
+                    </View>
+
+                    <View style={{ flexDirection: 'row', gap: 16, zIndex: 1000 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.inputLabel}>AGE</Text>
+                        <View style={styles.inputWrapper}>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Age"
+                            placeholderTextColor="rgba(255,255,255,0.4)"
+                            value={age}
+                            onChangeText={setAge}
+                            keyboardType="number-pad"
+                          />
+                        </View>
+                      </View>
+
+                      <View style={{ flex: 1.5 }}>
+                        <Text style={styles.inputLabel}>GENDER</Text>
+                        <TouchableOpacity 
+                          style={[styles.dropdownHeader, isGenderOpen && { borderColor: Colors.neonLime, backgroundColor: 'rgba(200, 255, 0, 0.05)' }]} 
+                          onPress={() => setIsGenderOpen(!isGenderOpen)}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={[styles.dropdownHeaderText, !gender && { color: 'rgba(255,255,255,0.6)' }]}>
+                            {gender || "Select"}
+                          </Text>
+                          <ChevronDown size={18} color={Colors.neonLime} style={{ marginLeft: 8, transform: [{ rotate: isGenderOpen ? '180deg' : '0deg' }] }} />
+                        </TouchableOpacity>
+
+                        {isGenderOpen && (
+                          <View style={styles.dropdownList}>
+                            {['Male', 'Female', 'Other'].map((g) => (
+                              <TouchableOpacity 
+                                key={g} 
+                                style={styles.dropdownItem}
+                                onPress={() => {
+                                  setGender(g);
+                                  setIsGenderOpen(false);
+                                }}
+                              >
+                                <Text style={styles.dropdownItemText}>{g}</Text>
+                                {gender === g && <CheckCircle2 size={16} color={Colors.neonLime} />}
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                    </View>
+
+                    <Text style={styles.inputLabel}>PHONE NUMBER (Optional)</Text>
+                    <View style={styles.inputWrapper}>
+                      <Smartphone size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="+91 9876543210"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={phone}
+                        onChangeText={setPhone}
+                        keyboardType="phone-pad"
+                      />
+                    </View>
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => name && age && setCurrentStep(1)}
+                      style={{ marginTop: 32 }}
+                    >
+                      <LinearGradient colors={['#FFE259', '#C8FF00']} style={styles.primaryBtn}>
+                        <Text style={styles.primaryBtnText}>Continue</Text>
+                        <ChevronRight size={20} color="#000" style={{ position: 'absolute', right: 20 }} />
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* STEP 1: EMAIL */}
+                {currentStep === 1 && (
+                  <>
+                    <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+                    <View style={styles.inputWrapper}>
+                      <Mail size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={[styles.input, isEmailVerified && { color: 'rgba(255,255,255,0.4)' }]}
+                        placeholder="name@example.com"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        editable={!isEmailVerified}
+                      />
+                      <TouchableOpacity 
+                        style={styles.verifyInlineBtn} 
+                        disabled={resendTimer > 0 || isLoading}
+                        onPress={() => isEmailVerified ? setIsEmailVerified(false) : handleSendOtp('email')}
+                      >
+                        {isLoading ? (
+                          <ActivityIndicator size="small" color={Colors.neonLime} />
+                        ) : (
+                          <Text style={[styles.verifyInlineText, resendTimer > 0 && { color: 'rgba(255,255,255,0.3)' }]}>
+                            {resendTimer > 0 ? `Resend in ${resendTimer}s` : (isEmailVerified ? "Change" : "Send Code")}
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+
+                    {isEmailVerified && (
+                      <>
+                        <Text style={styles.inputLabel}>6-DIGIT EMAIL CODE</Text>
+                        <View style={styles.inputWrapper}>
+                          <TextInput
+                            style={[styles.input, { letterSpacing: 8, textAlign: 'center', fontWeight: '800' }]}
+                            placeholder="••••••"
+                            placeholderTextColor="rgba(255,255,255,0.2)"
+                            keyboardType="number-pad"
+                            maxLength={6}
+                            value={otp}
+                            onChangeText={setOtp}
+                          />
+                        </View>
+                      </>
+                    )}
+
+                    <TouchableOpacity 
+                      activeOpacity={0.8} 
+                      onPress={() => handleVerifyOtp('email')}
+                      style={{ marginTop: 32 }}
+                      disabled={!isEmailVerified || isLoading}
+                    >
+                      <LinearGradient 
+                        colors={isEmailVerified ? ['#FFE259', '#C8FF00'] : ['#333', '#222']} 
+                        style={styles.primaryBtn}
+                      >
+                        {isLoading ? <ActivityIndicator color="#000" /> : (
+                          <>
+                            <Text style={[styles.primaryBtnText, !isEmailVerified && { color: '#666' }]}>Verify & Next</Text>
+                            <ChevronRight size={20} color={isEmailVerified ? "#000" : "#666"} style={{ position: 'absolute', right: 20 }} />
+                          </>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* STEP 2: SECURITY & PINs */}
+                {currentStep === 2 && (
+  <>
+                    <Text style={styles.inputLabel}>SET M-PIN (LOGIN PASSWORD)</Text>
+                    <View style={styles.inputWrapper}>
+                      <Lock size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Can be text or numbers"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={mPin}
+                        onChangeText={setMPin}
+                        secureTextEntry
+                      />
+                    </View>
+
+                    <Text style={styles.inputLabel}>SET U-PIN (4 OR 6 DIGIT TRANSACTION PIN)</Text>
+                    <View style={styles.inputWrapper}>
+                      <ShieldCheck size={18} color={Colors.neonLime} style={styles.inputIcon} />
+                      <TextInput
+                        style={[styles.input, { letterSpacing: 4, fontWeight: '700' }]}
+                        placeholder="••••••"
+                        placeholderTextColor="rgba(255,255,255,0.2)"
+                        value={uPin}
+                        onChangeText={(val) => setUPin(val.replace(/[^0-9]/g, ''))}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        secureTextEntry
+                      />
+                    </View>
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={handleStandardAuth}
+                      style={{ marginTop: 32 }}
+                    >
+                      <LinearGradient
+                        colors={(mPin && (uPin.length === 4 || uPin.length === 6)) ? ['#FFE259', '#C8FF00'] : ['#333', '#222']}
+                        style={styles.primaryBtn}
+                      >
+                        {isLoading ? <ActivityIndicator color="#000" /> : (
+                          <Text style={[styles.primaryBtnText, !(mPin && (uPin.length === 4 || uPin.length === 6)) && { color: '#666' }]}>Complete Registration</Text>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* Navigation Links */}
+                <View style={styles.wizardFooter}>
+                  {currentStep > 0 && (
+                    <TouchableOpacity onPress={() => setCurrentStep(prev => prev - 1)}>
+                      <Text style={styles.linkText}>← Previous Step</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity onPress={() => { setAuthMode('login'); setCurrentStep(0); }}>
+                    <Text style={styles.linkText}>Back to Login</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
             )}
 
             {/* ─── Forgot Password Flow ─── */}
@@ -538,7 +875,8 @@ const styles = StyleSheet.create({
   glassCard: {
     backgroundColor: 'rgba(15, 10, 30, 0.6)',
     borderRadius: 30,
-    padding: Spacing.xl,
+    paddingHorizontal: 20,
+    paddingVertical: 32,
     borderWidth: 1,
     borderColor: 'rgba(255, 50, 150, 0.3)',
   },
@@ -552,17 +890,121 @@ const styles = StyleSheet.create({
 
   // ── FORM & TEXT ──
   form: { marginBottom: Spacing.sm },
-  flowTitle: { fontSize: 24, fontWeight: '800', color: '#FFF', marginBottom: 8, textAlign: 'center' },
-  flowSub: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 24, textAlign: 'center', lineHeight: 20 },
+  flowTitle: { 
+    fontSize: 22, 
+    fontWeight: '800', 
+    color: '#FFF', 
+    marginBottom: 6, 
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  flowSub: { 
+    fontSize: 12.5, 
+    color: 'rgba(255,255,255,0.6)', 
+    marginBottom: 20, 
+    textAlign: 'center', 
+    lineHeight: 18 
+  },
 
-  inputLabel: { fontSize: 11, fontWeight: '800', color: '#FFF', letterSpacing: 1.5, marginBottom: 8, marginTop: Spacing.md },
+  inputLabel: { 
+    fontSize: 10.5, 
+    fontWeight: '800', 
+    color: 'rgba(255,255,255,0.5)', 
+    letterSpacing: 1.2, 
+    marginBottom: 8, 
+    marginTop: 14 
+  },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.md, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   inputIcon: { marginLeft: 16, marginRight: 12 },
   input: { flex: 1, paddingVertical: 16, paddingHorizontal: 16, fontSize: 15, color: '#FFF', fontWeight: '500' },
   eyeBtn: { padding: 16 },
 
-  forgotBtn: { alignSelf: 'flex-end', marginTop: 12, marginBottom: Spacing.xl },
-  forgotText: { color: '#FF2D78', fontWeight: '700', fontSize: 13 },
+  linksRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    marginBottom: Spacing.xl
+  },
+  linkText: { color: '#FF2D78', fontWeight: '700', fontSize: 13 },
+
+  // ── WIZARD ──
+  stepIndicator: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24 },
+  stepDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.1)' },
+  verifyInlineBtn: { paddingRight: 16, justifyContent: 'center' },
+  verifyInlineText: { color: Colors.neonLime, fontWeight: '700', fontSize: 12 },
+  wizardFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 32, alignItems: 'center' },
+
+  genderBtnTextActive: { color: Colors.neonLime, fontWeight: '800' },
+
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: Radius.md,
+    height: 50,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)'
+  },
+  segmentBtn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: Radius.sm
+  },
+  segmentBtnActive: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2
+  },
+  segmentText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    fontWeight: '600'
+  },
+  segmentTextActive: {
+    color: Colors.neonLime,
+    fontWeight: '800'
+  },
+
+  dropdownHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: 'rgba(255,255,255,0.08)', 
+    borderRadius: Radius.md, 
+    height: 52, 
+    paddingHorizontal: 8, 
+    borderWidth: 1.5, 
+    borderColor: 'rgba(255,255,255,0.2)' 
+  },
+  dropdownHeaderText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  dropdownList: { 
+    position: 'absolute', 
+    top: 60, 
+    left: 0, 
+    right: 0, 
+    backgroundColor: '#2A0845', 
+    borderRadius: Radius.md, 
+    borderWidth: 1, 
+    borderColor: Colors.neonLime, 
+    overflow: 'hidden', 
+    shadowColor: Colors.neonLime, 
+    shadowOffset: { width: 0, height: 10 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 20, 
+    elevation: 20,
+    zIndex: 1000,
+  },
+  dropdownItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    padding: 18, 
+    borderBottomWidth: 1, 
+    borderBottomColor: 'rgba(255,255,255,0.1)' 
+  },
+  dropdownItemText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
 
   // ── BUTTON ──
   primaryBtn: { borderRadius: Radius.full, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10 },

@@ -85,7 +85,7 @@ export function VaultScreen() {
 
   // Password Modal State
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
-  const [password, setPassword] = useState('');
+  const [uPin, setUPin] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
   // Fetch user data from storage
@@ -229,23 +229,23 @@ export function VaultScreen() {
     if (balanceVisible) {
       setBalanceVisible(false);
     } else {
-      setPassword('');
+      setUPin('');
       setIsPasswordModalVisible(true);
     }
   };
 
-  const verifyBalancePassword = async () => {
-    if (hasPassword && !password) {
-      Alert.alert("Required", "Please enter your password to view the balance.");
+  const verifyBalanceUpin = async () => {
+    if (!uPin) {
+      Alert.alert("Required", "Please enter your U-PIN to view the balance.");
       return;
     }
     setIsVerifying(true);
     try {
-      await UsersAPI.verifyPassword(password);
+      await UsersAPI.verifyUpin(uPin);
       setBalanceVisible(true);
       setIsPasswordModalVisible(false);
     } catch (error: any) {
-      Alert.alert("Verification Failed", error.response?.data?.detail || "Incorrect password.");
+      Alert.alert("Verification Failed", error.response?.data?.detail || "Incorrect U-PIN.");
     } finally {
       setIsVerifying(false);
     }
@@ -613,27 +613,25 @@ export function VaultScreen() {
           <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ShieldCheck size={24} color={Colors.neonLime} />
-              <Text style={styles.modalTitle}>Security Check</Text>
+              <Text style={styles.modalTitle}>Enter U-PIN</Text>
               <Text style={styles.modalSub}>
-                {hasPassword 
-                  ? 'Enter your password to reveal your account balance.' 
-                  : 'Confirm to reveal your account balance.'}
+                Enter your secret 6-digit transaction PIN to reveal your balance.
               </Text>
             </View>
 
-            {hasPassword && (
               <View style={styles.modalInputWrapper}>
                 <TextInput
-                  style={styles.modalInput}
-                  placeholder="Enter Password"
+                  style={[styles.modalInput, { letterSpacing: 10, fontWeight: '800' }]}
+                  placeholder="••••••"
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
+                  value={uPin}
+                  onChangeText={setUPin}
+                  keyboardType="number-pad"
+                  maxLength={6}
                   autoFocus
                 />
               </View>
-            )}
 
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setIsPasswordModalVisible(false)}>
@@ -642,14 +640,14 @@ export function VaultScreen() {
               
               <TouchableOpacity 
                 style={styles.modalConfirm} 
-                onPress={verifyBalancePassword}
+                onPress={verifyBalanceUpin}
                 disabled={isVerifying}
               >
                 {isVerifying ? (
                   <ActivityIndicator size="small" color="#000" />
                 ) : (
                   <Text style={styles.modalConfirmText}>
-                    {hasPassword ? 'Verify' : 'Confirm'}
+                    Verify
                   </Text>
                 )}
               </TouchableOpacity>
