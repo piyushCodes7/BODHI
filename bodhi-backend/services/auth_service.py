@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
+import os
+import requests
+from dotenv import load_dotenv
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -19,11 +22,17 @@ SECRET_KEY = "super_secret_bodhi_key_do_not_share"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
+load_dotenv()
+
 # Configuration
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SENDER_EMAIL = "govindjindal7808@gmail.com" 
-SENDER_PASSWORD = "cebm qeiq dllk xkwo" 
+SENDER_EMAIL = os.getenv("SMTP_USER")
+SENDER_PASSWORD = os.getenv("SMTP_PASSWORD")
+
+# SMS Configuration (Fast2SMS)
+SMS_KEY = os.getenv("SMS_API_KEY")
+SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "FSTSMS")
 
 # Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -43,8 +52,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# --- THE LOCK ON THE DOOR ---
-# We will use this function to protect our trade endpoints
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -78,7 +85,7 @@ def send_otp_email(email_address: str, otp: str):
         <html>
             <body style="font-family: sans-serif; background-color: #000; color: #fff; padding: 20px;">
                 <h2 style="color: #CCFF00;">BODHI</h2>
-                <p>Use the code below to reset your password. Valid for 15 minutes.</p>
+                <p>Use the code below to verify your account. Valid for 10 minutes.</p>
                 <div style="background: #222; padding: 20px; border-radius: 10px; text-align: center;">
                     <span style="font-size: 32px; font-weight: bold; letter-spacing: 10px; color: #CCFF00;">{otp}</span>
                 </div>
@@ -89,12 +96,58 @@ def send_otp_email(email_address: str, otp: str):
         msg.attach(MIMEText(body, 'html'))
 
         # Connect and Send
+        print(f"📧 Attempting to send mail to {email_address} via {SENDER_EMAIL}...")
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
+        print(f"✅ Mail sent successfully to {email_address}")
         return True
     except Exception as e:
-        print(f"❌ Mail Error: {e}")
+        import traceback
+        print(f"❌ Mail Error for {email_address}: {e}")
+        traceback.print_exc()
+        return False
+
+def send_otp_sms(phone_number: str, otp: str):
+    try:
+        url = "https://www.fast2sms.com/dev/bulkV2"
+        
+        # Clean phone number (remove +91 and any non-digits)
+        import re
+        clean_phone = re.sub(r'\D', '', phone_number)
+        if clean_phone.startswith('91') and len(clean_phone) > 10:
+            clean_phone = clean_phone[2:]
+            
+        # 🔑 Ensure the key is stripped of any hidden spaces/newlines
+        clean_key = str(SMS_KEY).strip() if SMS_KEY else ""
+        
+        payload = {
+            "variables_values": otp,
+            "route": "otp",
+            "numbers": clean_phone
+        }
+        
+        headers = {
+            'authorization': clean_key,
+            'Content-Type': "application/json",
+            'Cache-Control': "no-cache",
+        }
+
+        print(f"📱 [XHR] Sending JSON OTP to {clean_phone}...")
+        response = requests.post(url, json=payload, headers=headers)
+        res_data = response.json()
+        
+        if res_data.get("return"):
+            print(f"✅ SMS sent successfully to {clean_phone}")
+            return True
+        else:
+            print(f"❌ SMS Gateway Error: {res_data.get('message')}")
+            return False
+            
+    except Exception as e:
+        import traceback
+        print(f"❌ SMS System Error: {e}")
+        traceback.print_exc()
         return False

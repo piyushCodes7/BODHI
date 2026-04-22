@@ -79,7 +79,13 @@ export const UsersAPI = {
     const res = await apiClient.get('/users/me');
     return res.data;
   },
-  updateProfile: async (data: { full_name?: string; phone?: string; current_password: string }) => {
+  updateProfile: async (data: { 
+    full_name?: string; 
+    phone?: string; 
+    age?: number; 
+    gender?: string; 
+    current_password: string 
+  }) => {
     const res = await apiClient.put('/users/me', data);
     return res.data;
   },
