@@ -156,6 +156,17 @@ export const TransactionAPI = {
   }
 };
 
+export const SubscriptionsAPI = {
+  fetchCatalog: async () => {
+    const res = await apiClient.get('/subscriptions/catalog');
+    return res.data;
+  },
+  addToVault: async (data: { platform_id: string; platform_name: string; expected_monthly_cost: number }) => {
+    const res = await apiClient.post('/subscriptions/vault/add', data);
+    return res.data;
+  }
+};
+
 /**
  * Text-to-Speech via backend → Sarvam TTS.
  * Returns a data URI string (base64 audio) or null on failure.
