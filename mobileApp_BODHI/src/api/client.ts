@@ -3,17 +3,12 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@env';
 
-// Determine the API Base URL dynamically
+// Centralized API configuration pointing to AWS Elastic Beanstalk
 const getBaseUrl = () => {
   if (API_BASE_URL) return API_BASE_URL;
   
-  // High-reliability fallback for Android Emulators
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000';
-  }
-  
-  // Standard fallback
-  return 'http://localhost:8000';
+  // Production Elastic Beanstalk Backend URL
+  return 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com';
 };
 
 const BASE_URL = getBaseUrl();

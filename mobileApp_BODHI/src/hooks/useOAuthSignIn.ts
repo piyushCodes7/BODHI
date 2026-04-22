@@ -7,8 +7,9 @@ import {
 import { appleAuth } from '@invertase/react-native-apple-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Automatically route to localhost on iOS Simulator, or 10.0.2.2 on Android Emulator
-const API_URL = Platform.OS === 'ios' ? 'http://127.0.0.1:8000/auth' : 'http://10.0.2.2:8000/auth';
+import { BASE_URL } from '../api/client';
+
+const API_URL = `${BASE_URL}/auth`;
 const JWT_STORAGE_KEY = 'bodhi_access_token';
 
 interface OAuthResult {

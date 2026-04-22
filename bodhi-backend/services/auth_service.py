@@ -17,12 +17,21 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# In a real production app, put this in a .env file!
-SECRET_KEY = "super_secret_bodhi_key_do_not_share"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
-
 load_dotenv()
+
+# ── Security config ────────────────────────────────────────────────────────────
+# SECRET_KEY MUST be set in .env on production. The fallback is only for local dev.
+_env_secret = os.getenv("SECRET_KEY")
+if not _env_secret:
+    import warnings
+    warnings.warn(
+        "\u26a0\ufe0f  SECRET_KEY not set in environment. Using insecure default. "
+        "Set SECRET_KEY in your .env before deploying!",
+        stacklevel=2,
+    )
+SECRET_KEY = _env_secret or "super_secret_bodhi_key_do_not_share"
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", str(60 * 24 * 7)))  # 7 days
 
 # Configuration
 SMTP_SERVER = "smtp.gmail.com"
@@ -37,8 +46,8 @@ SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "FSTSMS")
 # Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# This tells FastAPI where the frontend should send the login request
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# tokenUrl must match the actual login route: POST /auth/token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
