@@ -17,12 +17,13 @@ const getBaseUrl = () => {
 };
 
 const BASE_URL = getBaseUrl();
+console.log(`🔌 API Base URL initialized: ${BASE_URL}`);
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000, // 30s — real device over Wi-Fi can be slow on cold start
 });
-
+node update-ip.js 
 // Interceptor: Automatically attach the JWT token to every single request
 apiClient.interceptors.request.use(
   async (config) => {
