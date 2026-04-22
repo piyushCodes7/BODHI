@@ -167,7 +167,7 @@ export function AuthScreen({ navigation }: any) {
           });
         } catch (fetchErr: any) {
           if (fetchErr.name === 'AbortError') throw new Error('Connection timed out. Please check your network.');
-          throw new Error('Network request failed. Make sure you are connected to the same Wi-Fi as the server.');
+          throw new Error(`Network request failed. Ensure you have an active internet connection. (${fetchErr.message || fetchErr})`);
         } finally {
           clearTimeout(timer);
         }
