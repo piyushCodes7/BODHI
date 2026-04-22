@@ -41,8 +41,8 @@ const STEPS: OnboardingStep[] = [
   },
   {
     id: 2,
-    title: 'Your Financial\nImmune System',
-    subtitle: 'A proactive AI that runs invisibly in the background. It surfaces exactly once when it detects something worth your attention.',
+    title: 'Your Financial\nAssistant',
+    subtitle: 'A proactive AI that runs invisibly in the background. And you can ask anything about your money, anytime.',
     image: require('../../assets/images/step2_ai.png'),
     accentColor: '#111827',
   },
