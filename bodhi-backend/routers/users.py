@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 from database import get_db
 from models.core import User
+from models.manual_transaction import ManualTransaction
 from services.auth_service import get_current_user, verify_password, get_password_hash
 
 router = APIRouter()
@@ -94,3 +96,62 @@ async def verify_user_password(
             detail="Incorrect password.",
         )
     return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Manual Transactions (Voice-logged cash/offline transactions)
+# ─────────────────────────────────────────────────────────────
+
+class ManualTransactionCreate(BaseModel):
+    merchant: str
+    category: str
+    amount: float
+    type: str = "DEBIT"
+    note: Optional[str] = None  # original transcript
+
+class ManualTransactionRead(BaseModel):
+    id: str
+    merchant: str
+    category: str
+    amount: float
+    type: str
+    note: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+@router.post("/transactions", response_model=ManualTransactionRead, status_code=status.HTTP_201_CREATED)
+async def add_manual_transaction(
+    data: ManualTransactionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Save a cash/offline transaction that was voice-logged via the AI agent."""
+    tx = ManualTransaction(
+        user_id=current_user.id,
+        merchant=data.merchant,
+        category=data.category,
+        amount=data.amount,
+        type=data.type,
+        note=data.note,
+    )
+    db.add(tx)
+    await db.commit()
+    await db.refresh(tx)
+    return tx
+
+
+@router.get("/transactions", response_model=List[ManualTransactionRead])
+async def list_manual_transactions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Fetch all manually-logged transactions for the current user (newest first)."""
+    result = await db.execute(
+        select(ManualTransaction)
+        .where(ManualTransaction.user_id == current_user.id)
+        .order_by(ManualTransaction.created_at.desc())
+    )
+    return result.scalars().all()

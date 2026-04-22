@@ -1,5 +1,7 @@
 from routers.oauth import router as oauth_router
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from services.scheduler import scheduler
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -19,6 +21,7 @@ import models.wallets
 import models.expenses
 import models.payments
 import models.notification
+import models.manual_transaction  # AI voice-logged cash transactions
 
 # 1. Lifespan (Building the database)
 @asynccontextmanager
@@ -32,12 +35,13 @@ async def lifespan(app: FastAPI):
     yield
 
 # 2. CRITICAL: Create the app!
+# docs_url=None disables the default CDN-dependent docs so we can serve our own
 app = FastAPI(
     title="BODHI API",
     version="1.0.0",
     lifespan=lifespan,
-    # This adds the global lock icon to the UI
-    swagger_ui_parameters={"persistAuthorization": True} 
+    docs_url=None,   # We override this below with a custom CDN
+    swagger_ui_parameters={"persistAuthorization": True}
 )
 
 @app.on_event("startup")
@@ -58,6 +62,18 @@ app.add_middleware(
 # --- SECURITY DEFINITION ---
 # This tells FastAPI how to handle the lock icon and token injection
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+# Custom /docs endpoint using unpkg.com CDN (works on restricted/college networks
+# where the default cdn.jsdelivr.net is often blocked)
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="BODHI API - Swagger UI",
+        swagger_js_url="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js",
+        swagger_css_url="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css",
+        swagger_ui_parameters={"persistAuthorization": True},
+    )
 
 # 4. NOW we attach all the routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])

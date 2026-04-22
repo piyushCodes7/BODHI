@@ -3,12 +3,24 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@env';
 
-// Falls back to localhost if the env var is missing for any reason
-const BASE_URL = API_BASE_URL || 'http://10.30.15.187:8000';
+// Determine the API Base URL dynamically
+const getBaseUrl = () => {
+  if (API_BASE_URL) return API_BASE_URL;
+  
+  // High-reliability fallback for Android Emulators
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000';
+  }
+  
+  // Standard fallback
+  return 'http://localhost:8000';
+};
+
+const BASE_URL = getBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // 30s — real device over Wi-Fi can be slow on cold start
 });
 
 // Interceptor: Automatically attach the JWT token to every single request
@@ -67,7 +79,7 @@ export const UsersAPI = {
     const res = await apiClient.get('/users/me');
     return res.data;
   },
-  updateProfile: async (data: { full_name?: string; phone?: string; current_password: str }) => {
+  updateProfile: async (data: { full_name?: string; phone?: string; current_password: string }) => {
     const res = await apiClient.put('/users/me', data);
     return res.data;
   },
@@ -92,6 +104,25 @@ export const NotificationAPI = {
   },
   markAllAsRead: async () => {
     const res = await apiClient.post('/notifications/read-all');
+    return res.data;
+  }
+};
+
+export const TransactionAPI = {
+  /** Saves a voice-logged cash/offline transaction. Called after user confirms the AI's understanding. */
+  saveVoiceTransaction: async (data: {
+    merchant: string;
+    category: string;
+    amount: number;
+    type?: string;
+    note?: string;
+  }) => {
+    const res = await apiClient.post('/users/transactions', data);
+    return res.data;
+  },
+  /** Returns all manually-logged transactions for the current user. */
+  listManualTransactions: async () => {
+    const res = await apiClient.get('/users/transactions');
     return res.data;
   }
 };
