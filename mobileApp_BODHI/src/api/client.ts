@@ -1,13 +1,11 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '@env';
 
-// Centralized API configuration pointing to AWS Elastic Beanstalk
+
+// Hardcoded API configuration pointing to AWS Elastic Beanstalk
+// (Bypassing @env to ensure Metro cache issues don't accidentally load local IP)
 const getBaseUrl = () => {
-  if (API_BASE_URL) return API_BASE_URL;
-  
-  // Production Elastic Beanstalk Backend URL
   return 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com';
 };
 
