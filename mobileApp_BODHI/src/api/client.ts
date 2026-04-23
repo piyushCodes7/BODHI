@@ -323,4 +323,37 @@ export const TravelAPI = {
   },
 };
 
+// ── Collaboration API (Scoped Chat, Polls, Activity) ───────────────────────
+export const CollaborationAPI = {
+  // Polls
+  createPoll: async (type: 'trip' | 'investment', id: number, data: { question: string; options: string[]; expires_hours?: number }) => {
+    const res = await apiClient.post(`/collaboration/${type}/${id}/polls`, data);
+    return res.data;
+  },
+  listPolls: async (type: 'trip' | 'investment', id: number) => {
+    const res = await apiClient.get(`/collaboration/${type}/${id}/polls`);
+    return res.data;
+  },
+  votePoll: async (type: 'trip' | 'investment', id: number, pollId: string, option_id: number) => {
+    const res = await apiClient.post(`/collaboration/${type}/${id}/polls/${pollId}/vote`, { option_id });
+    return res.data;
+  },
+
+  // Messages
+  getMessages: async (type: 'trip' | 'investment', id: number, before?: string) => {
+    const res = await apiClient.get(`/collaboration/${type}/${id}/messages`, { params: { before, limit: 50 } });
+    return res.data;
+  },
+  sendMessage: async (type: 'trip' | 'investment', id: number, message: string) => {
+    const res = await apiClient.post(`/collaboration/${type}/${id}/messages`, { message });
+    return res.data;
+  },
+
+  // Activity
+  getActivity: async (type: 'trip' | 'investment', id: number) => {
+    const res = await apiClient.get(`/collaboration/${type}/${id}/activity`);
+    return res.data;
+  },
+};
+
 export { BASE_URL };

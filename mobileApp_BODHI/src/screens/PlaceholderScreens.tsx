@@ -180,16 +180,6 @@ export const PaperTradeScreen: React.FC = () => (
   />
 );
 
-export const VentureClubScreen: React.FC = () => (
-  <PlaceholderShell
-    icon="💎"
-    title="Venture Club"
-    subtitle="Gain access to exclusive early-stage deals and private equity rounds."
-    ctaLabel="Join Waitlist"
-    onCta={() => Alert.alert('Coming Soon', 'Venture Club access is currently invite-only.')}
-  />
-);
-
 export const TravelBookingScreen: React.FC = () => (
   <PlaceholderShell
     icon="✈️"

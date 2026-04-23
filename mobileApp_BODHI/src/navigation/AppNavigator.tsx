@@ -19,6 +19,7 @@ import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
 import { PaymentScreen }                 from '../screens/PaymentScreen';
 import { VentureClubScreen }             from '../screens/VentureClubScreen';
 import { TripWalletScreen }              from '../screens/TripWalletScreen'; 
+import { CreatePollScreen }              from '../screens/CreatePollScreen';
 import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
 import { TransactionHistoryScreen }      from '../screens/TransactionHistoryScreen';
 import { ScanPayScreen }                 from '../screens/ScanPayScreen';
@@ -69,6 +70,7 @@ function RootNavigator() {
 
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="CreatePoll" component={CreatePollScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TransactionHistory" component={TransactionHistoryScreen} options={{ animation: 'slide_from_bottom' }} />
       <RootStack.Screen name="Notifications" component={NotificationScreen} options={{ animation: 'slide_from_right' }} />

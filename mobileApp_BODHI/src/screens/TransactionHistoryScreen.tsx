@@ -12,13 +12,22 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { MOCK_TRANSACTIONS, Transaction } from '../data/mockTransactions';
 import { TransactionAPI } from '../api/client';
+
+export interface Transaction {
+  id: string;
+  amount: number;
+  merchant: string;
+  category: string;
+  date: string;
+  type: 'CREDIT' | 'DEBIT';
+  account_last4?: string;
+}
 
 export function TransactionHistoryScreen() {
   const navigation = useNavigation();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -37,7 +46,7 @@ export function TransactionHistoryScreen() {
         account_last4: 'Manual'
       }));
 
-      const combined = [...translatedTxs, ...MOCK_TRANSACTIONS].sort((a, b) =>
+      const combined = [...translatedTxs].sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
