@@ -1,6 +1,6 @@
 /**
  * VentureClubScreen.tsx
- * Isolated Group Paper Trading & Polling for BODHI
+ * Redesigned Premium Experience for BODHI
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,12 +12,21 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
-  Alert
+  Alert,
+  Share,
+  Dimensions
 } from 'react-native';
-import { ChevronLeft, TrendingUp, Vote, Plus, BarChart2, Wallet } from 'lucide-react-native';
+import { 
+  ChevronLeft, TrendingUp, Vote, Plus, 
+  BarChart2, Wallet, MessageCircle, Activity, 
+  Share2, ArrowUpRight, ArrowDownLeft
+} from 'lucide-react-native';
 import { apiClient } from '../api/client';
+import { CollaborationView } from '../components/CollaborationView';
+import LinearGradient from 'react-native-linear-gradient';
 
-// ── Design Tokens ──
+const { width: W } = Dimensions.get('window');
+
 const C = {
   bg: '#07051A',
   cardBg: '#0E0C24',
@@ -25,31 +34,19 @@ const C = {
   purple: '#A855F7',
   red: '#F43F5E',
   white: '#FFFFFF',
-  whiteDim: 'rgba(255,255,255,0.4)',
+  whiteMid: 'rgba(255,255,255,0.7)',
+  whiteDim: 'rgba(255,255,255,0.3)',
   border: 'rgba(255,255,255,0.08)',
 };
 
-// ── Mock Data (For holdings and polls until Phase 2 & 3) ──
-const GROUP_PORTFOLIO = [
-  { id: '1', symbol: 'RELIANCE', qty: 15, avgPrice: 2840.50, currentPrice: 2910.00 },
-  { id: '2', symbol: 'TATAMOTORS', qty: 50, avgPrice: 920.00, currentPrice: 985.20 },
-];
-
-const ACTIVE_POLLS = [
-  { id: 'p1', type: 'BUY', symbol: 'ZOMATO', qty: 100, votesFor: 3, votesAgainst: 1, totalNeeded: 5 },
-];
-
 export function VentureClubScreen({ route, navigation }: any) {
   const { clubId, clubName } = route.params || {};
-  const [tab, setTab] = useState<'PORTFOLIO' | 'POLLS'>('PORTFOLIO');
-  
-  // ── Live State ──
+  const [tab, setTab] = useState<'PORTFOLIO' | 'CHAT' | 'POLLS' | 'FEED'>('PORTFOLIO');
   const [loading, setLoading] = useState(true);
   const [clubData, setClubData] = useState<any>(null);
 
   const formatINR = (val: number) => `₹${(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
-  // 1. Fetch live pool data
   const fetchClubData = async () => {
     if (!clubId) return;
     try {
@@ -68,7 +65,16 @@ export function VentureClubScreen({ route, navigation }: any) {
     fetchClubData();
   }, [clubId]);
 
-  // 2. Add Funds Handler
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Join my investment club "${clubData?.name}" on BODHI! Use invite code: ${clubData?.invite_code}`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleAddFunds = () => {
     Alert.prompt(
       'Add Funds to Pool',
@@ -80,12 +86,11 @@ export function VentureClubScreen({ route, navigation }: any) {
           onPress: async (amountStr) => {
             const amount = parseFloat(amountStr || '0');
             if (!amount || amount <= 0) return;
-            
             try {
               await apiClient.post(`/social/investments/${clubId}/contribute`, {
                 amount: amount,
               });
-              await fetchClubData(); // Instantly refresh the buying power
+              await fetchClubData();
             } catch (e) {
               Alert.alert("Error", "Failed to add funds.");
             }
@@ -95,6 +100,39 @@ export function VentureClubScreen({ route, navigation }: any) {
       'plain-text',
       '',
       'number-pad'
+    );
+  };
+
+  const handleProposeTrade = () => {
+    Alert.prompt(
+      'Propose Trade',
+      'Enter Symbol, Qty, Type (e.g., RELIANCE.NS, 10, BUY)',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Propose',
+          onPress: async (input) => {
+            const parts = input?.split(',').map(s => s.trim());
+            if (!parts || parts.length < 3) {
+              Alert.alert("Error", "Format: Symbol, Qty, Type");
+              return;
+            }
+            const [symbol, qtyStr, type] = parts;
+            const quantity = parseFloat(qtyStr);
+            try {
+              await apiClient.post(`/social/investments/${clubId}/polls`, {
+                symbol,
+                quantity,
+                type: type.toUpperCase()
+              });
+              await fetchClubData();
+              Alert.alert("Success", "Proposal created! Members can now vote.");
+            } catch (e) {
+              Alert.alert("Error", "Failed to create proposal.");
+            }
+          },
+        },
+      ],
     );
   };
 
@@ -108,181 +146,259 @@ export function VentureClubScreen({ route, navigation }: any) {
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* ── HEADER ── */}
+      {/* ── PREMIUM HEADER ── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={20}>
-          <ChevronLeft color={C.white} size={28} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>{clubData.name || clubName}</Text>
-          <Text style={styles.headerSub}>Isolated Group Fund</Text>
-        </View>
-        <View style={{ width: 28 }} />
-      </View>
-
-      {/* ── TABS ── */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, tab === 'PORTFOLIO' && styles.activeTab]}
-          onPress={() => setTab('PORTFOLIO')}
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.headerBtn}
+          activeOpacity={0.7}
         >
-          <BarChart2 size={16} color={tab === 'PORTFOLIO' ? C.bg : C.whiteDim} />
-          <Text style={[styles.tabText, tab === 'PORTFOLIO' && styles.activeTabText]}>
-            Portfolio
-          </Text>
+          <ChevronLeft color={C.white} size={24} />
         </TouchableOpacity>
         
-        <TouchableOpacity
-          style={[styles.tab, tab === 'POLLS' && styles.activeTab]}
-          onPress={() => setTab('POLLS')}
-        >
-          <Vote size={16} color={tab === 'POLLS' ? C.bg : C.whiteDim} />
-          <Text style={[styles.tabText, tab === 'POLLS' && styles.activeTabText]}>
-            Active Polls (1)
-          </Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle} numberOfLines={1}>{clubData.name || clubName}</Text>
+          <View style={styles.headerBadge}>
+            <TrendingUp size={10} color={C.purple} />
+            <Text style={styles.headerBadgeText}>{clubData.members?.length || 0} Partners</Text>
+            <Text style={styles.headerBadgeDot}>•</Text>
+            <Text style={styles.headerBadgeText}>Invite: {clubData.invite_code}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={handleShare} style={styles.headerBtn} activeOpacity={0.7}>
+          <Share2 color={C.white} size={22} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {tab === 'PORTFOLIO' ? (
-          <>
-            <View style={styles.summaryCard}>
+      {/* ── CONSOLIDATED TABS ── */}
+      <View style={styles.tabContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
+          {[
+            { key: 'PORTFOLIO', icon: BarChart2, label: 'Portfolio' },
+            { key: 'CHAT', icon: MessageCircle, label: 'Chat' },
+            { key: 'POLLS', icon: Vote, label: 'Polls' },
+            { key: 'FEED', icon: Activity, label: 'Activity' },
+          ].map(t => (
+            <TouchableOpacity
+              key={t.key}
+              style={[styles.tab, tab === t.key && styles.activeTab]}
+              onPress={() => setTab(t.key as any)}
+              activeOpacity={0.8}
+            >
+              <t.icon size={16} color={tab === t.key ? C.bg : C.whiteDim} />
+              <Text style={[styles.tabText, tab === t.key && styles.activeTabText]}>{t.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {tab === 'PORTFOLIO' ? (
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <LinearGradient
+            colors={['#4F46E5', '#0E0C24']}
+            style={styles.summaryCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View>
               <Text style={styles.summaryLabel}>Group Buying Power</Text>
               <Text style={styles.summaryValue}>{formatINR(clubData.buying_power)}</Text>
-              
-              <TouchableOpacity 
-                style={styles.addFundsBtn} 
-                activeOpacity={0.8}
-                onPress={handleAddFunds}
-              >
-                <Wallet size={16} color={C.purple} />
-                <Text style={styles.addFundsText}>Add Funds</Text>
-              </TouchableOpacity>
             </View>
+            <View style={styles.summaryIconBox}>
+              <Wallet size={32} color={C.white} />
+            </View>
+          </LinearGradient>
 
-            <Text style={styles.sectionTitle}>Current Holdings</Text>
-            {GROUP_PORTFOLIO.map((item) => {
-              const profit = (item.currentPrice - item.avgPrice) * item.qty;
-              const isPositive = profit >= 0;
-              return (
-                <View key={item.id} style={styles.holdingCard}>
-                  <View>
-                    <Text style={styles.symbol}>{item.symbol}</Text>
-                    <Text style={styles.qty}>{item.qty} Shares @ {formatINR(item.avgPrice)}</Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={styles.currentPrice}>{formatINR(item.currentPrice)}</Text>
-                    <Text style={[styles.profit, { color: isPositive ? C.neonLime : C.red }]}>
-                      {isPositive ? '+' : ''}{formatINR(profit)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </>
-        ) : (
-          <>
-            <TouchableOpacity style={styles.proposeBtn} activeOpacity={0.8}>
-              <Plus size={20} color={C.bg} />
-              <Text style={styles.proposeBtnText}>Propose New Trade</Text>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.actionBtn} onPress={handleAddFunds} activeOpacity={0.8}>
+              <LinearGradient colors={[C.neonLime, '#A3CF00']} style={styles.actionBtnGrad}>
+                <Plus size={20} color={C.bg} strokeWidth={3} />
+                <Text style={styles.actionBtnText}>Add Funds</Text>
+              </LinearGradient>
             </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionBtnSecondary} onPress={handleProposeTrade} activeOpacity={0.8}>
+              <ArrowUpRight size={18} color={C.neonLime} />
+              <Text style={styles.actionBtnTextSecondary}>Propose Trade</Text>
+            </TouchableOpacity>
+          </View>
 
-            {ACTIVE_POLLS.map((poll) => (
-              <View key={poll.id} style={styles.pollCard}>
-                <View style={styles.pollHeader}>
-                  <View style={[styles.badge, { backgroundColor: poll.type === 'BUY' ? 'rgba(200,255,0,0.1)' : 'rgba(244,63,94,0.1)' }]}>
-                    <Text style={[styles.badgeText, { color: poll.type === 'BUY' ? C.neonLime : C.red }]}>
-                      {poll.type}
-                    </Text>
-                  </View>
-                  <Text style={styles.pollTitle}>{poll.qty}x {poll.symbol}</Text>
-                </View>
-                
-                <View style={styles.progressContainer}>
-                  <View style={styles.progressLabels}>
-                    <Text style={styles.progressText}>Votes For: {poll.votesFor}</Text>
-                    <Text style={styles.progressText}>Needed: {poll.totalNeeded}</Text>
-                  </View>
-                  <View style={styles.progressBarBg}>
-                    <View style={[styles.progressBarFill, { width: `${(poll.votesFor / poll.totalNeeded) * 100}%` }]} />
-                  </View>
-                </View>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Club Holdings</Text>
+            <Text style={styles.holdingCount}>{clubData.holdings?.length || 0} Assets</Text>
+          </View>
 
-                <View style={styles.voteActions}>
-                  <TouchableOpacity style={[styles.voteBtn, { borderColor: C.neonLime }]}>
-                    <Text style={[styles.voteBtnText, { color: C.neonLime }]}>Vote YES</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.voteBtn, { borderColor: C.red }]}>
-                    <Text style={[styles.voteBtnText, { color: C.red }]}>Vote NO</Text>
-                  </TouchableOpacity>
+          {(!clubData.holdings || clubData.holdings.length === 0) && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>No holdings yet. Start investing together!</Text>
+            </View>
+          )}
+
+          {clubData.holdings?.map((item: any) => {
+            const currentPrice = item.currentPrice || item.avgPrice;
+            const profit = (currentPrice - item.avgPrice) * item.qty;
+            const isPositive = profit >= 0;
+            return (
+              <View key={item.id} style={styles.holdingCard}>
+                <View style={[styles.holdingIcon, { backgroundColor: isPositive ? 'rgba(200,255,0,0.1)' : 'rgba(244,63,94,0.1)' }]}>
+                   {isPositive ? <ArrowUpRight size={20} color={C.neonLime} /> : <ArrowDownLeft size={20} color={C.red} />}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.symbol}>{item.symbol}</Text>
+                  <Text style={styles.qty}>{item.qty} Shares @ {formatINR(item.avgPrice)}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.currentPrice}>{formatINR(currentPrice)}</Text>
+                  <Text style={[styles.profit, { color: isPositive ? C.neonLime : C.red }]}>
+                    {isPositive ? '+' : ''}{formatINR(profit)}
+                  </Text>
                 </View>
               </View>
+            );
+          })}
+          
+          <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+            <Text style={styles.sectionTitle}>Partner Shares</Text>
+          </View>
+          <View style={styles.partnerList}>
+            {clubData.members?.map((m: any) => (
+              <View key={m.user_id} style={styles.partnerRow}>
+                <View style={styles.partnerAvatar}>
+                   <User size={16} color={C.white} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.partnerName}>{m.user_id.substring(0, 15)}...</Text>
+                </View>
+                <Text style={styles.partnerShare}>{m.share || 0}% Share</Text>
+              </View>
             ))}
-          </>
-        )}
-      </ScrollView>
+          </View>
+        </ScrollView>
+      ) : (
+        <CollaborationView type="investment" id={clubId} activeTab={tab as any} />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
-  headerTitleContainer: { alignItems: 'center' },
-  headerTitle: { color: C.white, fontSize: 20, fontWeight: '800' },
-  headerSub: { color: C.purple, fontSize: 12, fontWeight: '600', marginTop: 2 },
   
-  tabContainer: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, gap: 10 },
-  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: C.cardBg, borderWidth: 1, borderColor: C.border, gap: 6 },
+  // HEADER
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 16, 
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: C.border
+  },
+  headerTitleContainer: { flex: 1, alignItems: 'center', paddingHorizontal: 10 },
+  headerTitle: { color: C.white, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  headerBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
+  headerBadgeText: { color: C.whiteDim, fontSize: 10, fontWeight: '700' },
+  headerBadgeDot: { color: C.whiteDim, fontSize: 10 },
+
+  // TABS
+  tabContainer: { paddingVertical: 15 },
+  tab: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
+    borderRadius: 14, 
+    backgroundColor: C.cardBg, 
+    borderWidth: 1, 
+    borderColor: C.border, 
+    gap: 8 
+  },
   activeTab: { backgroundColor: C.neonLime, borderColor: C.neonLime },
-  tabText: { color: C.whiteDim, fontSize: 14, fontWeight: '700' },
+  tabText: { color: C.whiteDim, fontSize: 13, fontWeight: '800' },
   activeTabText: { color: C.bg },
 
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
-  sectionTitle: { color: C.white, fontSize: 16, fontWeight: '700', marginBottom: 12, marginTop: 10 },
-  
-  summaryCard: { backgroundColor: C.purple, padding: 20, borderRadius: 20, marginBottom: 24, alignItems: 'center' },
-  summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '600', marginBottom: 4 },
-  summaryValue: { color: C.white, fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
 
-  holdingCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: C.cardBg, padding: 16, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: C.border },
-  symbol: { color: C.white, fontSize: 16, fontWeight: '800', marginBottom: 4 },
-  qty: { color: C.whiteDim, fontSize: 12, fontWeight: '500' },
-  currentPrice: { color: C.white, fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  profit: { fontSize: 13, fontWeight: '700' },
+  // SUMMARY
+  summaryCard: { 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24, 
+    borderRadius: 28, 
+    marginBottom: 24, 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '700', marginBottom: 6 },
+  summaryValue: { color: C.white, fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  summaryIconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
 
-  proposeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: C.neonLime, paddingVertical: 16, borderRadius: 16, marginBottom: 24, gap: 8 },
-  proposeBtnText: { color: C.bg, fontSize: 15, fontWeight: '800' },
-
-  pollCard: { backgroundColor: C.cardBg, padding: 20, borderRadius: 20, borderWidth: 1, borderColor: C.border },
-  pollHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { fontSize: 12, fontWeight: '800' },
-  pollTitle: { color: C.white, fontSize: 18, fontWeight: '800' },
-  
-  progressContainer: { marginBottom: 24 },
-  progressLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  progressText: { color: C.whiteDim, fontSize: 12, fontWeight: '600' },
-  progressBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' },
-  progressBarFill: { height: '100%', backgroundColor: C.neonLime, borderRadius: 4 },
-
-  voteActions: { flexDirection: 'row', gap: 12 },
-  voteBtn: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
-  voteBtnText: { fontSize: 14, fontWeight: '700' },
-
-  addFundsBtn: { 
+  // ACTIONS
+  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 30 },
+  actionBtn: { flex: 1.2 },
+  actionBtnGrad: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: C.white, 
-    paddingHorizontal: 16, 
-    paddingVertical: 8, 
+    justifyContent: 'center', 
+    paddingVertical: 15, 
+    borderRadius: 18, 
+    gap: 8 
+  },
+  actionBtnText: { color: C.bg, fontSize: 15, fontWeight: '800' },
+  actionBtnSecondary: { 
+    flex: 1, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: C.neonLime,
+    borderRadius: 18,
+    gap: 8
+  },
+  actionBtnTextSecondary: { color: C.neonLime, fontSize: 15, fontWeight: '800' },
+
+  // SECTIONS
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  sectionTitle: { color: C.white, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
+  holdingCount: { color: C.whiteDim, fontSize: 12, fontWeight: '600' },
+
+  holdingCard: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: C.cardBg, 
+    padding: 16, 
     borderRadius: 20, 
-    marginTop: 16, 
-    gap: 6 
+    marginBottom: 12, 
+    borderWidth: 1, 
+    borderColor: C.border 
   },
-  addFundsText: { 
-    color: C.purple, 
-    fontSize: 14, 
-    fontWeight: '800' 
-  },
+  holdingIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
+  symbol: { color: C.white, fontSize: 15, fontWeight: '800', marginBottom: 2 },
+  qty: { color: C.whiteDim, fontSize: 11, fontWeight: '600' },
+  currentPrice: { color: C.white, fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  profit: { fontSize: 13, fontWeight: '700' },
+
+  // PARTNERS
+  partnerList: { backgroundColor: C.cardBg, borderRadius: 24, padding: 8, borderWidth: 1, borderColor: C.border },
+  partnerRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
+  partnerAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.purple, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  partnerName: { color: C.white, fontSize: 14, fontWeight: '700' },
+  partnerShare: { color: C.neonLime, fontSize: 14, fontWeight: '800' },
+
+  emptyState: { padding: 40, alignItems: 'center' },
+  emptyStateText: { color: C.whiteDim, fontSize: 14, fontWeight: '600' },
 });

@@ -58,54 +58,26 @@ const C = {
 // ── Types ────────────────────────────────────────────────────
 
 interface InvestmentClub {
-  id: string;
+  id: number;
   name: string;
-  members: number;
-  pendingVotes: number;
-  totalValue: string;
-  totalReturns: string;
-  returnsPct: string;
-  yourShare: string;
+  member_count: number;
+  pending_votes: number;
+  total_value: string;
+  total_returns: string;
+  returns_pct: string;
+  your_share: string;
 }
 
 interface TripWallet {
-  id: string;
+  id: number;
   name: string;
-  members: number;
-  status: string;
-  totalBalance: string;
-  youSpent: string;
-  youOwe: string;
-  owes: boolean; // true = you owe money
+  member_count: number;
+  status_label: string;
+  total_balance: string;
+  you_spent: string;
+  you_owe: string;
+  you_owe_raw: number;
 }
-
-// ── Mock Data ─────────────────────────────────────────────────
-
-const INIT_VENTURES: InvestmentClub[] = [
-  {
-    id: 'v1',
-    name: 'Growth Alphas',
-    members: 5,
-    pendingVotes: 1,
-    totalValue: '₹2,45,680.50',
-    totalReturns: '+₹18,750.30',
-    returnsPct: '+8.25%',
-    yourShare: '₹49,136.10',
-  },
-];
-
-const INIT_TRIPS: TripWallet[] = [
-  {
-    id: 't1',
-    name: 'Thailand Trip',
-    members: 4,
-    status: 'Just started',
-    totalBalance: '₹62,340.00',
-    youSpent: '₹8,120.00',
-    youOwe: '₹2,430.00',
-    owes: true,
-  },
-];
 
 // ── Sub-Components ────────────────────────────────────────────
 
@@ -133,7 +105,6 @@ function InvestmentCard({
 }) {
   return (
     <View style={styles.card}>
-      {/* Subtle top accent line */}
       <LinearGradient
         colors={[C.purple, 'transparent']}
         start={{ x: 0, y: 0 }}
@@ -141,7 +112,6 @@ function InvestmentCard({
         style={styles.cardAccentLine}
       />
 
-      {/* Card Header */}
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderLeft}>
           <View style={[styles.iconBox, { backgroundColor: C.purpleBg, borderColor: C.purple }]}>
@@ -151,13 +121,13 @@ function InvestmentCard({
             <Text style={styles.cardName}>{club.name}</Text>
             <View style={styles.metaRow}>
               <Users size={11} color={C.whiteDim} />
-              <Text style={styles.cardMeta}>{club.members} Members</Text>
-              {club.pendingVotes > 0 && (
+              <Text style={styles.cardMeta}>{club.member_count} Members</Text>
+              {club.pending_votes > 0 && (
                 <>
                   <Text style={styles.metaDot}>·</Text>
                   <Vote size={11} color={C.neonLime} />
                   <Text style={[styles.cardMeta, { color: C.neonLime }]}>
-                    {club.pendingVotes} Vote Pending
+                    {club.pending_votes} Vote Pending
                   </Text>
                 </>
               )}
@@ -175,35 +145,32 @@ function InvestmentCard({
         </View>
       </View>
 
-      {/* Divider */}
       <View style={styles.cardInternalDivider} />
 
-      {/* Stats Grid */}
       <View style={styles.statsGrid}>
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>Total Value</Text>
-          <Text style={[styles.statValue, { color: C.neonLime }]}>{club.totalValue}</Text>
+          <Text style={[styles.statValue, { color: C.neonLime }]}>{club.total_value}</Text>
         </View>
         <StatDivider />
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>Total Returns</Text>
-          <Text style={[styles.statValue, { color: C.neonLime }]}>{club.totalReturns}</Text>
-          <Text style={styles.statSubGreen}>{club.returnsPct}</Text>
+          <Text style={[styles.statValue, { color: C.neonLime }]}>{club.total_returns}</Text>
+          <Text style={styles.statSubGreen}>{club.returns_pct}</Text>
         </View>
         <StatDivider />
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>Your Share</Text>
-          <Text style={styles.statValue}>{club.yourShare}</Text>
+          <Text style={styles.statValue}>{club.your_share}</Text>
         </View>
       </View>
 
-      {/* Action Button */}
       <TouchableOpacity
-        style={[styles.cardActionBtn, { borderColor: C.purpleBorder }]}
+        style={styles.cardActionBtn}
         onPress={onViewPortfolio}
         activeOpacity={0.7}
       >
-        <Text style={[styles.cardActionText, { color: C.purple }]}>View Portfolio</Text>
+        <Text style={styles.cardActionText}>View Portfolio</Text>
         <ChevronRight size={15} color={C.purple} />
       </TouchableOpacity>
     </View>
@@ -237,9 +204,9 @@ function TripCard({
             <Text style={styles.cardName}>{trip.name}</Text>
             <View style={styles.metaRow}>
               <Users size={11} color={C.whiteDim} />
-              <Text style={styles.cardMeta}>{trip.members} Members</Text>
+              <Text style={styles.cardMeta}>{trip.member_count} Members</Text>
               <Text style={styles.metaDot}>·</Text>
-              <Text style={styles.cardMeta}>{trip.status}</Text>
+              <Text style={styles.cardMeta}>{trip.status_label}</Text>
             </View>
           </View>
         </View>
@@ -259,26 +226,26 @@ function TripCard({
       <View style={styles.statsGrid}>
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>Total Balance</Text>
-          <Text style={[styles.statValue, { color: C.neonLime }]}>{trip.totalBalance}</Text>
+          <Text style={[styles.statValue, { color: C.neonLime }]}>{trip.total_balance}</Text>
         </View>
         <StatDivider />
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>You Spent</Text>
-          <Text style={styles.statValue}>{trip.youSpent}</Text>
+          <Text style={styles.statValue}>{trip.you_spent}</Text>
         </View>
         <StatDivider />
         <View style={styles.statColumn}>
           <Text style={styles.statLabel}>You Owe</Text>
-          <Text style={[styles.statValue, trip.owes && { color: C.red }]}>{trip.youOwe}</Text>
+          <Text style={[styles.statValue, trip.you_owe_raw > 0 && { color: C.red }]}>{trip.you_owe}</Text>
         </View>
       </View>
 
       <TouchableOpacity
-        style={[styles.cardActionBtn, { borderColor: C.purpleBorder }]}
+        style={styles.cardActionBtn}
         onPress={onSettle}
         activeOpacity={0.7}
       >
-        <Text style={[styles.cardActionText, { color: C.purple }]}>Settle Up</Text>
+        <Text style={styles.cardActionText}>Settle Up</Text>
         <ChevronRight size={15} color={C.purple} />
       </TouchableOpacity>
     </View>
@@ -299,25 +266,12 @@ export function SocialScreen({ navigation }: { navigation: any }) {
     try {
       setLoading(true);
       const response = await apiClient.get('/social/dashboard'); 
-      
-      // If backend returns empty lists, fall back to our beautiful mock data so the UI looks alive!
-      if (response.data?.investments?.length > 0) {
-        setVentures(response.data.investments);
-      } else {
-        setVentures(INIT_VENTURES);
-      }
-
-      if (response.data?.trips?.length > 0) {
-        setTrips(response.data.trips);
-      } else {
-        setTrips(INIT_TRIPS);
-      }
-
+      setVentures(response.data.investments || []);
+      setTrips(response.data.trips || []);
     } catch (error) {
       console.error("Error fetching social data:", error);
-      // Fallback on network/auth errors as well to keep the demo alive
-      setVentures(INIT_VENTURES);
-      setTrips(INIT_TRIPS);
+      setVentures([]);
+      setTrips([]);
     } finally {
       setLoading(false);
     }
@@ -338,12 +292,32 @@ export function SocialScreen({ navigation }: { navigation: any }) {
           onPress: async (name) => {
             if (!name?.trim()) return;
             try {
-              // Hit your new backend endpoint
               await apiClient.post('/social/investments', { name: name.trim() });
-              // Refresh the dashboard to pull the new live data
               await fetchSocialData(); 
             } catch (e) {
               Alert.alert("Error", "Failed to create investment club.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleJoinVenture = () => {
+    Alert.prompt(
+      'Join Investment Club',
+      'Enter the 6-character invite code',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Join',
+          onPress: async (code) => {
+            if (!code?.trim()) return;
+            try {
+              await apiClient.post('/social/investments/join', { invite_code: code.trim().toUpperCase() });
+              await fetchSocialData();
+            } catch (e) {
+              Alert.alert("Error", "Failed to join club. Check your code.");
             }
           },
         },
@@ -373,7 +347,29 @@ export function SocialScreen({ navigation }: { navigation: any }) {
     );
   };
 
-  const ventureOptions = (id: string) => {
+  const handleJoinTrip = () => {
+    Alert.prompt(
+      'Join Trip Wallet',
+      'Enter the 6-character invite code',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Join',
+          onPress: async (code) => {
+            if (!code?.trim()) return;
+            try {
+              await apiClient.post('/social/trips/join', { invite_code: code.trim().toUpperCase() });
+              await fetchSocialData();
+            } catch (e) {
+              Alert.alert("Error", "Failed to join trip. Check your code.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const ventureOptions = (id: number) => {
     Alert.alert('Manage Club', 'Are you sure you want to disband this club?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -382,12 +378,9 @@ export function SocialScreen({ navigation }: { navigation: any }) {
         onPress: async () => {
           try {
             setLoading(true);
-            // 1. Tell the database to delete it
             await apiClient.delete(`/social/investments/${id}`);
-            // 2. Refresh the screen with the live database data
             await fetchSocialData(); 
           } catch (e) {
-            console.error("Delete error:", e);
             Alert.alert("Error", "Failed to delete the investment club.");
             setLoading(false);
           }
@@ -396,7 +389,7 @@ export function SocialScreen({ navigation }: { navigation: any }) {
     ]);
   };
 
-  const tripOptions = (id: string) => {
+  const tripOptions = (id: number) => {
     Alert.alert('Manage Trip', 'Are you sure you want to delete this trip wallet?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -408,7 +401,6 @@ export function SocialScreen({ navigation }: { navigation: any }) {
             await apiClient.delete(`/social/trips/${id}`);
             await fetchSocialData();
           } catch (e) {
-            console.error("Delete error:", e);
             Alert.alert("Error", "Failed to delete the trip wallet.");
             setLoading(false);
           }
@@ -416,6 +408,12 @@ export function SocialScreen({ navigation }: { navigation: any }) {
       },
     ]);
   };
+
+  const totalSharedWealth = ventures.reduce((acc, v) => {
+    const rawShare = v.your_share || '0';
+    const val = parseFloat(rawShare.replace(/[^0-9.]/g, ''));
+    return acc + (isNaN(val) ? 0 : val);
+  }, 0);
 
   // ── Render ─────────────────────────────────────────────────
 
@@ -444,7 +442,6 @@ export function SocialScreen({ navigation }: { navigation: any }) {
             <Text style={styles.subtitle}>Shared wealth & group adventures</Text>
           </View>
 
-          {/* Concentric glow orb */}
           <View style={styles.orbContainer}>
             <View style={styles.orbOuter} />
             <View style={styles.orbInner} />
@@ -460,6 +457,30 @@ export function SocialScreen({ navigation }: { navigation: any }) {
           </View>
         </View>
 
+        {/* ── TOTAL SHARED WEALTH SUMMARY ── */}
+        <LinearGradient
+          colors={[C.purple, '#6B21A8']}
+          style={styles.wealthSummaryCard}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.wealthInfo}>
+            <Text style={styles.wealthLabel}>Total Shared Wealth</Text>
+            <Text style={styles.wealthValue}>₹{totalSharedWealth.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</Text>
+          </View>
+          <View style={styles.wealthStats}>
+            <View style={styles.wealthStatItem}>
+              <Text style={styles.wealthStatLabel}>Clubs</Text>
+              <Text style={styles.wealthStatValue}>{ventures.length}</Text>
+            </View>
+            <StatDivider />
+            <View style={styles.wealthStatItem}>
+              <Text style={styles.wealthStatLabel}>Trips</Text>
+              <Text style={styles.wealthStatValue}>{trips.length}</Text>
+            </View>
+          </View>
+        </LinearGradient>
+
         {/* ── SHARED INVESTMENTS ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -467,10 +488,15 @@ export function SocialScreen({ navigation }: { navigation: any }) {
               <Text style={styles.sectionTitle}>Shared Investments</Text>
               <Text style={styles.sectionSub}>Invest together. Grow together.</Text>
             </View>
-            <TouchableOpacity style={styles.createBtn} onPress={handleAddVenture} activeOpacity={0.75}>
-              <Plus size={14} color={C.neonLime} strokeWidth={2.5} />
-              <Text style={styles.createBtnText}>Create</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={[styles.createBtn, { backgroundColor: 'transparent' }]} onPress={handleJoinVenture} activeOpacity={0.75}>
+                <Text style={styles.createBtnText}>Join</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.createBtn} onPress={handleAddVenture} activeOpacity={0.75}>
+                <Plus size={14} color={C.neonLime} strokeWidth={2.5} />
+                <Text style={styles.createBtnText}>Create</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {ventures.length === 0 ? (
@@ -500,10 +526,15 @@ export function SocialScreen({ navigation }: { navigation: any }) {
               <Text style={styles.sectionTitle}>Shared Trip Wallets</Text>
               <Text style={styles.sectionSub}>Travel together. Spend together.</Text>
             </View>
-            <TouchableOpacity style={styles.createBtn} onPress={handleAddTrip} activeOpacity={0.75}>
-              <Plus size={14} color={C.neonLime} strokeWidth={2.5} />
-              <Text style={styles.createBtnText}>Create</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={[styles.createBtn, { backgroundColor: 'transparent' }]} onPress={handleJoinTrip} activeOpacity={0.75}>
+                <Text style={styles.createBtnText}>Join</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.createBtn} onPress={handleAddTrip} activeOpacity={0.75}>
+                <Plus size={14} color={C.neonLime} strokeWidth={2.5} />
+                <Text style={styles.createBtnText}>Create</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {trips.length === 0 ? (
@@ -526,7 +557,6 @@ export function SocialScreen({ navigation }: { navigation: any }) {
           )}
         </View>
 
-        {/* Bottom padding for tab bar */}
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>
@@ -605,6 +635,113 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // WEALTH SUMMARY
+  wealthSummaryCard: {
+    borderRadius: 28,
+    padding: 24,
+    marginBottom: 32,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: C.purple,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  wealthInfo: { flex: 1 },
+  wealthLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  wealthValue: {
+    color: C.white,
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  wealthStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+    gap: 12,
+  },
+  wealthStatItem: { alignItems: 'center' },
+  wealthStatLabel: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  wealthStatValue: {
+    color: C.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  wealthStatDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+
+  // WEALTH SUMMARY
+  wealthSummaryCard: {
+    borderRadius: 28,
+    padding: 24,
+    marginBottom: 32,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: C.purple,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  wealthInfo: { flex: 1 },
+  wealthLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  wealthValue: {
+    color: C.white,
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  wealthStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+    gap: 12,
+  },
+  wealthStatItem: { alignItems: 'center' },
+  wealthStatLabel: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  wealthStatValue: {
+    color: C.white,
+    fontSize: 14,
+    fontWeight: '800',
   },
 
   // SECTION
@@ -816,10 +953,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     backgroundColor: C.purpleBg,
+    borderColor: C.purpleBorder,
   },
   cardActionText: {
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.1,
+    color: C.purple,
   },
 });

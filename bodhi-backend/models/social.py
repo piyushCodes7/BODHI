@@ -54,7 +54,11 @@ class InvestmentGroup(Base):
     description     = Column(String(500), default="")
     emoji           = Column(String(8),   default="📈")
     total_value     = Column(Float, default=0.0, nullable=False)
-    # total_returns = current total_value - sum of all member contributions
+    # total_invested = sum of all member contributions
+    total_invested  = Column(Float, default=0.0, nullable=False)
+    # current cash balance (total_invested - spent)
+    total_balance   = Column(Float, default=0.0, nullable=False)
+    # total_returns = current total_value - total_invested
     total_returns   = Column(Float, default=0.0, nullable=False)
     status          = Column(SAEnum(InvestmentStatus), default=InvestmentStatus.ACTIVE, nullable=False)
     invite_code     = Column(String(12), unique=True, index=True, nullable=False)
@@ -78,10 +82,10 @@ class InvestmentGroup(Base):
     @property
     def returns_pct(self) -> float:
         """Return percentage gain/loss across the whole fund."""
-        invested = self.total_value - self.total_returns
+        invested = self.total_invested
         if invested <= 0:
             return 0.0
-        return round((self.total_returns / invested) * 100, 2)
+        return round(((self.total_value - invested) / invested) * 100, 2)
 
     def member_share(self, user_id: str) -> float:
         """Rupee value of a specific member's share."""
@@ -112,6 +116,7 @@ class InvestmentMember(Base):
     # Ownership slice expressed as a percentage (0.0 – 100.0).
     # The sum of all members' share_percentage in a group should equal 100.
     share_percentage = Column(Float, default=0.0, nullable=False)
+    contributed_amount = Column(Float, default=0.0, nullable=False)
     # Count of open investment proposals this member hasn't voted on yet.
     pending_votes   = Column(Integer, default=0, nullable=False)
     is_admin        = Column(Boolean, default=False, nullable=False)
@@ -141,6 +146,8 @@ class TripWallet(Base):
     emoji           = Column(String(8),   default="✈️")
     # Running total of all confirmed contributions pooled into the wallet.
     total_balance   = Column(Float, default=0.0, nullable=False)
+    # total_spent = sum of all expenses
+    total_spent     = Column(Float, default=0.0, nullable=False)
     status          = Column(SAEnum(TripStatus), default=TripStatus.ACTIVE, nullable=False)
     invite_code     = Column(String(12), unique=True, index=True, nullable=False)
     destination     = Column(String(200), default="")           # Optional destination label
@@ -275,4 +282,70 @@ class TripSplit(Base):
     __table_args__ = (
         UniqueConstraint("expense_id", "user_id", name="uq_trip_split"),
         Index("ix_trip_split_user", "user_id"),
+    )
+
+
+# ── Shared Investments: Holdings & Polls ───────────────────────────────────────
+
+class InvestmentHolding(Base):
+    """
+    A specific asset held by an InvestmentGroup.
+    """
+    __tablename__ = "investment_holdings"
+
+    id              = Column(Integer, primary_key=True)
+    group_id        = Column(Integer, ForeignKey("investment_groups.id", ondelete="CASCADE"), nullable=False)
+    symbol          = Column(String(20), nullable=False, index=True) # e.g. "RELIANCE.NS"
+    quantity        = Column(Float, default=0.0, nullable=False)
+    average_price   = Column(Float, default=0.0, nullable=False) # Purchase price in INR
+    updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    group           = relationship("InvestmentGroup")
+
+
+class InvestmentPoll(Base):
+    """
+    A proposal to buy or sell an asset. Group members vote on this.
+    """
+    __tablename__ = "investment_polls"
+
+    id              = Column(Integer, primary_key=True)
+    group_id        = Column(Integer, ForeignKey("investment_groups.id", ondelete="CASCADE"), nullable=False)
+    created_by      = Column(String(36), ForeignKey("users.id"), nullable=False)
+    
+    type            = Column(String(10), nullable=False) # "BUY" or "SELL"
+    symbol          = Column(String(20), nullable=False)
+    quantity        = Column(Float, nullable=False)
+    
+    votes_for       = Column(Integer, default=0, nullable=False)
+    votes_against   = Column(Integer, default=0, nullable=False)
+    votes_needed    = Column(Integer, default=1, nullable=False) # e.g. simple majority
+    
+    status          = Column(String(20), default="ACTIVE") # ACTIVE, PASSED, REJECTED, EXECUTED
+    created_at      = Column(DateTime, default=datetime.utcnow)
+    expires_at      = Column(DateTime, nullable=True)
+
+    # Relationships
+    group           = relationship("InvestmentGroup")
+    votes           = relationship("PollVote", back_populates="poll", cascade="all, delete-orphan")
+
+
+class PollVote(Base):
+    """
+    A single member's vote on a specific poll.
+    """
+    __tablename__ = "poll_votes"
+
+    id              = Column(Integer, primary_key=True)
+    poll_id         = Column(Integer, ForeignKey("investment_polls.id", ondelete="CASCADE"), nullable=False)
+    user_id         = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    decision        = Column(Boolean, nullable=False) # True = For, False = Against
+    voted_at        = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    poll            = relationship("InvestmentPoll", back_populates="votes")
+
+    __table_args__ = (
+        UniqueConstraint("poll_id", "user_id", name="uq_poll_vote"),
     )

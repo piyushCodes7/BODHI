@@ -325,15 +325,21 @@ export function VaultScreen() {
     }
   };
 
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return 'Good Morning';
+    if (hr < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   return (
     <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-
         {/* ── HERO SECTION (GRADIENT) ── */}
         <LinearGradient
-          colors={['#2A0066', '#660099', '#FF0055']}
+          colors={['#A855F7', '#EC4899']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.heroSection}
@@ -357,75 +363,102 @@ export function VaultScreen() {
               resizeMode="contain"
             />
 
-            <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
+              <BlurView blurType="light" blurAmount={10} style={styles.glassCircle}>
                 <Bell size={20} color="#FFF" />
                 {unreadCount > 0 && <View style={styles.notifBadge} />}
-              </TouchableOpacity>
-            </View>
+              </BlurView>
+            </TouchableOpacity>
           </View>
 
-          {/* Balance Area */}
+          {/* Balance Cockpit */}
           <View style={styles.balanceArea}>
-            <Text style={styles.greeting}>Hello, {userName || 'User'} 👋</Text>
-
-            <View style={styles.rowCenter}>
-              <Text style={styles.totalBalanceLabel}>TOTAL BALANCE</Text>
-              <TouchableOpacity onPress={handleToggleBalance} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                {balanceVisible ? (
-                  <Eye size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
-                ) : (
-                  <EyeOff size={14} color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }} />
-                )}
+            <Text style={styles.greeting}>{getGreeting()}, {userName} 👋</Text>
+            
+            <View style={styles.netWorthHeader}>
+              <Text style={styles.netWorthLabel}>TOTAL NET WORTH</Text>
+              <TouchableOpacity onPress={handleToggleBalance} style={styles.revealBtn}>
+                {balanceVisible ? <Eye size={14} color="#FFF" /> : <EyeOff size={14} color="#FFF" />}
               </TouchableOpacity>
             </View>
 
             <View style={styles.balanceRow}>
               <Text style={styles.currencySymbol}>₹</Text>
-              <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '******'}</Text>
+              <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '••••••'}</Text>
               <Text style={styles.balanceDecimals}>{balanceVisible ? `.${balance.split('.')[1] || '00'}` : ''}</Text>
-
-              <TouchableOpacity style={styles.hideBtn} onPress={handleToggleBalance}>
-                <ShieldCheck size={12} color="#FFF" />
-                <Text style={styles.hideBtnText}>{balanceVisible ? 'Hide' : 'Show'}</Text>
-              </TouchableOpacity>
             </View>
 
-            <View style={styles.rowCenter}>
-              <Text style={styles.includesText}>Includes Bank Balance + Wallet</Text>
-              <Info size={12} color="rgba(255,255,255,0.6)" style={{ marginLeft: 4 }} />
+            <View style={styles.growthRow}>
+              <TrendingUp size={14} color={Colors.neonLime} />
+              <Text style={styles.growthTxt}>+₹4,532 today</Text>
             </View>
-          </View>
-
-          {/* Hero Actions */}
-          <View style={styles.heroActionsRow}>
-            {[
-              { label: 'Scan & Pay', icon: ScanLine, screen: 'ScanPay' },
-              { label: 'Send Money', icon: Send, screen: 'SendMoney' },
-              { label: 'Add Money', icon: Plus, screen: null },
-              { label: 'Request', icon: ArrowDownToLine, screen: 'RequestMoney' },
-            ].map((action, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.heroActionItem}
-                onPress={() => {
-                  if (action.label === 'Add Money') {
-                    setShowAddMoney(true);
-                  } else if (action.screen) {
-                    navigation.navigate(action.screen);
-                  } else {
-                    Alert.alert('Coming Soon', `${action.label} will be available soon!`);
-                  }
-                }}
-              >
-                <View style={styles.heroActionCircle}>
-                  <action.icon size={22} color="#FFF" />
-                </View>
-                <Text style={styles.heroActionLabel}>{action.label}</Text>
-              </TouchableOpacity>
-            ))}
           </View>
         </LinearGradient>
+
+        {/* ── PARALLEL ACTIONS (PREMIUM GLASS) ── */}
+        <View style={styles.parallelActions}>
+          {/* Left: Scan & Pay */}
+          <TouchableOpacity 
+            style={styles.scanBtnContainer}
+            onPress={() => navigation.navigate('ScanPay')}
+            activeOpacity={0.9}
+          >
+            <View style={styles.scanGlassRing}>
+              <LinearGradient colors={[Colors.neonLime, '#A3D900']} style={styles.scanBtn}>
+                <ScanLine size={30} color="#000" strokeWidth={2.5} />
+              </LinearGradient>
+            </View>
+            <Text style={styles.scanLabel}>Scan & Pay</Text>
+          </TouchableOpacity>
+
+          {/* Right: Pill Container */}
+          <BlurView blurType="dark" blurAmount={32} style={styles.actionPill}>
+            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
+              <View style={styles.pillIconGlass}>
+                <Send size={18} color="#FFF" />
+              </View>
+              <Text style={styles.pillLabel}>Send</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.pillItem} onPress={() => setShowAddMoney(true)}>
+              <View style={styles.pillIconGlass}>
+                <Plus size={18} color="#FFF" />
+              </View>
+              <Text style={styles.pillLabel}>Add</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('RequestMoney')}>
+              <View style={styles.pillIconGlass}>
+                <ArrowDownToLine size={18} color="#FFF" />
+              </View>
+              <Text style={styles.pillLabel}>Request</Text>
+            </TouchableOpacity>
+          </BlurView>
+        </View>
+
+        {/* ── LIVE WATCHLIST TICKER ── */}
+        <View style={styles.tickerSection}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tickerScroll}>
+            {[
+              { name: 'Reliance', val: '+2.4%', up: true },
+              { name: 'TCS', val: '-0.8%', up: false },
+              { name: 'BTC', val: '+5.2%', up: true },
+              { name: 'Nifty 50', val: '+1.1%', up: true },
+            ].map((t, i) => (
+              <TouchableOpacity key={i} style={styles.tickerChip}>
+                <View style={[styles.liveDot, { backgroundColor: t.up ? Colors.neonLime : '#FF4B4B' }]} />
+                <Text style={styles.tickerName}>{t.name}</Text>
+                <Text style={[styles.tickerVal, { color: t.up ? Colors.neonLime : '#FF4B4B' }]}>{t.val}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.addTickerBtn}>
+              <Plus size={14} color="rgba(255,255,255,0.5)" />
+              <Text style={styles.addTickerTxt}>Edit</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+
 
         {/* ── MAIN CONTENT (DARK SURFACE) ── */}
         <View style={styles.contentSection}>
@@ -751,54 +784,84 @@ const styles = StyleSheet.create({
 
   heroSection: {
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 82,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    position: 'relative',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     zIndex: 10,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
   },
   avatarContainer: { position: 'relative' },
   avatarPlaceholder: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center',
+    width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)'
   },
-  avatarText: { fontSize: 18, fontWeight: '800', color: '#000' },
+  avatarText: { fontSize: 20, fontWeight: '800', color: '#FFF' },
   onlineDot: {
-    position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#2A0066',
+    position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7',
   },
-  logo: { height: 35, width: 200, tintColor: '#FFF' },
-  headerIcons: { flexDirection: 'row', gap: 15 },
-  iconBtn: { position: 'relative' },
+  logo: { height: 30, width: 120, tintColor: '#FFF' },
+  iconBtn: { overflow: 'hidden', borderRadius: 22 },
+  glassCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   notifBadge: {
-    position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3366',
+    position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime,
   },
 
-  balanceArea: { marginBottom: 30 },
-  greeting: { color: '#FFF', fontSize: 16, fontWeight: '500', marginBottom: 12 },
-  rowCenter: { flexDirection: 'row', alignItems: 'center' },
-  totalBalanceLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '600', letterSpacing: 1 },
-  balanceRow: { flexDirection: 'row', alignItems: 'baseline', marginVertical: 8 },
-  currencySymbol: { color: '#FFF', fontSize: 32, fontWeight: '400', marginRight: 4 },
-  balanceMain: { color: '#FFF', fontSize: 48, fontWeight: '800', letterSpacing: -1 },
-  balanceDecimals: { color: 'rgba(255,255,255,0.8)', fontSize: 24, fontWeight: '600' },
-  hideBtn: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginLeft: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)'
-  },
-  hideBtnText: { color: '#FFF', fontSize: 10, fontWeight: '600', marginLeft: 4 },
-  includesText: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+  balanceArea: { marginBottom: 0 },
+  greeting: { color: 'rgba(255,255,255,0.8)', fontSize: 15, fontWeight: '600', marginBottom: 16 },
+  netWorthHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  netWorthLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  revealBtn: { marginLeft: 10, opacity: 0.6 },
+  balanceRow: { flexDirection: 'row', alignItems: 'baseline', marginVertical: 2 },
+  currencySymbol: { color: '#FFF', fontSize: 22, fontWeight: '400', marginRight: 6 },
+  balanceMain: { color: '#FFF', fontSize: 42, fontWeight: '900', letterSpacing: -1 },
+  balanceDecimals: { color: 'rgba(255,255,255,0.7)', fontSize: 22, fontWeight: '700' },
+  growthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  growthTxt: { color: Colors.neonLime, fontSize: 12, fontWeight: '800' },
 
-  heroActionsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingRight: 40 },
-  heroActionItem: { alignItems: 'center', gap: 8 },
-  heroActionCircle: {
-    width: 54, height: 54, borderRadius: 27, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.05)',
+  parallelActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -42, paddingHorizontal: 20, zIndex: 20 },
+  scanBtnContainer: { alignItems: 'center', gap: 6 },
+  scanGlassRing: { padding: 4, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  scanBtn: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
+  scanLabel: { color: Colors.neonLime, fontSize: 10, fontWeight: '800', marginTop: 4, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 },
+  actionPill: { 
+    flex: 1, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    height: 84, 
+    borderRadius: 42, 
+    marginLeft: 16, 
+    paddingHorizontal: 12, 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.15)', 
+    overflow: 'hidden', 
+    backgroundColor: 'rgba(0,0,0,0.18)' 
   },
-  heroActionLabel: { color: '#FFF', fontSize: 11, fontWeight: '500' },
+  pillItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  pillIconGlass: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 22, 
+    backgroundColor: 'rgba(255,255,255,0.06)', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.1)' 
+  },
+  pillLabel: { color: '#FFF', fontSize: 11, fontWeight: '700', opacity: 0.95 },
+
+  tickerSection: { marginTop: 42 },
+  tickerScroll: { paddingHorizontal: 20, gap: 10 },
+  tickerChip: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  liveDot: { width: 4, height: 4, borderRadius: 2 },
+  tickerName: { color: '#FFF', fontSize: 11, fontWeight: '600' },
+  tickerVal: { fontSize: 11, fontWeight: '800' },
+  addTickerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, borderStyle: 'dashed', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  addTickerTxt: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600' },
 
   contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },

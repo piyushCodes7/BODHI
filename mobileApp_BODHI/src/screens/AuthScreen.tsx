@@ -230,6 +230,16 @@ export function AuthScreen({ navigation }: any) {
 
         await AsyncStorage.setItem('bodhi_access_token', data.access_token);
         if (data.full_name) await AsyncStorage.setItem('user_full_name', data.full_name);
+        // Fetch and store user ID for community chat bubble identification
+        try {
+          const profileRes = await fetch(`${BASE_URL}/users/me`, {
+            headers: { Authorization: `Bearer ${data.access_token}` }
+          });
+          if (profileRes.ok) {
+            const profile = await profileRes.json();
+            if (profile.id) await AsyncStorage.setItem('bodhi_user_id', profile.id);
+          }
+        } catch (_) {}
 
         navigation.replace('Main');
 

@@ -14,7 +14,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Import official line-art icons
-import { Lock, Users, Cpu, BarChart2, Shuffle } from 'lucide-react-native';
+import { Lock, Users, Cpu, BarChart2, Shuffle, Compass } from 'lucide-react-native';
 
 import { Colors, Fonts, Radius } from '../theme/tokens';
 
@@ -25,11 +25,11 @@ type TabConfig = {
 
 // Map routes to official Lucide icons. "Me" tab has been removed.
 const TAB_CONFIG: Record<string, TabConfig> = {
-  Vault:  { label: 'VAULT',  Icon: Lock },
-  Social: { label: 'SOCIAL', Icon: Users },
-  AI:     { label: 'AI',     Icon: Cpu },     // The microchip icon
-  Trade:  { label: 'TRADE',  Icon: BarChart2 }, // Candlestick alternative
-  Market: { label: 'MARKET', Icon: Shuffle },   // Crossing arrows
+  Vault:     { label: 'VAULT',     Icon: Lock },
+  Social:    { label: 'SOCIAL',    Icon: Users },
+  AI:        { label: 'AI',        Icon: Cpu },
+  Trade:     { label: 'TRADE',     Icon: BarChart2 },
+  Market:    { label: 'MARKET',    Icon: Shuffle },
 };
 
 interface BodhiTabBarProps extends BottomTabBarProps {
