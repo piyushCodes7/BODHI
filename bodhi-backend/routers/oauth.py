@@ -74,34 +74,15 @@ class OAuthTokenResponse(BaseModel):
 # ─────────────────────────────────────────────────────────────────────────────
 # Settings expected in your config (add these to your .env / Settings class)
 # ─────────────────────────────────────────────────────────────────────────────
-GOOGLE_CLIENT_ID_IOS      = "xxxx.apps.googleusercontent.com"
-GOOGLE_CLIENT_ID_ANDROID  = "yyyy.apps.googleusercontent.com"
-GOOGLE_CLIENT_ID_WEB      = "zzzz.apps.googleusercontent.com"   # backend/web
-APPLE_APP_BUNDLE_ID       = "com.yourcompany.bodhi"
-# JWT_SECRET_KEY            = "..."
-# JWT_ALGORITHM             = "HS256"
-# ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7   # 7 days
-
-
 # ─────────────────────────────────────────────────────────────────────────────
-# Helper – our standard JWT issuer
+# Settings – read from environment (set these in .env / EB config)
 # ─────────────────────────────────────────────────────────────────────────────
-
-def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
-    """
-    Create a signed JWT for `subject` (user UUID as string).
-    Adjust this to match your existing token-creation logic.
-    """
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    payload = {
-        "sub": subject,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
-        "type": "access",
-    }
-    return pyjwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+GOOGLE_CLIENT_ID_IOS      = os.getenv("GOOGLE_CLIENT_ID_IOS", "")
+GOOGLE_CLIENT_ID_ANDROID  = os.getenv("GOOGLE_CLIENT_ID_ANDROID", "")
+GOOGLE_CLIENT_ID_WEB      = os.getenv("GOOGLE_CLIENT_ID", "")   # primary web/backend client
+APPLE_APP_BUNDLE_ID       = os.getenv("APPLE_APP_BUNDLE_ID", "com.bodhi.app")
+JWT_SECRET_KEY            = os.getenv("SECRET_KEY", "super_secret_bodhi_key_do_not_share")
+JWT_ALGORITHM             = os.getenv("JWT_ALGORITHM", "HS256")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

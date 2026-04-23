@@ -90,7 +90,28 @@ export function AuthScreen({ navigation }: any) {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
-  const startResendTimer = () => setResendTimer(45);
+  useEffect(() => {
+    // Diagnostic check: Test if we can at least perform a GET request to the server
+    const testConnection = async () => {
+      try {
+        console.log(`🔍 Connectivity Check: Fetching ${BASE_URL}/ ...`);
+        const res = await fetch(`${BASE_URL}/`, { method: 'GET' });
+        console.log(`📊 Status: ${res.status}`);
+        if (res.ok) {
+          const text = await res.text();
+          console.log(`✅ Connectivity Check Success: ${text.substring(0, 50)}`);
+        } else {
+          console.warn(`⚠️ Connectivity Check returned non-OK status: ${res.status}`);
+        }
+      } catch (err: any) {
+        console.error(`❌ Connectivity Check Failed: ${err.message}`, err);
+      }
+    };
+    testConnection();
+  }, []);
+
+  const startResendTimer = () => setResendTimer(60);
+
 
   const handleSendOtp = async (target: 'email' | 'phone') => {
     try {
@@ -101,15 +122,30 @@ export function AuthScreen({ navigation }: any) {
       }
 
       setIsLoading(true);
+
+      // Using native fetch as a fallback to bypass potential axios-specific network blocks
+      const otpResponse = await fetch(`${BASE_URL}/auth/send-register-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(target === 'email' ? { email } : { phone }),
+      });
+
+      if (!otpResponse.ok) {
+        const errorData = await otpResponse.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Server responded with ${otpResponse.status}`);
+      }
+
       if (target === 'email') {
-        await AuthAPI.sendRegisterOtp({ email });
-        setIsEmailSent(true);
-        setIsEditingEmail(false);
+        setIsEmailVerified(true);
+      } else {
+        setIsPhoneVerified(true);
       }
       startResendTimer();
       Alert.alert("Sent!", `OTP has been sent to your ${target}`);
     } catch (error: any) {
-      Alert.alert("Error", error.response?.data?.detail || "Failed to send OTP");
+      console.error("OTP Error:", error);
+      const errorMsg = error.response?.data?.detail || error.message || "Unknown Network Error";
+      Alert.alert("Error", `Failed to send OTP: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +213,7 @@ export function AuthScreen({ navigation }: any) {
           });
         } catch (fetchErr: any) {
           if (fetchErr.name === 'AbortError') throw new Error('Connection timed out. Please check your network.');
-          throw new Error('Network request failed.');
+          throw new Error(`Network request failed. Ensure you have an active internet connection. (${fetchErr.message || fetchErr})`);
         } finally {
           clearTimeout(timer);
         }
@@ -408,7 +444,7 @@ export function AuthScreen({ navigation }: any) {
                       <View style={{ flex: 1.5, zIndex: 20 }}>
                         <Text style={styles.inputLabel}>GENDER</Text>
                         <TouchableOpacity
-                          style={styles.dropdownHeader}
+                          style={[styles.dropdownHeader, isGenderOpen && { borderColor: Colors.neonLime, backgroundColor: 'rgba(200, 255, 0, 0.05)' }]}
                           onPress={() => setIsGenderOpen(!isGenderOpen)}
                         >
                           <Text style={{ color: gender ? '#FFF' : 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
@@ -420,8 +456,15 @@ export function AuthScreen({ navigation }: any) {
                         {isGenderOpen && (
                           <View style={styles.dropdownList}>
                             {['Male', 'Female', 'Other'].map((g) => (
-                              <TouchableOpacity key={g} style={styles.dropdownItem} onPress={() => { setGender(g); setIsGenderOpen(false); }}>
-                                <Text style={{ color: '#FFF', fontWeight: '600' }}>{g}</Text>
+                              <TouchableOpacity
+                                key={g}
+                                style={styles.dropdownItem}
+                                onPress={() => {
+                                  setGender(g);
+                                  setIsGenderOpen(false);
+                                }}
+                              >
+                                <Text style={styles.dropdownItemText}>{g}</Text>
                                 {gender === g && <CheckCircle2 size={16} color={Colors.neonLime} />}
                               </TouchableOpacity>
                             ))}
@@ -449,29 +492,21 @@ export function AuthScreen({ navigation }: any) {
 
                 {currentStep === 1 && (
                   <>
-                    <AuthInput
-                      label="Email Address"
-                      placeholder="e.g., name@example.com"
-                      icon={<Mail size={20} color="#A855F7" />}
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      editable={isEditingEmail}
-                    />
-
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+                    <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+                    <View style={styles.inputWrapper}>
+                      <Mail size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={[styles.input, isEmailVerified && { color: 'rgba(255,255,255,0.4)' }]}
+                        placeholder="name@example.com"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        editable={!isEmailVerified}
+                      />
                       <TouchableOpacity
-                        onPress={() => setIsEditingEmail(true)}
-                        disabled={isEditingEmail}
-                      >
-                        <Text style={{ color: isEditingEmail ? 'rgba(255,255,255,0.2)' : '#FF3366', fontWeight: '700', fontSize: 13 }}>
-                          Change Email
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => handleSendOtp('email')}
+                        style={styles.verifyInlineBtn}
                         disabled={resendTimer > 0 || isLoading}
                       >
                         <Text style={{ color: '#FF3366', fontWeight: '700', fontSize: 13 }}>
@@ -480,27 +515,58 @@ export function AuthScreen({ navigation }: any) {
                       </TouchableOpacity>
                     </View>
 
-                    <OTPInput value={otp} onChange={setOtp} />
+                    {isEmailVerified && (
+                      <>
+                        <Text style={styles.inputLabel}>6-DIGIT EMAIL CODE</Text>
+                        <View style={styles.inputWrapper}>
+                          <TextInput
+                            style={[styles.input, { letterSpacing: 8, textAlign: 'center', fontWeight: '800' }]}
+                            placeholder="••••••"
+                            placeholderTextColor="rgba(255,255,255,0.2)"
+                            keyboardType="number-pad"
+                            maxLength={6}
+                            value={otp}
+                            onChangeText={setOtp}
+                          />
+                        </View>
+                      </>
+                    )}
 
-                    <AuthButton
-                      title="Verify Code"
-                      onPress={handleVerifyOtp}
-                      disabled={otp.length !== 6 || isEditingEmail}
-                      isLoading={isLoading}
-                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => handleVerifyOtp('email')}
+                      style={{ marginTop: 32 }}
+                      disabled={!isEmailVerified || isLoading}
+                    >
+                      <LinearGradient
+                        colors={isEmailVerified ? ['#FFE259', '#C8FF00'] : ['#333', '#222']}
+                        style={styles.primaryBtn}
+                      >
+                        {isLoading ? <ActivityIndicator color="#000" /> : (
+                          <>
+                            <Text style={[styles.primaryBtnText, !isEmailVerified && { color: '#666' }]}>Verify & Next</Text>
+                            <ChevronRight size={20} color={isEmailVerified ? "#000" : "#666"} style={{ position: 'absolute', right: 20 }} />
+                          </>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
                   </>
                 )}
 
                 {currentStep === 2 && (
                   <>
-                    <AuthInput
-                      label="Login Pin (M-PIN)"
-                      placeholder="••••••••"
-                      icon={<Lock size={20} color="#A855F7" />}
-                      value={mPin}
-                      onChangeText={setMPin}
-                      secureTextEntry
-                    />
+                    <Text style={styles.inputLabel}>SET M-PIN (LOGIN PASSWORD)</Text>
+                    <View style={styles.inputWrapper}>
+                      <Lock size={18} color="#A855F7" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Can be text or numbers"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={mPin}
+                        onChangeText={setMPin}
+                        secureTextEntry
+                      />
+                    </View>
 
                     <AuthInput
                       label="Transaction Pin (U-PIN)"
@@ -608,20 +674,38 @@ const styles = StyleSheet.create({
   tagline: { fontSize: 16, color: '#FFF', letterSpacing: 0.5 },
   taglineHighlight: { color: Colors.neonLime, fontWeight: '800' },
 
+  // ── TOGGLE ──
+  toggleContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
+  toggleBtn: { flex: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', height: 44 },
+  activeToggleBg: { width: '100%', height: '100%', borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8 },
+  toggleText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  toggleTextActive: { color: '#FFF', fontWeight: '800', fontSize: 14 },
+
+  // ── FORM & TEXT ──
+  form: { marginBottom: Spacing.sm },
   flowTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '800',
     color: '#FFF',
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
     letterSpacing: -0.5
   },
   flowSub: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
-    marginBottom: 32,
+    fontSize: 12.5,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 20,
     textAlign: 'center',
-    lineHeight: 22
+    lineHeight: 18
+  },
+
+  inputLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    marginTop: 14
   },
 
   linksRow: {
@@ -664,46 +748,42 @@ const styles = StyleSheet.create({
     fontWeight: '500'
   },
 
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: 'rgba(255,255,255,0.5)',
-    letterSpacing: 1,
-    marginBottom: 10,
-    marginLeft: 4
-  },
   dropdownHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: Radius.md,
-    height: 56,
-    paddingHorizontal: 16,
+    height: 52,
+    paddingHorizontal: 8,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.08)',
-    marginBottom: Spacing.xl
+    borderColor: 'rgba(255,255,255,0.2)'
   },
+  dropdownHeaderText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   dropdownList: {
     position: 'absolute',
-    top: 70,
+    top: 60,
     left: 0,
     right: 0,
-    backgroundColor: '#0c0e12',
+    backgroundColor: '#2A0845',
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.neonLime,
-    zIndex: 3000,
     overflow: 'hidden',
-    elevation: 20
+    shadowColor: Colors.neonLime,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+    zIndex: 1000,
   },
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)'
+    borderBottomColor: 'rgba(255,255,255,0.1)'
   },
 
   wizardFooter: {

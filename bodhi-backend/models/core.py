@@ -105,6 +105,7 @@ class User(Base):
     email_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     m_pin: Mapped[str | None] = mapped_column(String(255), nullable=True) # Account Password / PIN
     u_pin: Mapped[str | None] = mapped_column(String(255), nullable=True) # Transaction PIN
+    is_mpin_set: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)
     gender: Mapped[str | None] = mapped_column(String(20), nullable=True)
     # 🟢 --- NEW OAUTH COLUMNS END --- 🟢

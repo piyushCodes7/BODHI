@@ -1,1 +1,0 @@
-export { BankAccountsScreen as default } from './PlaceholderScreens';

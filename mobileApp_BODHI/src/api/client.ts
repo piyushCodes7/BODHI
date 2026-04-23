@@ -1,27 +1,26 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '@env';
 
-// Determine the API Base URL dynamically
+
+// Hardcoded API configuration pointing to AWS Elastic Beanstalk
+// (Bypassing @env to ensure Metro cache issues don't accidentally load local IP)
 const getBaseUrl = () => {
-  if (API_BASE_URL) return API_BASE_URL;
-  
-  // High-reliability fallback for Android Emulators
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000';
-  }
-  
-  // Standard fallback
-  return 'http://localhost:8000';
+  return 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com';
 };
 
-const BASE_URL = getBaseUrl();
+export const BASE_URL = getBaseUrl();
 console.log(`🔌 API Base URL initialized: ${BASE_URL}`);
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000, // 30s — real device over Wi-Fi can be slow on cold start
+});
+
+// Debugging: Log every request to see exactly what URL the app is hitting
+apiClient.interceptors.request.use(request => {
+  console.log(`🚀 Outgoing Request: [${request.method?.toUpperCase()}] ${request.baseURL}${request.url}`);
+  return request;
 });
 // Interceptor: Automatically attach the JWT token to every single request
 apiClient.interceptors.request.use(
@@ -79,12 +78,12 @@ export const UsersAPI = {
     const res = await apiClient.get('/users/me');
     return res.data;
   },
-  updateProfile: async (data: { 
-    full_name?: string; 
-    phone?: string; 
-    age?: number; 
-    gender?: string; 
-    current_password: string 
+  updateProfile: async (data: {
+    full_name?: string;
+    phone?: string;
+    age?: number;
+    gender?: string;
+    current_password: string
   }) => {
     const res = await apiClient.put('/users/me', data);
     return res.data;
@@ -191,7 +190,7 @@ export const fetchBodhiVoice = async (text: string): Promise<string | null> => {
 
     const data = await response.json();
     return `data:audio/mp3;base64,${data.audio_base64}`;
-    
+
   } catch (error) {
     console.error("API Client Error fetching voice:", error);
     return null;
@@ -206,8 +205,8 @@ export const fetchBodhiVoice = async (text: string): Promise<string | null> => {
 export const transcribeAudio = async (fileUri: string): Promise<string | null> => {
   try {
     // Ensure the URI has the correct scheme for iOS
-    const uri = Platform.OS === 'ios' && !fileUri.startsWith('file://') 
-      ? `file://${fileUri}` 
+    const uri = Platform.OS === 'ios' && !fileUri.startsWith('file://')
+      ? `file://${fileUri}`
       : fileUri;
 
     const formData = new FormData();
@@ -254,8 +253,8 @@ export interface VoiceCommandResponse {
  */
 export const processVoiceCommand = async (fileUri: string): Promise<VoiceCommandResponse | null> => {
   try {
-    const uri = Platform.OS === 'ios' && !fileUri.startsWith('file://') 
-      ? `file://${fileUri}` 
+    const uri = Platform.OS === 'ios' && !fileUri.startsWith('file://')
+      ? `file://${fileUri}`
       : fileUri;
 
     const formData = new FormData();
@@ -278,7 +277,7 @@ export const processVoiceCommand = async (fileUri: string): Promise<VoiceCommand
     const data = await response.json();
     console.log("✅ AI Command processed:", data.intent);
     return data;
-    
+
   } catch (error) {
     console.error("API Client Error in voice command:", error);
     return null;

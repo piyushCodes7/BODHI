@@ -1,1 +1,0 @@
-export { PaperTradeScreen as default } from './PlaceholderScreens';

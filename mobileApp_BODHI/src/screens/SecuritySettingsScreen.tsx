@@ -1,1 +1,0 @@
-export { SecuritySettingsScreen as default } from './PlaceholderScreens';
