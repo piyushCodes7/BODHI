@@ -336,7 +336,8 @@ export function VaultScreen() {
     <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <ScrollView showsVerticalScrollIndi        {/* ── HERO SECTION (GRADIENT) ── */}
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        {/* ── HERO SECTION (GRADIENT) ── */}
         <LinearGradient
           colors={['#A855F7', '#EC4899']}
           start={{ x: 0, y: 0 }}
@@ -457,8 +458,7 @@ export function VaultScreen() {
           </ScrollView>
         </View>
 
-          </View>
-        </LinearGradient>
+
 
         {/* ── MAIN CONTENT (DARK SURFACE) ── */}
         <View style={styles.contentSection}>

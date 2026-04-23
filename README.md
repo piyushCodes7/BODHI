@@ -36,6 +36,20 @@
 
 ---
 
+## ✨ Visual Showcase
+
+| 💎 Financial Vault | 🎙️ AI Assistant (GAP) | ✈️ Trip Wallets |
+| :---: | :---: | :---: |
+| ![Login Screen](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/login.png) | ![AI Screen](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/ai_assistant.png) | ![Paper Trade Screen](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/paper_trade.png) |
+| *Premium Glassmorphic Cockpit* | *Voice-First Financial Co-pilot* | *Collaborative Group Expenses* |
+
+| 📜 Insurance Stories | 🤝 Venture Clubs | 📈 Market Watchlist |
+| :---: | :---: | :---: |
+| ![Insurance](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/insurance.png) | ![Social Hub](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/social.png) | ![Market](https://raw.githubusercontent.com/GovindJindal/BODHI/main/docs/screenshots/market.png) |
+| *AI-Powered Policy Decoder* | *Social Investing & Clubs* | *Live Asset Tickers & Trading* |
+
+---
+
 ## ⚡ The Problem
 Finance apps today are **broken** for the new generation.
 *   **Group Friction:** "Who owes what?" ruins trips and friendships.
