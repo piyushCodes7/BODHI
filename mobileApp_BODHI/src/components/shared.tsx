@@ -19,12 +19,6 @@ export const BodhiHeader = ({ onBack, onInsurancePress, showBack }: any) => (
 
 export const BottomNav = ({ active, onPress }: any) => <View />; // Hide this since you have MainTabNavigator
 
-export const GradientCard = ({ children, style }: any) => (
-  <View style={[{ backgroundColor: '#2A1A5E', borderRadius: 16, padding: 16 }, style]}>
-    {children}
-  </View>
-);
-
 export const SectionHeader = ({ title }: { title: string }) => (
   <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginBottom: 16, marginTop: 8 }}>
     {title}

@@ -109,6 +109,9 @@ async def process_voice_command(file: UploadFile = File(...)):
             "audio_base64": audio_response,
             "transaction_data": brain_result.get("transaction_data"),
         }
+    except HTTPException:
+        # Re-raise explicit HTTP exceptions (e.g. from missing keys or specific API failures)
+        raise
     except Exception as e:
         print(f"❌ CRASH in process_voice_command: {str(e)}")
         traceback.print_exc()

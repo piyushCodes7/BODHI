@@ -48,8 +48,8 @@ async def process_user_intent(message: str) -> Dict[str, Any]:
     """
     gemini_key = os.getenv("GEMINI_API_KEY")
     if not gemini_key:
-        print("⚠️ GEMINI_API_KEY not set; using mock brain response.")
-        return _mock_brain_response(message)
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY environment variable is not set. Cannot process AI intent.")
 
     msg_lower = message.lower()
     has_trigger = any(kw in msg_lower for kw in _TRANSACTION_KEYWORDS)
@@ -81,15 +81,5 @@ async def process_user_intent(message: str) -> Dict[str, Any]:
 
     except Exception as exc:
         logger.exception("Bodhi Brain failed: %s", exc)
-        return {
-            "intent": "general_chat",
-            "text_response": "My neural circuits are a bit fuzzy right now, but I'm here. What's up?",
-            "suggested_action": None
-        }
-
-def _mock_brain_response(message: str) -> Dict[str, Any]:
-    return {
-        "intent": "general_chat",
-        "text_response": f"I heard you say: '{message}'. How can I help?",
-        "suggested_action": None
-    }
+        from fastapi import HTTPException
+        raise HTTPException(status_code=502, detail=f"AI Brain (Gemini) failed: {str(exc)}")

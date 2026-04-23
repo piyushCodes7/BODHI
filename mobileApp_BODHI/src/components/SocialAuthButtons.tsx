@@ -20,7 +20,7 @@ export function SocialAuthButtons({ onSuccess }: SocialAuthButtonsProps) {
     };
 
     return (
-        <>
+        <View style={styles.container}>
             {/* Apple Button - Only render on iOS */}
             {Platform.OS === 'ios' && (
                 <TouchableOpacity
@@ -29,9 +29,9 @@ export function SocialAuthButtons({ onSuccess }: SocialAuthButtonsProps) {
                     disabled={isLoading !== null}
                 >
                     {isLoading === 'apple' ? (
-                        <ActivityIndicator color="#000" />
+                        <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={{ fontSize: 24, color: '#000', marginBottom: 2 }}></Text>
+                        <Text style={[styles.iconText, { fontSize: 28, marginBottom: 4 }]}></Text>
                     )}
                 </TouchableOpacity>
             )}
@@ -43,24 +43,33 @@ export function SocialAuthButtons({ onSuccess }: SocialAuthButtonsProps) {
                 disabled={isLoading !== null}
             >
                 {isLoading === 'google' ? (
-                    <ActivityIndicator color="#000" />
+                    <ActivityIndicator color="#FFF" />
                 ) : (
-                    <Text style={{ fontSize: 20, fontWeight: '800', color: '#000' }}>G</Text>
+                    <Text style={styles.iconText}>G</Text>
                 )}
             </TouchableOpacity>
-        </>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        gap: 20,
+    },
     socialBtn: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#F3F4F6',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: 'rgba(255,255,255,0.04)',
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    iconText: {
+        fontSize: 22,
+        color: '#FFF',
+        fontWeight: '800',
     },
 });

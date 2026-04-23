@@ -51,10 +51,10 @@ async def generate_bodhi_speech(text: str) -> str:
             if hasattr(e, 'response') and e.response is not None:
                 error_msg += f" | Body: {e.response.text}"
             print(error_msg)
-            raise HTTPException(status_code=502, detail="Bodhi's voice circuits are currently offline.")
+            raise HTTPException(status_code=502, detail=f"Text-to-Speech API failed: {e}")
         except Exception as e:
             print(f"❌ UNEXPECTED TTS CRASH: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Unexpected error in Text-to-Speech: {e}")
 
 
 async def transcribe_audio(file_bytes: bytes, filename: str) -> str:
@@ -99,7 +99,7 @@ async def transcribe_audio(file_bytes: bytes, filename: str) -> str:
             if hasattr(e, 'response') and e.response is not None:
                 error_msg += f" | Body: {e.response.text}"
             print(error_msg)
-            raise HTTPException(status_code=502, detail="Bodhi's ears are currently offline.")
+            raise HTTPException(status_code=502, detail=f"Speech-to-Text API failed: {e}")
         except Exception as e:
             print(f"❌ UNEXPECTED STT CRASH: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Unexpected error in Speech-to-Text: {e}")

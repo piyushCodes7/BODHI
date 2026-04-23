@@ -16,6 +16,7 @@ import {
   ArrowLeft, Search, Users, Phone, Zap, ChevronRight, CheckCircle, X, ExternalLink,
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { Colors, Radius, Spacing, Gradients } from '../theme/tokens';
 import { BASE_URL } from '../api/client';
 
 const API = `${BASE_URL}/transfers`;
@@ -298,9 +299,14 @@ export function SendMoneyScreen() {
         disabled={phoneInput.length < 10}
         onPress={() => openPayFor(`+91${phoneInput}`, `+91 ${phoneInput}`)}
       >
-        <LinearGradient colors={['#7B2FBE', '#4A00E0']} style={styles.continueBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-          <Text style={styles.continueBtnText}>Continue</Text>
-          <ChevronRight size={18} color="#FFF" />
+        <LinearGradient
+          colors={Gradients.authCTA.colors}
+          style={styles.continueBtnGrad}
+          start={Gradients.authCTA.start}
+          end={Gradients.authCTA.end}
+        >
+          <Text style={[styles.continueBtnText, { color: '#000' }]}>Continue</Text>
+          <ChevronRight size={18} color="#000" />
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -324,24 +330,34 @@ export function SendMoneyScreen() {
         disabled={!upiInput}
         onPress={() => openPayFor(upiInput.trim().toLowerCase(), upiInput.trim())}
       >
-        <LinearGradient colors={['#7B2FBE', '#4A00E0']} style={styles.continueBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-          <Text style={styles.continueBtnText}>Continue</Text>
-          <ChevronRight size={18} color="#FFF" />
+        <LinearGradient
+          colors={Gradients.authCTA.colors}
+          style={styles.continueBtnGrad}
+          start={Gradients.authCTA.start}
+          end={Gradients.authCTA.end}
+        >
+          <Text style={[styles.continueBtnText, { color: '#000' }]}>Continue</Text>
+          <ChevronRight size={18} color="#000" />
         </LinearGradient>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View style={styles.root}>
+    <LinearGradient
+      colors={Gradients.darkVibrant.colors}
+      start={Gradients.darkVibrant.start}
+      end={Gradients.darkVibrant.end}
+      style={styles.root}
+    >
       {/* Header */}
-      <LinearGradient colors={['#2A0066', '#660099']} style={styles.header}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={22} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Send Money</Text>
         <View style={{ width: 40 }} />
-      </LinearGradient>
+      </View>
 
       {/* Tabs */}
       <View style={styles.tabBar}>
@@ -351,7 +367,7 @@ export function SendMoneyScreen() {
             style={[styles.tab, activeTab === key && styles.tabActive]}
             onPress={() => { setActiveTab(key); setSearchQuery(''); }}
           >
-            <Icon size={15} color={activeTab === key ? '#A855F7' : 'rgba(255,255,255,0.4)'} />
+            <Icon size={15} color={activeTab === key ? Colors.neonLime : 'rgba(255,255,255,0.4)'} />
             <Text style={[styles.tabLabel, activeTab === key && styles.tabLabelActive]}>{label}</Text>
           </TouchableOpacity>
         ))}
@@ -388,7 +404,7 @@ export function SendMoneyScreen() {
               </View>
             ) : (
               <>
-                <View style={styles.modalHeader}>
+                <View style={[styles.modalHeader, { paddingTop: Platform.OS === 'ios' ? 10 : 0 }]}>
                   <Text style={styles.modalTitle}>Send Money</Text>
                   <TouchableOpacity onPress={() => setShowPayModal(false)}>
                     <X size={22} color="#FFF" />
@@ -480,12 +496,12 @@ export function SendMoneyScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05050A' },
+  root: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 
   header: {
@@ -496,22 +512,23 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
 
-  tabBar: { flexDirection: 'row', backgroundColor: '#0C0C18', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: '#A855F7' },
-  tabLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' },
-  tabLabelActive: { color: '#A855F7' },
+  tabActive: { borderBottomWidth: 2, borderBottomColor: Colors.neonLime },
+  tabLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
+  tabLabelActive: { color: Colors.neonLime },
 
-  // contacts
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
     marginHorizontal: 16, marginVertical: 12,
     paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   searchInput: { flex: 1, color: '#FFF', fontSize: 15 },
 
@@ -520,84 +537,82 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
   },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  avatar: { width: 44, height: 44, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
   avatarText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   contactInfo: { flex: 1 },
   contactName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 2 },
-  contactPhone: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
+  contactPhone: { color: 'rgba(255,255,255,0.4)', fontSize: 13 },
 
-  // permission
   permTitle: { color: '#FFF', fontSize: 20, fontWeight: '700', marginTop: 16, marginBottom: 8 },
   permSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
-  permBtn: { backgroundColor: '#A855F7', paddingHorizontal: 28, paddingVertical: 14, borderRadius: 30 },
-  permBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  permBtn: { backgroundColor: Colors.neonLime, paddingHorizontal: 28, paddingVertical: 14, borderRadius: Radius.lg },
+  permBtnText: { color: '#000', fontSize: 15, fontWeight: '800' },
 
-  // manual entry
   manualSection: { padding: 20 },
-  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 10 },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
   phoneRow: {
-    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 20,
+    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 20,
+    height: 60, alignItems: 'center',
   },
   countryCode: {
-    paddingHorizontal: 14, paddingVertical: 16,
+    paddingHorizontal: 14,
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
+    justifyContent: 'center', height: '100%',
   },
-  countryCodeText: { color: '#FFF', fontSize: 15, fontWeight: '600' },
-  phoneInput: { flex: 1, paddingHorizontal: 14, paddingVertical: 16, color: '#FFF', fontSize: 15 },
+  countryCodeText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  phoneInput: { flex: 1, paddingHorizontal: 14, color: '#FFF', fontSize: 16, fontWeight: '600' },
   upiInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-    padding: 16, color: '#FFF', fontSize: 15, marginBottom: 20,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
+    padding: 16, color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 20,
+    height: 60,
   },
-  continueBtn: { borderRadius: 30, overflow: 'hidden' },
+  continueBtn: { borderRadius: Radius.xl, overflow: 'hidden' },
   continueBtnGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-  continueBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  continueBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
 
-  // modal
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
   modalSheet: {
-    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    backgroundColor: '#12142d', borderTopLeftRadius: 32, borderTopRightRadius: 32,
     padding: 24, paddingBottom: 44,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  modalTitle: { color: '#FFF', fontSize: 22, fontWeight: '800' },
 
   recipientTag: {
-    backgroundColor: 'rgba(168,85,247,0.1)', borderRadius: 12, padding: 12, marginBottom: 20,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
-  },
-  recipientLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
-  recipientValue: { color: '#A855F7', fontSize: 15, fontWeight: '700' },
-
-  amtLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8, textAlign: 'center' },
-  amtRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  rupee: { color: '#FFF', fontSize: 36, fontWeight: '300', marginRight: 8 },
-  amtInput: { color: '#FFF', fontSize: 56, fontWeight: '800', minWidth: 80, textAlign: 'center' },
-
-  quickAmounts: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 16 },
-  quickPill: {
-    backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 20,
-    paddingHorizontal: 14, paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginBottom: 24,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickPillText: { color: '#A855F7', fontSize: 13, fontWeight: '600' },
+  recipientLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
+  recipientValue: { color: Colors.neonLime, fontSize: 18, fontWeight: '800' },
+
+  amtLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginBottom: 8, textAlign: 'center' },
+  amtRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  rupee: { color: '#FFF', fontSize: 40, fontWeight: '300', marginRight: 8 },
+  amtInput: { color: '#FFF', fontSize: 64, fontWeight: '900', minWidth: 100, textAlign: 'center' },
+
+  quickAmounts: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24 },
+  quickPill: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  quickPillText: { color: Colors.neonLime, fontSize: 14, fontWeight: '700' },
 
   noteInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12,
-    padding: 14, color: '#FFF', fontSize: 15, marginBottom: 20,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    padding: 16, color: '#FFF', fontSize: 15, marginBottom: 24,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
-  payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center' },
-  payBtnText: { fontSize: 16, fontWeight: '800', color: '#000' },
+  payBtn: { borderRadius: Radius.xl, paddingVertical: 18, alignItems: 'center' },
+  payBtnText: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
 
-  // success
   successContainer: { alignItems: 'center', paddingVertical: 16 },
-  successTitle: { color: '#FFF', fontSize: 26, fontWeight: '800', marginTop: 16, marginBottom: 8 },
-  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  doneBtn: { backgroundColor: '#34c759', paddingHorizontal: 48, paddingVertical: 16, borderRadius: 30 },
-  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  successTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  doneBtn: { backgroundColor: Colors.success, paddingHorizontal: 48, paddingVertical: 18, borderRadius: Radius.xl },
+  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });

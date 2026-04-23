@@ -189,11 +189,13 @@ export const TravelBookingScreen = () => {
   }, []);
 
   const [sessionId, setSessionId] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSearch = async () => {
     if (!fromAirport || !toAirport) { Alert.alert('Missing Fields', 'Select origin and destination.'); return; }
     if (!travelDate) { Alert.alert('Missing Date', 'Enter travel date (YYYY-MM-DD).'); return; }
     setLoading(true);
+    setErrorMessage(null); // Reset before new search
     try {
       const data = await TravelAPI.searchFlights({
         origin_sky_id: fromAirport.sky_id,
@@ -206,8 +208,11 @@ export const TravelBookingScreen = () => {
       setFlights(data.flights || []);
       setSessionId(data.session_id || '');
       setScreen('results');
-    } catch {
-      Alert.alert('Search Failed', 'Could not fetch flights. Try again.');
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Could not fetch flights. Try again.';
+      setErrorMessage(msg);
+      setFlights([]); // Clear flights
+      setScreen('results'); // Go to results screen to show the ListEmptyComponent with the error
     } finally { setLoading(false); }
   };
 
@@ -385,7 +390,7 @@ export const TravelBookingScreen = () => {
                 Cannot fetch flights
               </Text>
               <Text style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 10, paddingHorizontal: 20 }}>
-                Your API data quota limit is exceeded. Please upgrade your RapidAPI plan or provide a new key.
+                {errorMessage || "Try changing your dates or selecting a different route."}
               </Text>
             </View>
           )}

@@ -10,6 +10,7 @@ export const Colors = {
   electricViolet:  '#702ae1',  // secondary — gradient anchor
   hotPink:         '#f74b6d',  // error-container — gradient tail
   magenta:         '#a400a4',  // tertiary — gradient mid
+  neonGreen:       '#39FF14',  // vibrant green for specific CTAs
 
   // ── Gradient (Signature Neon) ────────────────────────────────
   gradientStart:   '#702ae1',
@@ -132,9 +133,19 @@ export const Gradients = {
   },
   neonLimeRadial: ['#d1fc00', '#465600'], // used in orb/AI brain
   darkAmbient: {
-    colors: ['#0c0e12', '#12121e'],
+    colors: ['#0a0b1e', '#2c0450'],
     start:  { x: 0, y: 0 },
-    end:    { x: 0, y: 1 },
+    end:    { x: 1, y: 1 },
+  },
+  darkVibrant: {
+    colors: ['#000000', '#0a0b1e', '#450a4e'],
+    start:  { x: 0, y: 0 },
+    end:    { x: 1, y: 1 },
+  },
+  authCTA: {
+    colors: ['#FFE259', '#C8FF00'],
+    start:  { x: 0, y: 0 },
+    end:    { x: 1, y: 0 },
   },
 } as const;
 
