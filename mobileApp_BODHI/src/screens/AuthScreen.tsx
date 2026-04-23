@@ -91,6 +91,26 @@ export function AuthScreen({ navigation }: any) {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
+  useEffect(() => {
+    // Diagnostic check: Test if we can at least perform a GET request to the server
+    const testConnection = async () => {
+      try {
+        console.log(`🔍 Connectivity Check: Fetching ${BASE_URL}/ ...`);
+        const res = await fetch(`${BASE_URL}/`, { method: 'GET' });
+        console.log(`📊 Status: ${res.status}`);
+        if (res.ok) {
+          const text = await res.text();
+          console.log(`✅ Connectivity Check Success: ${text.substring(0, 50)}`);
+        } else {
+          console.warn(`⚠️ Connectivity Check returned non-OK status: ${res.status}`);
+        }
+      } catch (err: any) {
+        console.error(`❌ Connectivity Check Failed: ${err.message}`, err);
+      }
+    };
+    testConnection();
+  }, []);
+
   const startResendTimer = () => setResendTimer(60);
 
 
@@ -101,19 +121,32 @@ export function AuthScreen({ navigation }: any) {
         Alert.alert("Error", `Please enter ${target} first`);
         return;
       }
-      
+
       setIsLoading(true);
+
+      // Using native fetch as a fallback to bypass potential axios-specific network blocks
+      const otpResponse = await fetch(`${BASE_URL}/auth/send-register-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(target === 'email' ? { email } : { phone }),
+      });
+
+      if (!otpResponse.ok) {
+        const errorData = await otpResponse.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Server responded with ${otpResponse.status}`);
+      }
+
       if (target === 'email') {
-        await AuthAPI.sendRegisterOtp({ email });
         setIsEmailVerified(true);
       } else {
-        await AuthAPI.sendRegisterOtp({ phone });
         setIsPhoneVerified(true);
       }
       startResendTimer();
       Alert.alert("Sent!", `OTP has been sent to your ${target}`);
     } catch (error: any) {
-      Alert.alert("Error", error.response?.data?.detail || "Failed to send OTP");
+      console.error("OTP Error:", error);
+      const errorMsg = error.response?.data?.detail || error.message || "Unknown Network Error";
+      Alert.alert("Error", `Failed to send OTP: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
@@ -591,8 +624,8 @@ export function AuthScreen({ navigation }: any) {
 
                       <View style={{ flex: 1.5 }}>
                         <Text style={styles.inputLabel}>GENDER</Text>
-                        <TouchableOpacity 
-                          style={[styles.dropdownHeader, isGenderOpen && { borderColor: Colors.neonLime, backgroundColor: 'rgba(200, 255, 0, 0.05)' }]} 
+                        <TouchableOpacity
+                          style={[styles.dropdownHeader, isGenderOpen && { borderColor: Colors.neonLime, backgroundColor: 'rgba(200, 255, 0, 0.05)' }]}
                           onPress={() => setIsGenderOpen(!isGenderOpen)}
                           activeOpacity={0.8}
                         >
@@ -605,8 +638,8 @@ export function AuthScreen({ navigation }: any) {
                         {isGenderOpen && (
                           <View style={styles.dropdownList}>
                             {['Male', 'Female', 'Other'].map((g) => (
-                              <TouchableOpacity 
-                                key={g} 
+                              <TouchableOpacity
+                                key={g}
                                 style={styles.dropdownItem}
                                 onPress={() => {
                                   setGender(g);
@@ -685,8 +718,8 @@ export function AuthScreen({ navigation }: any) {
                         autoCapitalize="none"
                         editable={!isEmailVerified}
                       />
-                      <TouchableOpacity 
-                        style={styles.verifyInlineBtn} 
+                      <TouchableOpacity
+                        style={styles.verifyInlineBtn}
                         disabled={resendTimer > 0 || isLoading}
                         onPress={() => isEmailVerified ? setIsEmailVerified(false) : handleSendOtp('email')}
                       >
@@ -717,14 +750,14 @@ export function AuthScreen({ navigation }: any) {
                       </>
                     )}
 
-                    <TouchableOpacity 
-                      activeOpacity={0.8} 
+                    <TouchableOpacity
+                      activeOpacity={0.8}
                       onPress={() => handleVerifyOtp('email')}
                       style={{ marginTop: 32 }}
                       disabled={!isEmailVerified || isLoading}
                     >
-                      <LinearGradient 
-                        colors={isEmailVerified ? ['#FFE259', '#C8FF00'] : ['#333', '#222']} 
+                      <LinearGradient
+                        colors={isEmailVerified ? ['#FFE259', '#C8FF00'] : ['#333', '#222']}
                         style={styles.primaryBtn}
                       >
                         {isLoading ? <ActivityIndicator color="#000" /> : (
@@ -740,7 +773,7 @@ export function AuthScreen({ navigation }: any) {
 
                 {/* STEP 2: SECURITY & PINs */}
                 {currentStep === 2 && (
-  <>
+                  <>
                     <Text style={styles.inputLabel}>SET M-PIN (LOGIN PASSWORD)</Text>
                     <View style={styles.inputWrapper}>
                       <Lock size={18} color="#A855F7" style={styles.inputIcon} />
@@ -929,29 +962,29 @@ const styles = StyleSheet.create({
 
   // ── FORM & TEXT ──
   form: { marginBottom: Spacing.sm },
-  flowTitle: { 
-    fontSize: 22, 
-    fontWeight: '800', 
-    color: '#FFF', 
-    marginBottom: 6, 
+  flowTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFF',
+    marginBottom: 6,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
-  flowSub: { 
-    fontSize: 12.5, 
-    color: 'rgba(255,255,255,0.6)', 
-    marginBottom: 20, 
-    textAlign: 'center', 
-    lineHeight: 18 
+  flowSub: {
+    fontSize: 12.5,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 18
   },
 
-  inputLabel: { 
-    fontSize: 10.5, 
-    fontWeight: '800', 
-    color: 'rgba(255,255,255,0.5)', 
-    letterSpacing: 1.2, 
-    marginBottom: 8, 
-    marginTop: 14 
+  inputLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    marginTop: 14
   },
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.md, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   inputIcon: { marginLeft: 16, marginRight: 12 },
@@ -1006,42 +1039,42 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
 
-  dropdownHeader: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    backgroundColor: 'rgba(255,255,255,0.08)', 
-    borderRadius: Radius.md, 
-    height: 52, 
-    paddingHorizontal: 8, 
-    borderWidth: 1.5, 
-    borderColor: 'rgba(255,255,255,0.2)' 
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: Radius.md,
+    height: 52,
+    paddingHorizontal: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.2)'
   },
   dropdownHeaderText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  dropdownList: { 
-    position: 'absolute', 
-    top: 60, 
-    left: 0, 
-    right: 0, 
-    backgroundColor: '#2A0845', 
-    borderRadius: Radius.md, 
-    borderWidth: 1, 
-    borderColor: Colors.neonLime, 
-    overflow: 'hidden', 
-    shadowColor: Colors.neonLime, 
-    shadowOffset: { width: 0, height: 10 }, 
-    shadowOpacity: 0.3, 
-    shadowRadius: 20, 
+  dropdownList: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: '#2A0845',
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.neonLime,
+    overflow: 'hidden',
+    shadowColor: Colors.neonLime,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
     elevation: 20,
     zIndex: 1000,
   },
-  dropdownItem: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    padding: 18, 
-    borderBottomWidth: 1, 
-    borderBottomColor: 'rgba(255,255,255,0.1)' 
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)'
   },
   dropdownItemText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
 
