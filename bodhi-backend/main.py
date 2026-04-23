@@ -14,11 +14,13 @@ logger = logging.getLogger(__name__)
 # Database & Models
 from database import engine, Base
 import models.portfolio
-import models.social  # This ensures the Social tables get registered to the Base
+import models.social        # Social Hub tables
+import models.collaboration # Scoped collaboration (Chat, Polls)
 
 # Routers
 from routers import auth, trade, search, prices, simulate, social, ai, notification, travel
 from routers.social import router as social_router
+from routers.collaboration import router as collaboration_router
 from routers import payments, insurance, wallets, expenses, users, subscriptions
 from routers import transfers
 
@@ -125,3 +127,4 @@ app.include_router(notification.router, prefix="/notifications", tags=["Notifica
 app.include_router(users.router,        prefix="/users",         tags=["Users"])
 app.include_router(travel.router,       prefix="/travel",        tags=["Travel"])
 app.include_router(transfers.router)
+app.include_router(collaboration_router, prefix="/collaboration", tags=["Collaboration"])
