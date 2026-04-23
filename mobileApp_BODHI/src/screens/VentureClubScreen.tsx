@@ -10,12 +10,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Share,
   Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
   ChevronLeft, TrendingUp, Vote, Plus, 
   BarChart2, Wallet, MessageCircle, Activity, 

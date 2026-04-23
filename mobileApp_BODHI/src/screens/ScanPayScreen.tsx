@@ -131,23 +131,19 @@ export function ScanPayScreen() {
     try {
       let finalUrl = scannedData;
       
-      // 1. Remove existing am/tn to avoid duplicates
-      finalUrl = finalUrl.replace(/([?&])am=[^&]*/g, '');
-      finalUrl = finalUrl.replace(/([?&])tn=[^&]*/g, '');
-      
-      // 2. Ensure cu=INR is present
-      if (!finalUrl.includes('cu=')) {
-        finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'cu=INR';
-      }
-
-      // 3. Cleanup ampersands and separators
-      finalUrl = finalUrl.replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/&$/, '');
-
-      // 4. Append our amount and note
-      const formattedAmount = parseFloat(amount).toFixed(2);
-      finalUrl += (finalUrl.includes('?') ? '&' : '?') + `am=${formattedAmount}`;
-      if (note) {
-        finalUrl += `&tn=${encodeURIComponent(note)}`;
+      // If the QR code is dynamic (already has an amount or a signature), 
+      // DO NOT mutate the URL or it will fail bank security checks (Limit Reached / Invalid Signature).
+      if (!/[?&]am=/i.test(scannedData)) {
+        if (!finalUrl.includes('cu=')) {
+          finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'cu=INR';
+        }
+        finalUrl = finalUrl.replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/&$/, '');
+        
+        const formattedAmount = parseFloat(amount).toFixed(2);
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + `am=${formattedAmount}`;
+        if (note) {
+          finalUrl += `&tn=${encodeURIComponent(note)}`;
+        }
       }
 
       // Try specific Google Pay schemes first to avoid WhatsApp taking over

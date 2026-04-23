@@ -10,7 +10,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Share,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react-native';
 import { apiClient } from '../api/client';
 import { CollaborationView } from '../components/CollaborationView';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width: W } = Dimensions.get('window');

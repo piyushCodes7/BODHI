@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   Linking,
-  SafeAreaView,
   AppState,
   Modal,
   ActivityIndicator,
@@ -16,6 +15,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   Tv, Gamepad2, Briefcase, Music, BookOpen,

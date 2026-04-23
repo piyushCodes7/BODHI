@@ -59,11 +59,18 @@ async def update_my_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verify current password before any changes
-    if not verify_password(user_data.current_password, current_user.hashed_password):
+    print(f"DEBUG: Updating profile for user {current_user.email}")
+    # Determine the target hash to verify against (M-PIN is preferred for profile edits)
+    target_hash = current_user.m_pin if current_user.m_pin else current_user.hashed_password
+    print(f"DEBUG: Target hash exists: {bool(target_hash)}")
+    
+    # Only verify if a target hash exists (local users)
+    # OAuth users with no PIN yet are allowed to update
+    if target_hash and not verify_password(user_data.current_password, target_hash):
+        print("DEBUG: Profile update verification FAILED")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect password. Update failed.",
+            detail="Incorrect M-PIN. Update failed.",
         )
     
     if user_data.full_name is not None:
@@ -128,17 +135,25 @@ async def verify_mpin(
     current_user: User = Depends(get_current_user)
 ):
     """Specific endpoint to verify M-PIN."""
-    if not current_user.m_pin:
-        # Fallback to hashed_password if m_pin isn't set specifically
-        target_hash = current_user.hashed_password
-    else:
-        target_hash = current_user.m_pin
+    print(f"DEBUG: Verifying M-PIN for user {current_user.email}")
+    print(f"DEBUG: Received M-PIN: {data.password}")
+    
+    # Handle OAuth users who haven't set a local M-PIN/Password yet
+    if not current_user.m_pin and not current_user.hashed_password:
+        print("DEBUG: OAuth user with no PIN - Auto-success")
+        return {"success": True, "method": "oauth"}
+
+    target_hash = current_user.m_pin if current_user.m_pin else current_user.hashed_password
+    print(f"DEBUG: Target hash exists: {bool(target_hash)}")
 
     if not target_hash or not verify_password(data.password, target_hash):
+        print("DEBUG: Verification FAILED")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect M-PIN.",
         )
+    
+    print("DEBUG: Verification SUCCESS")
     return {"success": True}
 
 from fastapi import File, UploadFile

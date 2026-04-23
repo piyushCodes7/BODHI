@@ -45,6 +45,7 @@ export function ProfileScreen() {
   const [originalData, setOriginalData] = useState<any>(null);
   const [gapId, setGapId] = useState('');
   const [balance, setBalance] = useState(0);
+  const [hasPassword, setHasPassword] = useState(true);
 
   // Modal State
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -74,7 +75,8 @@ export function ProfileScreen() {
       setGender(data.gender || '');
       setGapId(data.gap_id || '');
       setBalance(data.balance || 0);
-      console.log("Profile Data Loaded:", { gapId: data.gap_id, balance: data.balance });
+      setHasPassword(data.has_password);
+      console.log("Profile Data Loaded:", { gapId: data.gap_id, balance: data.balance, hasPassword: data.has_password });
       
       setAvatarUrl(resolveAvatarUrl(data.avatar_url));
       
@@ -159,7 +161,7 @@ export function ProfileScreen() {
   };
 
   const executeAction = async () => {
-    if (!password && modalType !== 'confirm_save') {
+    if (hasPassword && !password && modalType !== 'confirm_save') {
       Alert.alert("Error", "M-PIN is required.");
       return;
     }
@@ -267,7 +269,12 @@ export function ProfileScreen() {
           </View>
 
           {/* ─── Profile Details Card ─── */}
-          <BlurView blurType="dark" blurAmount={20} style={styles.glassCard}>
+          <View style={styles.glassCard}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={20} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            )}
             <View style={styles.fieldRow}>
               <View style={styles.fieldIcon}>
                 <User size={20} color={Colors.neonLime} />
@@ -396,11 +403,16 @@ export function ProfileScreen() {
                 </TouchableOpacity>
               )}
             </View>
-          </BlurView>
+          </View>
 
           {/* ─── Financial Identity ─── */}
           <Text style={styles.sectionLabel}>FINANCIAL IDENTITY</Text>
-          <BlurView blurType="dark" blurAmount={20} style={styles.glassCard}>
+          <View style={styles.glassCard}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={20} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            )}
             <TouchableOpacity 
               style={styles.linkRow} 
               onPress={() => setIsQrModalVisible(true)}
@@ -414,11 +426,16 @@ export function ProfileScreen() {
               </View>
               <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
             </TouchableOpacity>
-          </BlurView>
+          </View>
 
           {/* ─── Account & Banking ─── */}
           <Text style={styles.sectionLabel}>ACCOUNT & BANKING</Text>
-          <BlurView blurType="dark" blurAmount={20} style={styles.glassCard}>
+          <View style={styles.glassCard}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={20} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            )}
             <TouchableOpacity 
               style={styles.linkRow} 
               onPress={() => navigation.navigate('BankAccounts')}
@@ -448,11 +465,16 @@ export function ProfileScreen() {
               </View>
               <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
             </TouchableOpacity>
-          </BlurView>
+          </View>
 
           {/* ─── Security & Privacy ─── */}
           <Text style={styles.sectionLabel}>SECURITY & PRIVACY</Text>
-          <BlurView blurType="dark" blurAmount={20} style={styles.glassCard}>
+          <View style={styles.glassCard}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={20} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            )}
             <TouchableOpacity 
               style={styles.linkRow}
               onPress={() => navigation.navigate('SecuritySettings')}
@@ -466,11 +488,16 @@ export function ProfileScreen() {
               </View>
               <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
             </TouchableOpacity>
-          </BlurView>
+          </View>
 
           {/* ─── Preferences ─── */}
           <Text style={styles.sectionLabel}>APP PREFERENCES</Text>
-          <BlurView blurType="dark" blurAmount={20} style={styles.glassCard}>
+          <View style={styles.glassCard}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={20} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+            )}
             <TouchableOpacity 
               style={styles.linkRow}
               onPress={() => navigation.navigate('TravelBooking')}
@@ -500,7 +527,7 @@ export function ProfileScreen() {
               </View>
               <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
             </TouchableOpacity>
-          </BlurView>
+          </View>
 
           {/* ─── Action Buttons ─── */}
           <View style={styles.actionContainer}>
@@ -534,9 +561,15 @@ export function ProfileScreen() {
         visible={isQrModalVisible}
         transparent
         animationType="fade"
+        onRequestClose={() => setIsQrModalVisible(false)}
       >
         <View style={styles.qrModalOverlay}>
-          <BlurView blurType="dark" blurAmount={30} style={styles.qrModalContent}>
+          <View style={styles.qrModalContent}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={30} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.85)' }]} />
+            )}
             <TouchableOpacity 
               style={styles.qrCloseBtn} 
               onPress={() => setIsQrModalVisible(false)}
@@ -575,7 +608,7 @@ export function ProfileScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </BlurView>
+          </View>
         </View>
       </Modal>
 
@@ -584,12 +617,18 @@ export function ProfileScreen() {
         visible={isModalVisible}
         transparent
         animationType="fade"
+        onRequestClose={() => {}}
       >
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
+          <View style={styles.modalContent}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={30} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.85)' }]} />
+            )}
             <View style={styles.modalHeader}>
               <ShieldCheck size={24} color={Colors.neonLime} />
               <Text style={styles.modalTitle}>
@@ -598,11 +637,13 @@ export function ProfileScreen() {
               <Text style={styles.modalSub}>
                 {modalType === 'confirm_save' 
                   ? "Are you sure you want to save these changes to your profile?" 
-                  : `Enter your M-PIN to unlock the ${targetField || 'profile'} field for editing.`}
+                  : (hasPassword 
+                      ? `Enter your M-PIN to unlock the ${targetField || 'profile'} field for editing.`
+                      : `Confirm to unlock the ${targetField || 'profile'} field for editing.`)}
               </Text>
             </View>
 
-            {modalType !== 'confirm_save' && (
+            {hasPassword && (
               <View style={styles.modalInputWrapper}>
                 <TextInput
                   style={[styles.modalInput, { letterSpacing: 8, fontWeight: '800' }]}
@@ -637,7 +678,7 @@ export function ProfileScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
     </View>
@@ -647,7 +688,7 @@ export function ProfileScreen() {
 // ─── Styles ───
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#05001F' },
+  container: { flex: 1, backgroundColor: '#000000' },
   center: { justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
@@ -872,7 +913,7 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.95)',
     justifyContent: 'center',
     padding: 24,
   },

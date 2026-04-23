@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
@@ -46,13 +47,16 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
   const labelCol = dark ? '#6b7280'               : Colors.tabInactive;
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: insets.bottom || 16 }]}>
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType={dark ? 'dark' : 'light'}
-        blurAmount={24}
-        reducedTransparencyFallbackColor={dark ? '#0c0e12' : '#f6f6fb'}
-      />
+    <View style={[styles.wrapper, { paddingBottom: insets.bottom || (Platform.OS === 'android' ? 24 : 16) }]}>
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType={dark ? 'dark' : 'light'}
+          blurAmount={24}
+        />
+      ) : (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(12,14,18,0.9)' : 'rgba(255,255,255,0.9)' }]} />
+      )}
 
       <View style={[StyleSheet.absoluteFill, { backgroundColor: barBg }]} />
 

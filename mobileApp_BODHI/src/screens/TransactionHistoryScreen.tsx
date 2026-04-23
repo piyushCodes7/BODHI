@@ -144,7 +144,7 @@ export function TransactionHistoryScreen() {
       )}
 
       {/* Transaction Details Modal */}
-      <Modal visible={!!selectedTx} animationType="slide" transparent>
+      <Modal visible={!!selectedTx} animationType="slide" transparent onRequestClose={() => setSelectedTx(null)}>
         <View style={styles.modalBg}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -193,7 +193,7 @@ export function TransactionHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05001F' },
+  root: { flex: 1, backgroundColor: '#000000' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   txRight: { alignItems: 'flex-end', flexShrink: 0 },
   txAmount: { fontSize: 16, fontWeight: '800' },
 
-  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },

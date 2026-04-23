@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, LogBox } from 'react-native';
-import { configureGoogleSignIn } from './src/hooks/useOAuthSignIn'; 
+// Safe import
+import * as OAuth from './src/hooks/useOAuthSignIn'; 
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { CalculatorProvider } from './src/context/CalculatorContext';
 import { FloatingCalculator } from './src/components/FloatingCalculator';
@@ -20,14 +21,24 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(true);
 
   useEffect(() => {
-    configureGoogleSignIn(); 
+    try {
+      if (OAuth && OAuth.configureGoogleSignIn) {
+        OAuth.configureGoogleSignIn(); 
+      }
+    } catch (e) {
+      console.warn("Google Sign-In config failed", e);
+    }
   }, []);
 
   return (
     <>
       {/* Dynamically match the status bar. Splash and Onboarding are dark, App is light */}
     <CalculatorProvider>
-      <StatusBar barStyle={(showSplash || showOnboarding) ? "light-content" : "dark-content"} />
+      <StatusBar 
+        barStyle={(showSplash || showOnboarding) ? "light-content" : "dark-content"} 
+        translucent 
+        backgroundColor="transparent" 
+      />
       
       {showSplash ? (
         // Step 1: Play the video. When done, it triggers setShowSplash(false)

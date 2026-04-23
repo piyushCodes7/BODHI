@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
@@ -47,7 +47,11 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
   return (
     <>
       <View style={[styles.wrapper, { paddingTop: insets.top }]}>
-        <BlurView style={StyleSheet.absoluteFill} blurType={dark ? 'dark' : 'light'} blurAmount={20} />
+        {Platform.OS === 'ios' ? (
+          <BlurView style={StyleSheet.absoluteFill} blurType={dark ? 'dark' : 'light'} blurAmount={20} />
+        ) : (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)' }]} />
+        )}
         <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(12,14,18,0.65)' : 'rgba(255,255,255,0.2)' }]} />
 
         <View style={styles.inner}>
@@ -83,7 +87,11 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
 
       <Modal visible={profileOpen} transparent animationType="slide" onRequestClose={() => setProfileOpen(false)}>
         <View style={styles.modalOverlay}>
-          <BlurView style={StyleSheet.absoluteFill} blurType="dark" blurAmount={10} />
+          {Platform.OS === 'ios' ? (
+            <BlurView style={StyleSheet.absoluteFill} blurType="dark" blurAmount={10} />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.8)' }]} />
+          )}
           <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setProfileOpen(false)} />
           
           <View style={[styles.modalContent, { paddingBottom: insets.bottom || 24 }]}>

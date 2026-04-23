@@ -59,7 +59,7 @@ export const Colors = {
   bgGlassBorder:   'rgba(255,255,255,0.10)',
   divider:         '#e1e2e8',
   textInverse:     '#ffffff',
-  bgDeep:          '#05001F',
+  bgDeep:          '#000000',
   neonLimeSubtle: '#eaff80',
   neonCyan: '#00f2fe',
 } as const;

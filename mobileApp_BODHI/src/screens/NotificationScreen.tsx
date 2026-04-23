@@ -5,11 +5,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Bell, CheckCheck, Info, AlertTriangle, Briefcase, CheckCircle2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NotificationAPI } from '../api/client';
@@ -26,6 +26,7 @@ interface Notification {
 
 export const NotificationScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -102,7 +103,7 @@ export const NotificationScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
       
       {/* Header */}
@@ -138,7 +139,7 @@ export const NotificationScreen = () => {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
