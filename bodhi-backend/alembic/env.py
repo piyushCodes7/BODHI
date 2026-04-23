@@ -73,8 +73,14 @@ async def run_async_migrations() -> None:
     """In this scenario we need to create an AsyncEngine
     and associate it with the context.
     """
+    # Prioritize environment variable if present
+    db_url = os.getenv("DATABASE_URL")
+    configuration = config.get_section(config.config_ini_section, {})
+    if db_url:
+        configuration["sqlalchemy.url"] = db_url
+
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

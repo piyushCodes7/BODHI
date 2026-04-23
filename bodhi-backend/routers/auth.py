@@ -85,6 +85,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
                 u_pin=hashed_upin,
                 age=user_data.age,
                 gender=user_data.gender,
+                is_mpin_set=True,
                 is_active=True,
                 is_verified=True, # OTP was verified before this step
                 balance=100000.0,
@@ -100,11 +101,24 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         raise
     except Exception as e:
         import traceback
-        print(f"❌ Registration Crash: {str(e)}")
-        traceback.print_exc()
+        error_trace = traceback.format_exc()
+        # Log request payload safely (masking PINs)
+        safe_payload = user_data.model_dump()
+        safe_payload['m_pin'] = '********'
+        safe_payload['u_pin'] = '********'
+        safe_payload['password'] = '********'
+        
+        print(f"❌ Registration Crash for {user_data.email}: {str(e)}")
+        print(f"📦 Safe Payload: {safe_payload}")
+        print(f"🔍 Traceback:\n{error_trace}")
+        
         raise HTTPException(
             status_code=500, 
-            detail=f"Registration failed due to server error: {str(e)}"
+            detail={
+                "message": "Registration failed due to server error",
+                "error": str(e),
+                "type": type(e).__name__
+            }
         )
 
 # Note: OAuth2PasswordRequestForm expects form data (username & password), not JSON!
