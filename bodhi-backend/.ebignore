@@ -1,0 +1,10 @@
+bodhi/
+__pycache__/
+*.pyc
+.git/
+.env
+static/
+backend.log
+response.json
+response2.json
+node_modules/

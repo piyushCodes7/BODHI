@@ -33,6 +33,9 @@ class UserProfile(BaseModel):
     age: Optional[int]
     gender: Optional[str]
     has_password: bool
+    avatar_url: Optional[str] = None
+    gap_id: Optional[str] = None
+    balance: float = 0.0
 
 @router.get("/me", response_model=UserProfile)
 async def get_my_profile(current_user: User = Depends(get_current_user)):
@@ -43,7 +46,10 @@ async def get_my_profile(current_user: User = Depends(get_current_user)):
         phone=current_user.phone,
         age=current_user.age,
         gender=current_user.gender,
-        has_password=current_user.hashed_password is not None
+        has_password=current_user.hashed_password is not None,
+        avatar_url=current_user.avatar_url,
+        gap_id=f"{current_user.email.split('@')[0]}.g.gap".lower(),
+        balance=current_user.balance
     )
     return user_profile
 
@@ -115,6 +121,50 @@ async def verify_user_password(
             detail="Incorrect password.",
         )
     return {"success": True}
+
+@router.post("/verify-mpin")
+async def verify_mpin(
+    data: VerifyPasswordRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Specific endpoint to verify M-PIN."""
+    if not current_user.m_pin:
+        # Fallback to hashed_password if m_pin isn't set specifically
+        target_hash = current_user.hashed_password
+    else:
+        target_hash = current_user.m_pin
+
+    if not target_hash or not verify_password(data.password, target_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect M-PIN.",
+        )
+    return {"success": True}
+
+from fastapi import File, UploadFile
+import os
+import shutil
+
+@router.post("/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # In a real app, upload to S3. For now, local storage or just a mock URL.
+    # We'll save to a 'static/avatars' folder
+    os.makedirs("static/avatars", exist_ok=True)
+    file_path = f"static/avatars/{current_user.id}_{file.filename}"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update user in DB
+    # For now, let's just use a placeholder URL or the local path if served
+    avatar_url = f"/static/avatars/{current_user.id}_{file.filename}"
+    current_user.avatar_url = avatar_url
+    await db.commit()
+    
+    return {"avatar_url": avatar_url}
 
 
 # ─────────────────────────────────────────────────────────────

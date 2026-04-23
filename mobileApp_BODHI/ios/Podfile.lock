@@ -1131,6 +1131,8 @@ PODS:
     - React-Core
   - RNAudioRecorderPlayer (3.6.14):
     - React-Core
+  - RNCClipboard (1.16.3):
+    - React-Core
   - RNFS (2.20.0):
     - React-Core
   - RNGestureHandler (2.31.1):
@@ -1230,6 +1232,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
@@ -1379,6 +1382,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNAudioRecorderPlayer:
     :path: "../node_modules/react-native-audio-recorder-player"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNFS:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
@@ -1471,6 +1476,7 @@ SPEC CHECKSUMS:
   ReactCommon: cc18bd33c0fab03c67620da6a602dcc1704e66b4
   RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
   RNAudioRecorderPlayer: b5ed41ccfe72a211a870bfe09ab36c046eb27d2a
+  RNCClipboard: f6679d470d0da2bce2a37b0af7b9e0bf369ecda5
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: ee39f3faf060a0a157312bd5e1bfe26ce46232da
   RNGoogleSignin: b11289afb825c32c250272e4d92446f71091814e

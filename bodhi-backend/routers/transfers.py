@@ -162,6 +162,17 @@ async def _find_user_by_identifier(db: AsyncSession, identifier: str) -> Optiona
         if user:
             return user
 
+    # 4. GAP ID (username.g.gap)
+    if raw.lower().endswith(".g.gap"):
+        username_part = raw.lower()[:-6]
+        # Search for user where email starts with username_part + '@'
+        result = await db.execute(
+            select(User).where(User.email.like(f"{username_part}@%"))
+        )
+        user = result.scalar_one_or_none()
+        if user:
+            return user
+
     return None
 
 

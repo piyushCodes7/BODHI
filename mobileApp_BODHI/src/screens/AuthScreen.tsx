@@ -52,7 +52,9 @@ export function AuthScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mPin, setMPin] = useState('');
+  const [confirmMPin, setConfirmMPin] = useState('');
   const [uPin, setUPin] = useState('');
+  const [confirmUPin, setConfirmUPin] = useState('');
   const [otp, setOtp] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
@@ -68,7 +70,9 @@ export function AuthScreen({ navigation }: any) {
     setEmail('');
     setPassword('');
     setMPin('');
+    setConfirmMPin('');
     setUPin('');
+    setConfirmUPin('');
     setOtp('');
     setCurrentStep(0);
     setIsEmailSent(false);
@@ -178,6 +182,14 @@ export function AuthScreen({ navigation }: any) {
     if (authMode === 'signup') {
       if (!email || !mPin || !uPin) {
         Alert.alert('Error', 'Please enter your Email, M-PIN and U-PIN.');
+        return;
+      }
+      if (mPin !== confirmMPin) {
+        Alert.alert('Error', 'M-PINs do not match.');
+        return;
+      }
+      if (uPin !== confirmUPin) {
+        Alert.alert('Error', 'U-PINs do not match.');
         return;
       }
     } else {
@@ -303,8 +315,13 @@ export function AuthScreen({ navigation }: any) {
   };
 
   const handleResetPassword = async () => {
-    if (otp.length !== 6 || newPassword.length < 8) {
-      Alert.alert('Invalid Input', 'Enter 6-digit code and new password.');
+    if (otp.length !== 6 || newPassword.length < 4) {
+      Alert.alert('Invalid Input', 'Enter 6-digit code and new 4-digit M-PIN.');
+      return;
+    }
+
+    if (newPassword !== confirmMPin) {
+      Alert.alert('Error', 'PINs do not match.');
       return;
     }
 
@@ -376,11 +393,13 @@ export function AuthScreen({ navigation }: any) {
                 />
 
                 <AuthInput
-                  label="Password"
-                  placeholder="Min. 8 characters"
+                  label="Login PIN (M-PIN)"
+                  placeholder="••••"
                   icon={<Lock size={20} color="#A855F7" />}
                   value={password}
                   onChangeText={setPassword}
+                  keyboardType="number-pad"
+                  maxLength={4}
                   secureTextEntry
                 />
 
@@ -565,18 +584,27 @@ export function AuthScreen({ navigation }: any) {
 
                 {currentStep === 2 && (
                   <>
-                    <Text style={styles.inputLabel}>SET M-PIN (LOGIN PASSWORD)</Text>
-                    <View style={styles.inputWrapper}>
-                      <Lock size={18} color="#A855F7" style={styles.inputIcon} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Can be text or numbers"
-                        placeholderTextColor="rgba(255,255,255,0.4)"
-                        value={mPin}
-                        onChangeText={setMPin}
-                        secureTextEntry
-                      />
-                    </View>
+                    <AuthInput
+                      label="Login Pin (M-PIN)"
+                      placeholder="••••"
+                      icon={<Lock size={20} color="#A855F7" />}
+                      value={mPin}
+                      onChangeText={setMPin}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      secureTextEntry
+                    />
+
+                    <AuthInput
+                      label="Confirm M-PIN"
+                      placeholder="••••"
+                      icon={<Lock size={20} color="#A855F7" />}
+                      value={confirmMPin}
+                      onChangeText={setConfirmMPin}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      secureTextEntry
+                    />
 
                     <AuthInput
                       label="Transaction Pin (U-PIN)"
@@ -589,11 +617,22 @@ export function AuthScreen({ navigation }: any) {
                       secureTextEntry
                     />
 
+                    <AuthInput
+                      label="Confirm U-PIN"
+                      placeholder="••••"
+                      icon={<ShieldCheck size={20} color="#A855F7" />}
+                      value={confirmUPin}
+                      onChangeText={setConfirmUPin}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      secureTextEntry
+                    />
+
                     <AuthButton
                       title="Complete Signup"
                       onPress={handleStandardAuth}
                       isLoading={isLoading}
-                      disabled={!mPin || uPin.length < 4}
+                      disabled={!mPin || mPin.length < 4 || uPin.length < 4 || mPin !== confirmMPin || uPin !== confirmUPin}
                       variant="signup"
                     />
                   </>
@@ -639,11 +678,23 @@ export function AuthScreen({ navigation }: any) {
                   <>
                     <OTPInput value={otp} onChange={setOtp} />
                     <AuthInput
-                      label="New Password"
-                      placeholder="Min 8 characters"
+                      label="New Login PIN (M-PIN)"
+                      placeholder="••••"
                       icon={<Lock size={20} color="#A855F7" />}
                       value={newPassword}
                       onChangeText={setNewPassword}
+                      keyboardType="number-pad"
+                      maxLength={4}
+                      secureTextEntry
+                    />
+                    <AuthInput
+                      label="Confirm New M-PIN"
+                      placeholder="••••"
+                      icon={<Lock size={20} color="#A855F7" />}
+                      value={confirmMPin}
+                      onChangeText={setConfirmMPin}
+                      keyboardType="number-pad"
+                      maxLength={4}
                       secureTextEntry
                     />
                   </>
