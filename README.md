@@ -1,5 +1,3 @@
-# BODHI
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/GovindJindal/BODHI/main/mobileApp_BODHI/assets/images/bodhi-logo.png" width="300" alt="BODHI Logo" />
 </p>
@@ -19,7 +17,6 @@
   <img src="https://img.shields.io/badge/AWS-Elastic%20Beanstalk-FF9900?logo=amazon-aws&logoColor=white" alt="AWS" />
   <img src="https://img.shields.io/badge/AI-Gemini%201.5%20Flash-4285F4?logo=google-gemini&logoColor=white" alt="Gemini AI" />
   <img src="https://img.shields.io/badge/Payments-Razorpay-008CFF?logo=razorpay&logoColor=white" alt="Razorpay" />
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License" />
 </p>
 
 ---
@@ -220,7 +217,7 @@ npm run ios # or npm run android
 ---
 
 ## 📄 License
-This project is licensed under the MIT License. Built with 🧠 and way too much caffeine for the **FINVASIA Innovation Hackathon 2026**.
+Built with 🧠 and way too much caffeine for the **FINVASIA Innovation Hackathon 2026**.
 
 <p align="center">
   <em>BODHI — Your money. Alive.</em>
