@@ -15,7 +15,7 @@ import models.social  # This ensures the Social tables get registered to the Bas
 # Routers
 from routers import auth, trade, search, prices, simulate, social, ai, notification, travel
 from routers.social import router as social_router
-from routers import payments, insurance, wallets, expenses, users
+from routers import payments, insurance, wallets, expenses, users, subscriptions
 
 import models.wallets
 import models.expenses
@@ -88,6 +88,7 @@ app.include_router(payments.router)
 app.include_router(insurance.router)
 app.include_router(wallets.router)
 app.include_router(expenses.router)
+app.include_router(subscriptions.router)
 app.include_router(oauth_router, tags=["oauth"])
 app.include_router(ai.router)
 app.include_router(notification.router, prefix="/notifications", tags=["Notifications"])

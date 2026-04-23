@@ -63,7 +63,7 @@ const QUICK_SERVICES = [
   { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3399FF' },
   { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFD700' },
   { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF', route: 'TravelBooking' },
-  { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2' },
+  { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2', route: 'SubscriptionHub' },
 ];
 
 // Constants removed, logic moved dynamically inside the component!

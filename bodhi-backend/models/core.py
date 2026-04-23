@@ -300,3 +300,49 @@ class Payment(Base):
             f"<Payment id={self.id} order={self.razorpay_order_id} "
             f"status={self.status.value}>"
         )
+
+# ---------------------------------------------------------------------------
+# Vault / Subscriptions
+# ---------------------------------------------------------------------------
+class SubscriptionStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    CANCELLED = "CANCELLED"
+    PAUSED = "PAUSED"
+
+class UserSubscription(Base):
+    """
+    Tracks recurring subscriptions for a user in their Vault.
+    """
+    __tablename__ = "user_subscriptions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    
+    platform_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    platform_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    expected_monthly_cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    
+    status: Mapped[SubscriptionStatus] = mapped_column(
+        SAEnum(SubscriptionStatus, name="subscription_status_enum"),
+        nullable=False,
+        default=SubscriptionStatus.ACTIVE,
+    )
+    
+    next_billing_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow
+    )
+
+    user: Mapped["User"] = relationship("User")
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<UserSubscription id={self.id} user={self.user_id} platform={self.platform_id}>"

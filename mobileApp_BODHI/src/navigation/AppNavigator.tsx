@@ -26,6 +26,7 @@ import { SendMoneyScreen }               from '../screens/SendMoneyScreen';
 import { RequestMoneyScreen }            from '../screens/RequestMoneyScreen';
 import { NotificationScreen }            from '../screens/NotificationScreen';
 import { ProfileScreen }                 from '../screens/ProfileScreen';
+import { SubscriptionHubScreen }         from '../screens/SubscriptionHubScreen';
 import { 
   BankAccountsScreen, 
   SecuritySettingsScreen, 
@@ -75,6 +76,7 @@ function RootNavigator() {
       <RootStack.Screen name="BankAccounts" component={BankAccountsScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="SecuritySettings" component={SecuritySettingsScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TravelBooking" component={TravelBookingScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="SubscriptionHub" component={SubscriptionHubScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
 
       {/* ── Payment Features ── */}
