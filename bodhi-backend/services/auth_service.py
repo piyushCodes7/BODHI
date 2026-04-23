@@ -49,11 +49,26 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # tokenUrl must match the actual login route: POST /auth/token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+import bcrypt
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+def verify_password(plain_password: str, hashed_password: str):
+    try:
+        if not hashed_password:
+            return False
+        # bcrypt.checkpw expects bytes
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'), 
+            hashed_password.encode('utf-8')
+        )
+    except Exception as e:
+        print(f"❌ Password verification error: {e}")
+        return False
+
+def get_password_hash(password: str):
+    # bcrypt.hashpw expects bytes and a salt
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()

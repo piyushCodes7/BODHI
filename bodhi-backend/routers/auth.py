@@ -63,27 +63,49 @@ register_otps = {}
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    # Check if user already exists
-    result = await db.execute(select(User).where(User.email == user_data.email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already registered")
+    print(f"📝 Attempting to register user: {user_data.email}")
+    try:
+        # Check if user already exists
+        result = await db.execute(select(User).where(User.email == user_data.email))
+        if result.scalar_one_or_none():
+            print(f"⚠️ Registration failed: Email {user_data.email} already exists.")
+            raise HTTPException(status_code=400, detail="Username already registered")
+            
+        # Create new user
+        print("🔐 Hashing PINs...")
+        hashed_mpin = get_password_hash(user_data.m_pin)
+        hashed_upin = get_password_hash(user_data.u_pin)
         
-    # Create new user with ₹1,00,000 starting balance
-    hashed_mpin = get_password_hash(user_data.m_pin)
-    new_user = User(
-            email=user_data.email,
-            full_name=user_data.full_name,
-            phone=user_data.phone_number,
-            hashed_password=hashed_mpin, # M-PIN is used for primary login
-            m_pin=hashed_mpin,
-            u_pin=get_password_hash(user_data.u_pin),
-            age=user_data.age,
-            gender=user_data.gender
+        new_user = User(
+                email=user_data.email,
+                full_name=user_data.full_name,
+                phone=user_data.phone_number,
+                hashed_password=hashed_mpin, # M-PIN is used for primary login
+                m_pin=hashed_mpin,
+                u_pin=hashed_upin,
+                age=user_data.age,
+                gender=user_data.gender,
+                is_active=True,
+                is_verified=True, # OTP was verified before this step
+                balance=100000.0,
+                paper_balance=100000.0
+            )
+        
+        print("💾 Saving user to DB...")
+        db.add(new_user)
+        await db.commit()
+        print(f"✅ User {user_data.email} registered successfully.")
+        return {"message": "User created successfully. Welcome to BODHI!"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"❌ Registration Crash: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Registration failed due to server error: {str(e)}"
         )
-    
-    db.add(new_user)
-    await db.commit()
-    return {"message": "User created successfully. Welcome to BODHI!"}
 
 # Note: OAuth2PasswordRequestForm expects form data (username & password), not JSON!
 @router.post("/token")
