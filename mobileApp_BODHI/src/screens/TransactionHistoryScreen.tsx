@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { TransactionAPI } from '../api/client';
+import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 
 export interface Transaction {
   id: string;
@@ -41,12 +42,18 @@ export function TransactionHistoryScreen() {
         amount: tx.amount,
         merchant: tx.merchant,
         category: tx.category,
-        date: tx.created_at,
-        type: tx.type as 'CREDIT' | 'DEBIT',
+        date: tx.created_at || tx.date,
+        type: (tx.type || 'DEBIT').toUpperCase() as 'CREDIT' | 'DEBIT',
         account_last4: 'Manual'
       }));
 
-      const combined = [...translatedTxs].sort((a, b) =>
+      // Include mock transactions for a fuller history
+      const mockTxs: Transaction[] = MOCK_TRANSACTIONS.map((tx: any) => ({
+        ...tx,
+        type: tx.type.toUpperCase() as 'CREDIT' | 'DEBIT'
+      }));
+
+      const combined = [...translatedTxs, ...mockTxs].sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
@@ -69,7 +76,7 @@ export function TransactionHistoryScreen() {
   };
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
-    const isCredit = item.type === 'CREDIT';
+    const isCredit = item.type.toUpperCase() === 'CREDIT';
 
     return (
       <TouchableOpacity
@@ -149,12 +156,12 @@ export function TransactionHistoryScreen() {
 
             {selectedTx && (
               <View style={styles.receiptMain}>
-                <View style={[styles.receiptIcon, { backgroundColor: selectedTx.type === 'CREDIT' ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
-                  {selectedTx.type === 'CREDIT' ? <ArrowDownRight size={32} color="#C8FF00" /> : <ArrowUpRight size={32} color="#FFF" />}
+                <View style={[styles.receiptIcon, { backgroundColor: selectedTx.type.toUpperCase() === 'CREDIT' ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
+                  {selectedTx.type.toUpperCase() === 'CREDIT' ? <ArrowDownRight size={32} color="#C8FF00" /> : <ArrowUpRight size={32} color="#FFF" />}
                 </View>
                 <Text style={styles.receiptMerchant}>{selectedTx.merchant}</Text>
-                <Text style={[styles.receiptAmount, { color: selectedTx.type === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
-                  {selectedTx.type === 'CREDIT' ? '+' : '-'}₹{selectedTx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                <Text style={[styles.receiptAmount, { color: selectedTx.type.toUpperCase() === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
+                  {selectedTx.type.toUpperCase() === 'CREDIT' ? '+' : '-'}₹{selectedTx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </Text>
 
                 <View style={styles.receiptDivider} />

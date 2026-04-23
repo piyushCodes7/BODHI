@@ -50,7 +50,6 @@ async def init_db():
 # 1. Lifespan – non-blocking startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-<<<<<<< HEAD
     # Fire DB sync as background task so startup doesn't block on RDS
     asyncio.create_task(init_db())
 
@@ -69,21 +68,8 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
-=======
-    print("🚀 App starting... Connecting to database.")
-    try:
-        if engine:
-            async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-            print("✅ Database tables verified.")
-    except Exception as e:
-        print(f"❌ DATABASE ERROR: {e}")
-    yield
-    print("🛑 App shutting down.")
->>>>>>> 985a48b4 (qr code added)
 
 # 2. CRITICAL: Create the app!
-# docs_url=None disables the default CDN-dependent docs so we can serve our own
 app = FastAPI(
     title="BODHI API",
     version="1.0.0",
@@ -95,8 +81,6 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True},
 )
 
-<<<<<<< HEAD
-=======
 # Ensure static directory exists
 if not os.path.exists("static"):
     os.makedirs("static")
@@ -104,13 +88,6 @@ if not os.path.exists("static"):
 # Serve static files (avatars, etc.)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.on_event("startup")
-async def startup_event():
-    # Start the background AMO processor
-    scheduler.start()
-    print("🤖 Trading Scheduler Started")
-
->>>>>>> 985a48b4 (qr code added)
 # 3. Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -124,7 +101,6 @@ app.add_middleware(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 # Custom /docs endpoint using unpkg.com CDN
-# (works on restricted/college networks where cdn.jsdelivr.net is often blocked)
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
     return get_swagger_ui_html(
@@ -135,10 +111,10 @@ async def custom_swagger_ui_html():
         swagger_ui_parameters={"persistAuthorization": True},
     )
 
-# Health check – always responds immediately, even before DB is ready
+# Health check – always responds immediately
 @app.get("/", tags=["Health"])
 async def health_check():
-    return {"status": "ok", "service": "BODHI API", "version": "1.0.0"}
+    return {"status": "alive", "message": "BODHI API is running"}
 
 # 4. Attach all routers
 app.include_router(auth.router,         prefix="/auth",          tags=["Authentication"])
@@ -155,19 +131,7 @@ app.include_router(subscriptions.router)
 app.include_router(oauth_router,                                 tags=["OAuth"])
 app.include_router(ai.router)
 app.include_router(notification.router, prefix="/notifications", tags=["Notifications"])
-<<<<<<< HEAD
 app.include_router(users.router,        prefix="/users",         tags=["Users"])
 app.include_router(travel.router,       prefix="/travel",        tags=["Travel"])
-=======
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(travel.router, prefix="/travel", tags=["Travel"])
-
-@app.get("/")
-async def root():
-    return {"status": "alive", "message": "BODHI API is running"}
-
-# ─── NEW: Transfers (P2P, QR, Requests, Razorpay) ───
-from routers import transfers
->>>>>>> 985a48b4 (qr code added)
 app.include_router(transfers.router)
 app.include_router(collaboration_router, prefix="/collaboration", tags=["Collaboration"])
