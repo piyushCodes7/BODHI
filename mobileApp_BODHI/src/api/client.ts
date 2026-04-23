@@ -99,6 +99,23 @@ export const UsersAPI = {
   verifyUpin: async (u_pin: string) => {
     const res = await apiClient.post('/auth/verify-upin', { u_pin });
     return res.data;
+  },
+  verifyMpin: async (m_pin: string) => {
+    const res = await apiClient.post('/users/verify-mpin', { password: m_pin });
+    return res.data;
+  },
+  uploadAvatar: async (uri: string, name: string) => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri,
+      name,
+      type: 'image/jpeg'
+    } as any);
+
+    const res = await apiClient.post('/users/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
   }
 };
 

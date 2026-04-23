@@ -5,12 +5,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-SECRET_KEY = os.getenv("SECRET_KEY")
-SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback_secret")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "")
 
-engine = create_async_engine(DATABASE_URL, echo=True, pool_pre_ping=True)
-AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+try:
+    if DATABASE_URL:
+        engine = create_async_engine(DATABASE_URL, echo=True, pool_pre_ping=True)
+        AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    else:
+        print("⚠️ WARNING: DATABASE_URL is missing!")
+        engine = None
+        AsyncSessionLocal = None
+except Exception as e:
+    print(f"❌ Failed to create engine: {e}")
+    engine = None
+    AsyncSessionLocal = None
 
 Base = declarative_base()
 

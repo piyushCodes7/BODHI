@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
@@ -43,8 +44,8 @@ SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 SMS_KEY = os.getenv("SMS_API_KEY")
 SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "FSTSMS")
 
-# Password hashing setup
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Using PBKDF2 instead of bcrypt to avoid the 72-char limit issues on some platforms
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # tokenUrl must match the actual login route: POST /auth/token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")

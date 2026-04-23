@@ -1,7 +1,9 @@
+import os
 from routers.oauth import router as oauth_router
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
 from services.scheduler import scheduler
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -48,6 +50,7 @@ async def init_db():
 # 1. Lifespan – non-blocking startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+<<<<<<< HEAD
     # Fire DB sync as background task so startup doesn't block on RDS
     asyncio.create_task(init_db())
 
@@ -66,6 +69,18 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
+=======
+    print("🚀 App starting... Connecting to database.")
+    try:
+        if engine:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            print("✅ Database tables verified.")
+    except Exception as e:
+        print(f"❌ DATABASE ERROR: {e}")
+    yield
+    print("🛑 App shutting down.")
+>>>>>>> 985a48b4 (qr code added)
 
 # 2. CRITICAL: Create the app!
 # docs_url=None disables the default CDN-dependent docs so we can serve our own
@@ -80,6 +95,22 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True},
 )
 
+<<<<<<< HEAD
+=======
+# Ensure static directory exists
+if not os.path.exists("static"):
+    os.makedirs("static")
+
+# Serve static files (avatars, etc.)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.on_event("startup")
+async def startup_event():
+    # Start the background AMO processor
+    scheduler.start()
+    print("🤖 Trading Scheduler Started")
+
+>>>>>>> 985a48b4 (qr code added)
 # 3. Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -124,7 +155,19 @@ app.include_router(subscriptions.router)
 app.include_router(oauth_router,                                 tags=["OAuth"])
 app.include_router(ai.router)
 app.include_router(notification.router, prefix="/notifications", tags=["Notifications"])
+<<<<<<< HEAD
 app.include_router(users.router,        prefix="/users",         tags=["Users"])
 app.include_router(travel.router,       prefix="/travel",        tags=["Travel"])
+=======
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(travel.router, prefix="/travel", tags=["Travel"])
+
+@app.get("/")
+async def root():
+    return {"status": "alive", "message": "BODHI API is running"}
+
+# ─── NEW: Transfers (P2P, QR, Requests, Razorpay) ───
+from routers import transfers
+>>>>>>> 985a48b4 (qr code added)
 app.include_router(transfers.router)
 app.include_router(collaboration_router, prefix="/collaboration", tags=["Collaboration"])
