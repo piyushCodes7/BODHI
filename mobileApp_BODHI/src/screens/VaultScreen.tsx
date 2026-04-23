@@ -27,7 +27,6 @@ import {
   ShieldCheck,
   EyeOff,
   Eye,
-  Info,
   ScanLine,
   Send,
   Plus,
@@ -54,7 +53,6 @@ import { useCalculator } from '../context/CalculatorContext';
 
 const { width: W } = Dimensions.get('window');
 
-// ─── DATA WITH NAVIGATION ROUTES ───
 const QUICK_SERVICES = [
   { id: '1', label: 'Split Money', icon: Users, color: '#8A5CFF', route: 'TripWallet' },
   { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF3366', route: 'InsuranceStories' },
@@ -65,8 +63,6 @@ const QUICK_SERVICES = [
   { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF', route: 'TravelBooking' },
   { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2', route: 'SubscriptionHub' },
 ];
-
-// Constants removed, logic moved dynamically inside the component!
 
 export function VaultScreen() {
   const navigation = useNavigation<any>();
@@ -91,15 +87,13 @@ export function VaultScreen() {
 
   const { toggleCalculator } = useCalculator();
 
-  // Fetch user data from storage
   const fetchUserData = useCallback(async () => {
     try {
       const storedName = await AsyncStorage.getItem('user_full_name');
       if (storedName) {
-        setUserName(storedName.split(' ')[0]); // Use first name
+        setUserName(storedName.split(' ')[0]);
         setUserInitial(storedName.charAt(0).toUpperCase());
       }
-      // Also fetch from backend to get live security status
       const profile = await UsersAPI.fetchProfile();
       setHasPassword(profile.has_password);
     } catch (error) {
@@ -107,7 +101,6 @@ export function VaultScreen() {
     }
   }, []);
 
-  // Fetch balance from backend
   const fetchBalance = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('bodhi_access_token');
@@ -124,7 +117,6 @@ export function VaultScreen() {
     }
   }, []);
 
-  // Fetch unread notifications count
   const fetchUnreadCount = useCallback(async () => {
     try {
       const notifications = await NotificationAPI.fetchNotifications();
@@ -135,10 +127,6 @@ export function VaultScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    // Vault Screen Mounted
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       fetchUnreadCount();
@@ -147,20 +135,20 @@ export function VaultScreen() {
     }, [fetchUnreadCount, fetchUserData, fetchBalance])
   );
 
-  // ─── DYNAMIC INSIGHTS MATH ───
-  // Scans the entire Mock Database (3-month average calculation)
   const sourceTransactions = MOCK_TRANSACTIONS;
+  const today = new Date().toISOString().split('T')[0];
+  const todayGrowth = sourceTransactions
+    .filter(t => t.date.startsWith(today))
+    .reduce((acc, t) => t.type.toLowerCase() === 'credit' ? acc + t.amount : acc - t.amount, 0);
 
   const foodSpending = sourceTransactions
     .filter(t => t.category === 'Food' || t.category === 'Groceries')
     .reduce((acc, t) => acc + t.amount, 0);
-
   const entertainmentSpending = sourceTransactions
     .filter(t => t.category === 'Entertainment')
     .reduce((acc, t) => acc + t.amount, 0);
-
-  const totalIncome = sourceTransactions.filter(t => t.type === 'CREDIT').reduce((acc, t) => acc + t.amount, 0);
-  const totalExpenses = sourceTransactions.filter(t => t.type === 'DEBIT').reduce((acc, t) => acc + t.amount, 0);
+  const totalIncome = sourceTransactions.filter(t => t.type.toLowerCase() === 'credit').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpenses = sourceTransactions.filter(t => t.type.toLowerCase() === 'debit').reduce((acc, t) => acc + t.amount, 0);
   const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : '0';
 
   const dynamicInsights = [
@@ -173,7 +161,6 @@ export function VaultScreen() {
     if (!activeInsight) return null;
     let filtered: any[] = [];
     let title = '';
-
     if (activeInsight === 'FOOD') {
       title = "Food & Groceries Breakdown";
       filtered = sourceTransactions.filter(t => t.category === 'Food' || t.category === 'Groceries');
@@ -187,8 +174,8 @@ export function VaultScreen() {
 
     return (
       <View style={styles.modalBg}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
+        <View style={styles.modalContentInsight}>
+          <View style={styles.modalHeaderInsight}>
             <Text style={styles.modalTitle}>{title}</Text>
             <TouchableOpacity onPress={() => setActiveInsight(null)} style={styles.modalCloseBtn}>
               <Text style={styles.modalCloseText}>Done</Text>
@@ -199,11 +186,11 @@ export function VaultScreen() {
             keyExtractor={(t) => t.id}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
-              const isCredit = item.type === 'CREDIT';
+              const isCredit = item.type.toLowerCase() === 'credit';
               return (
                 <View style={styles.insightRow}>
                   <View style={styles.insightRowLeft}>
-                    <View style={[styles.insightIconWrap, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
+                    <View style={[styles.insightIconCircle, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
                       {isCredit ? (
                         <ArrowDownRight size={18} color="#C8FF00" />
                       ) : (
@@ -217,7 +204,6 @@ export function VaultScreen() {
                       </Text>
                     </View>
                   </View>
-
                   <View style={styles.insightRowRight}>
                     <Text style={[styles.insightRowAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
                       {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -263,25 +249,17 @@ export function VaultScreen() {
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
     }
-    
     setIsProcessing(true);
     try {
       const token = await AsyncStorage.getItem('bodhi_access_token');
-      // 1. Create order
       const res = await fetch(`${BASE_URL}/transfers/razorpay/create-order`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: parseFloat(amountToAdd),
-          currency: 'INR',
-          description: 'BODHI Wallet Top-up'
-        })
+        body: JSON.stringify({ amount: parseFloat(amountToAdd), currency: 'INR', description: 'BODHI Wallet Top-up' })
       });
-      
       const orderData = await res.json();
       if (!res.ok) throw new Error(orderData.detail || 'Failed to create order');
 
-      // 2. Open Razorpay
       const options = {
         description: 'BODHI Wallet Top-up',
         image: 'https://i.imgur.com/3g7nmJC.png',
@@ -294,7 +272,6 @@ export function VaultScreen() {
       };
 
       RazorpayCheckout.open(options).then(async (data: any) => {
-        // 3. Verify on success
         const verifyRes = await fetch(`${BASE_URL}/transfers/razorpay/verify-and-credit`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -305,13 +282,12 @@ export function VaultScreen() {
             amount: parseFloat(amountToAdd)
           })
         });
-        
         const verifyData = await verifyRes.json();
         if (verifyRes.ok) {
           Alert.alert('Success', verifyData.message);
           setAmountToAdd('');
           setShowAddMoney(false);
-          fetchBalance(); // Refresh balance
+          fetchBalance();
         } else {
           Alert.alert('Verification Failed', verifyData.detail || 'Payment was not credited.');
         }
@@ -337,16 +313,16 @@ export function VaultScreen() {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        {/* ── HERO SECTION (GRADIENT) ── */}
+        {/* ── HERO SECTION ── */}
         <LinearGradient
-          colors={['#A855F7', '#EC4899']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroSection}
+          colors={['#A84DFF', '#FF2D95']}
+start={{ x: 0, y: 0 }}
+end={{ x: 1, y: 1 }}
+style={styles.heroSection}
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => navigation.navigate('Profile')}
               style={styles.avatarContainer}
@@ -371,10 +347,10 @@ export function VaultScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Balance Cockpit */}
+          {/* Compact Balance Card */}
           <View style={styles.balanceArea}>
             <Text style={styles.greeting}>{getGreeting()}, {userName} 👋</Text>
-            
+
             <View style={styles.netWorthHeader}>
               <Text style={styles.netWorthLabel}>TOTAL NET WORTH</Text>
               <TouchableOpacity onPress={handleToggleBalance} style={styles.revealBtn}>
@@ -389,80 +365,55 @@ export function VaultScreen() {
             </View>
 
             <View style={styles.growthRow}>
-              <TrendingUp size={14} color={Colors.neonLime} />
-              <Text style={styles.growthTxt}>+₹4,532 today</Text>
+              <TrendingUp size={14} color={todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B'} />
+              <Text style={[styles.growthTxt, { color: todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B' }]}>
+                {todayGrowth >= 0 ? '+' : ''}₹{todayGrowth.toLocaleString('en-IN')} today
+              </Text>
             </View>
           </View>
         </LinearGradient>
 
-        {/* ── PARALLEL ACTIONS (PREMIUM GLASS) ── */}
+        {/* ── PRIMARY ACTIONS ── */}
         <View style={styles.parallelActions}>
-          {/* Left: Scan & Pay */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.scanBtnContainer}
             onPress={() => navigation.navigate('ScanPay')}
             activeOpacity={0.9}
           >
             <View style={styles.scanGlassRing}>
               <LinearGradient colors={[Colors.neonLime, '#A3D900']} style={styles.scanBtn}>
-                <ScanLine size={30} color="#000" strokeWidth={2.5} />
+                <ScanLine size={24} color="#000" strokeWidth={2.5} />
               </LinearGradient>
             </View>
-            <Text style={styles.scanLabel}>Scan & Pay</Text>
+            <Text style={styles.scanBtnLabel}>Scan & Pay</Text>
           </TouchableOpacity>
 
-          {/* Right: Pill Container */}
-          <BlurView blurType="dark" blurAmount={32} style={styles.actionPill}>
-            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
-              <View style={styles.pillIconGlass}>
-                <Send size={18} color="#FFF" />
+          <BlurView blurType="light" blurAmount={32} style={styles.actionPill}>
+            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')} activeOpacity={0.7}>
+              <View style={styles.actionBtnCircle}>
+                <Send size={18} color="#FFF" strokeWidth={2.5} />
               </View>
-              <Text style={styles.pillLabel}>Send</Text>
+              <Text style={styles.actionBtnLabel}>Send</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.pillItem} onPress={() => setShowAddMoney(true)}>
-              <View style={styles.pillIconGlass}>
-                <Plus size={18} color="#FFF" />
+
+            <TouchableOpacity style={styles.pillItem} onPress={() => setShowAddMoney(true)} activeOpacity={0.7}>
+              <View style={styles.actionBtnCircle}>
+                <Plus size={20} color="#FFF" strokeWidth={3} />
               </View>
-              <Text style={styles.pillLabel}>Add</Text>
+              <Text style={styles.actionBtnLabel}>Add</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('RequestMoney')}>
-              <View style={styles.pillIconGlass}>
-                <ArrowDownToLine size={18} color="#FFF" />
+
+            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('RequestMoney')} activeOpacity={0.7}>
+              <View style={styles.actionBtnCircle}>
+                <ArrowDownToLine size={18} color="#FFF" strokeWidth={2.5} />
               </View>
-              <Text style={styles.pillLabel}>Request</Text>
+              <Text style={styles.actionBtnLabel}>Request</Text>
             </TouchableOpacity>
           </BlurView>
         </View>
 
-        {/* ── LIVE WATCHLIST TICKER ── */}
-        <View style={styles.tickerSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tickerScroll}>
-            {[
-              { name: 'Reliance', val: '+2.4%', up: true },
-              { name: 'TCS', val: '-0.8%', up: false },
-              { name: 'BTC', val: '+5.2%', up: true },
-              { name: 'Nifty 50', val: '+1.1%', up: true },
-            ].map((t, i) => (
-              <TouchableOpacity key={i} style={styles.tickerChip}>
-                <View style={[styles.liveDot, { backgroundColor: t.up ? Colors.neonLime : '#FF4B4B' }]} />
-                <Text style={styles.tickerName}>{t.name}</Text>
-                <Text style={[styles.tickerVal, { color: t.up ? Colors.neonLime : '#FF4B4B' }]}>{t.val}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.addTickerBtn}>
-              <Plus size={14} color="rgba(255,255,255,0.5)" />
-              <Text style={styles.addTickerTxt}>Edit</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-
-
-        {/* ── MAIN CONTENT (DARK SURFACE) ── */}
+        {/* ── MAIN CONTENT ── */}
         <View style={styles.contentSection}>
-
           {/* Quick Services */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Quick Services</Text>
@@ -480,7 +431,6 @@ export function VaultScreen() {
                     toggleCalculator();
                     return;
                   }
-                  
                   if (item.route === 'InsuranceStories') {
                     setShowInsurance(true);
                   } else if (item.route) {
@@ -491,12 +441,13 @@ export function VaultScreen() {
                 }}
               >
                 <View style={styles.serviceIconWrap}>
-                  <item.icon size={24} color={item.color} strokeWidth={2} />
+                  <item.icon size={22} color={item.color} strokeWidth={2.5} />
                 </View>
                 <Text style={styles.serviceLabel}>{item.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
+
 
           {/* AI Insights */}
           <View style={styles.sectionHeader}>
@@ -504,11 +455,7 @@ export function VaultScreen() {
             <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.insightsScroll}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
             {dynamicInsights.map((insight) => (
               <LinearGradient
                 key={insight.id}
@@ -523,7 +470,6 @@ export function VaultScreen() {
                 <Text style={styles.insightTitle}>{insight.title}</Text>
                 <Text style={styles.insightValue}>{insight.value}</Text>
                 <Text style={styles.insightSub}>{insight.sub}</Text>
-
                 <TouchableOpacity style={styles.insightLinkRow} onPress={() => setActiveInsight(insight.type)}>
                   <Text style={styles.insightLink}>View Details</Text>
                   <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
@@ -568,7 +514,7 @@ export function VaultScreen() {
             <View style={styles.dot} />
           </View>
 
-          {/* DEDICATED TRANSACTION HISTORY BUTTON */}
+          {/* Transaction History Banner */}
           <TouchableOpacity
             style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]}
             onPress={() => navigation.navigate('TransactionHistory')}
@@ -581,36 +527,25 @@ export function VaultScreen() {
             <ChevronRight size={20} color="#C8FF00" style={{ position: 'absolute', right: 20 }} />
           </TouchableOpacity>
 
-          {/* Bottom spacer for tab bar */}
-          <View style={{ height: 100 }} />
+          <View style={{ height: 150 }} />
         </View>
       </ScrollView>
 
-      {/* ── INSURANCE MODAL MOUNTED HERE ── */}
-      <InsuranceScreen
-        visible={showInsurance}
-        onClose={() => setShowInsurance(false)}
-      />
-
-      {/* ── DYNAMIC INSIGHTS MODAL ── */}
+      {/* Modals */}
+      <InsuranceScreen visible={showInsurance} onClose={() => setShowInsurance(false)} />
       <Modal visible={!!activeInsight} animationType="slide" transparent>
         {renderInsightDetails()}
       </Modal>
 
-      {/* ── ADD MONEY MODAL ── */}
       <Modal visible={showAddMoney} transparent animationType="slide">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlayBottom}>
           <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
+            <View style={styles.modalHeaderCommon}>
               <Text style={styles.modalTitle}>Add Money to Wallet</Text>
               <TouchableOpacity onPress={() => setShowAddMoney(false)}>
                 <Text style={{ color: '#FFF', fontSize: 24 }}>✕</Text>
               </TouchableOpacity>
             </View>
-
             <Text style={styles.inputLabel}>AMOUNT (₹)</Text>
             <TextInput
               style={styles.input}
@@ -621,80 +556,42 @@ export function VaultScreen() {
               placeholderTextColor="rgba(255,255,255,0.3)"
               autoFocus
             />
-
-            <TouchableOpacity
-              onPress={handleAddMoney}
-              disabled={isProcessing || !amountToAdd}
-              style={{ opacity: isProcessing || !amountToAdd ? 0.6 : 1, marginTop: 16 }}
-            >
-              <LinearGradient
-                colors={['#8E2DE2', '#4A00E0']}
-                style={styles.payBtn}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              >
-                {isProcessing ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <Text style={[styles.payBtnText, { color: '#FFF' }]}>
-                    PROCEED TO PAY
-                  </Text>
-                )}
+            <TouchableOpacity onPress={handleAddMoney} disabled={isProcessing || !amountToAdd} style={{ opacity: isProcessing || !amountToAdd ? 0.6 : 1, marginTop: 16 }}>
+              <LinearGradient colors={['#8E2DE2', '#4A00E0']} style={styles.payBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                {isProcessing ? <ActivityIndicator color="#FFF" /> : <Text style={[styles.payBtnText, { color: '#FFF' }]}>PROCEED TO PAY</Text>}
               </LinearGradient>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ─── Security Password Modal ─── */}
-      <Modal
-        visible={isPasswordModalVisible}
-        transparent
-        animationType="fade"
-      >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
-          <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
-            <View style={styles.modalHeader}>
+      <Modal visible={isPasswordModalVisible} transparent animationType="fade">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlayCenter}>
+          <BlurView blurType="dark" blurAmount={30} style={styles.modalContentUPin}>
+            <View style={styles.modalHeaderUPin}>
               <ShieldCheck size={24} color={Colors.neonLime} />
               <Text style={styles.modalTitle}>Enter U-PIN</Text>
-              <Text style={styles.modalSub}>
-                Enter your secret 6-digit transaction PIN to reveal your balance.
-              </Text>
+              <Text style={styles.modalSub}>Enter your secret 6-digit transaction PIN to reveal your balance.</Text>
             </View>
-
-              <View style={styles.modalInputWrapper}>
-                <TextInput
-                  style={[styles.modalInput, { letterSpacing: 10, fontWeight: '800' }]}
-                  placeholder="••••••"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  secureTextEntry
-                  value={uPin}
-                  onChangeText={setUPin}
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  autoFocus
-                />
-              </View>
-
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                style={[styles.modalInput, { letterSpacing: 10, fontWeight: '800' }]}
+                placeholder="••••••"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                secureTextEntry
+                value={uPin}
+                onChangeText={setUPin}
+                keyboardType="number-pad"
+                maxLength={6}
+                autoFocus
+              />
+            </View>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setIsPasswordModalVisible(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalConfirm} 
-                onPress={verifyBalanceUpin}
-                disabled={isVerifying}
-              >
-                {isVerifying ? (
-                  <ActivityIndicator size="small" color="#000" />
-                ) : (
-                  <Text style={styles.modalConfirmText}>
-                    Verify
-                  </Text>
-                )}
+              <TouchableOpacity style={styles.modalConfirm} onPress={verifyBalanceUpin} disabled={isVerifying}>
+                {isVerifying ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.modalConfirmText}>Verify</Text>}
               </TouchableOpacity>
             </View>
           </BlurView>
@@ -705,164 +602,99 @@ export function VaultScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#05001F',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.85)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    borderRadius: 32,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
-  },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  modalTitle: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 12,
-  },
-  modalSub: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
-  },
-  modalInputWrapper: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    marginBottom: 24,
-  },
-  modalInput: {
-    height: 56,
-    paddingHorizontal: 20,
-    color: '#FFF',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalCancel: {
-    flex: 1,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCancelText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalConfirm: {
-    flex: 1.5,
-    height: 50,
-    backgroundColor: Colors.neonLime,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalConfirmText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  root: { flex: 1, backgroundColor: '#05001F' },
+  // Common Modal Styles
+  modalOverlayCenter: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', padding: 24 },
+  modalOverlayBottom: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+  modalHeaderCommon: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
 
+  // U-PIN Modal
+  modalContentUPin: { borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
+  modalHeaderUPin: { alignItems: 'center', marginBottom: 24 },
+  modalSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  modalInputWrapper: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
+  modalInput: { height: 56, paddingHorizontal: 20, color: '#FFF', fontSize: 16, textAlign: 'center' },
+  modalActions: { flexDirection: 'row', gap: 12 },
+  modalCancel: { flex: 1, height: 50, alignItems: 'center', justifyContent: 'center' },
+  modalCancelText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '600' },
+  modalConfirm: { flex: 1.5, height: 50, backgroundColor: Colors.neonLime, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  modalConfirmText: { color: '#000', fontSize: 16, fontWeight: '700' },
+
+  // Hero Section
   heroSection: {
-    paddingTop: 60,
-    paddingBottom: 82,
+    paddingTop: 58,
+    paddingBottom: 65,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    zIndex: 10,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    zIndex: 10
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 44 },
   avatarContainer: { position: 'relative' },
-  avatarPlaceholder: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)'
-  },
+  avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   avatarText: { fontSize: 20, fontWeight: '800', color: '#FFF' },
-  onlineDot: {
-    position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7',
-  },
+  onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7' },
   logo: { height: 30, width: 120, tintColor: '#FFF' },
   iconBtn: { overflow: 'hidden', borderRadius: 22 },
   glassCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  notifBadge: {
-    position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime,
-  },
+  notifBadge: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime },
 
   balanceArea: { marginBottom: 0 },
-  greeting: { color: 'rgba(255,255,255,0.8)', fontSize: 15, fontWeight: '600', marginBottom: 16 },
+  greeting: { color: 'rgba(255,255,255,0.9)', fontSize: 18, fontWeight: '700', marginBottom: 12 },
   netWorthHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  netWorthLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  netWorthLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '800', letterSpacing: 1.2 },
   revealBtn: { marginLeft: 10, opacity: 0.6 },
   balanceRow: { flexDirection: 'row', alignItems: 'baseline', marginVertical: 2 },
-  currencySymbol: { color: '#FFF', fontSize: 22, fontWeight: '400', marginRight: 6 },
-  balanceMain: { color: '#FFF', fontSize: 42, fontWeight: '900', letterSpacing: -1 },
+  currencySymbol: { color: '#FFF', fontSize: 26, fontWeight: '400', marginRight: 6 },
+  balanceMain: { color: '#FFF', fontSize: 48, fontWeight: '900', letterSpacing: -1 },
   balanceDecimals: { color: 'rgba(255,255,255,0.7)', fontSize: 22, fontWeight: '700' },
   growthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   growthTxt: { color: Colors.neonLime, fontSize: 12, fontWeight: '800' },
 
-  parallelActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -42, paddingHorizontal: 20, zIndex: 20 },
-  scanBtnContainer: { alignItems: 'center', gap: 6 },
-  scanGlassRing: { padding: 4, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-  scanBtn: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
-  scanLabel: { color: Colors.neonLime, fontSize: 10, fontWeight: '800', marginTop: 4, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 },
-  actionPill: { 
-    flex: 1, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    height: 84, 
-    borderRadius: 42, 
-    marginLeft: 16, 
-    paddingHorizontal: 12, 
-    borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.18)', 
-    overflow: 'hidden', 
-    backgroundColor: 'rgba(5, 5, 15, 0.4)' 
+  // Actions
+  parallelActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: -30,
+    paddingHorizontal: 20,
+    zIndex: 20
   },
-  pillItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  pillIconGlass: { 
-    width: 44, 
-    height: 44, 
-    borderRadius: 22, 
-    backgroundColor: 'rgba(255,255,255,0.02)', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.1)' 
+  scanBtnContainer: { alignItems: 'center', justifyContent: 'center' },
+  scanGlassRing: { padding: 0, borderRadius: 40 },
+  scanBtn: { width: 72, height: 72, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
+  scanBtnLabel: { color: Colors.neonLime, fontSize: 12, fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    height: 72,
+    width: 256,
+    borderRadius: 36,
+    marginLeft: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+    overflow: 'hidden'
   },
-  pillLabel: { color: '#FFF', fontSize: 11, fontWeight: '700', opacity: 0.95 },
+  pillItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  actionBtnCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: '700', marginTop: 6 },
 
-  tickerSection: { marginTop: 42 },
-  tickerScroll: { paddingHorizontal: 20, gap: 10 },
-  tickerChip: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  liveDot: { width: 4, height: 4, borderRadius: 2 },
-  tickerName: { color: '#FFF', fontSize: 11, fontWeight: '600' },
-  tickerVal: { fontSize: 11, fontWeight: '800' },
-  addTickerBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, borderStyle: 'dashed', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  addTickerTxt: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600' },
-
+  // Content
   contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },
   sectionTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
@@ -870,8 +702,9 @@ const styles = StyleSheet.create({
 
   servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 24 },
   serviceItem: { width: '23%', alignItems: 'center', gap: 8 },
-  serviceIconWrap: { width: 50, height: 50, borderRadius: 16, backgroundColor: '#12121A', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  serviceLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11, textAlign: 'center', fontWeight: '500' },
+  serviceIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: '#111827', alignItems: 'center', justifyContent: 'center' },
+  serviceLabel: { color: '#FFF', fontSize: 11, textAlign: 'center', fontWeight: '600' },
+
 
   insightsScroll: { paddingRight: 20, gap: 16 },
   insightCard: { width: 150, height: 170, borderRadius: 20, padding: 16, justifyContent: 'space-between' },
@@ -889,42 +722,31 @@ const styles = StyleSheet.create({
   bankLogoWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   bankName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 4 },
   bankDetail: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+  rowCenter: { flexDirection: 'row', alignItems: 'center' },
   primaryTag: { backgroundColor: 'rgba(212,255,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 8 },
   primaryTagText: { color: Colors.neonLime, fontSize: 10, fontWeight: '700' },
   accountRight: { flexDirection: 'row', alignItems: 'center' },
   accountBalance: { color: '#FFF', fontSize: 15, fontWeight: '700' },
-
   paginationDots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
   dotActive: { width: 16, backgroundColor: '#A855F7' },
 
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalSheet: {
-    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    padding: 24, paddingBottom: 40,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
-  },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+  // Add Money Sheet
+  modalSheet: { backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
   inputLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16,
-    color: '#FFF', fontSize: 18, fontWeight: '600', marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-  },
+  input: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, color: '#FFF', fontSize: 18, fontWeight: '600', marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
   payBtnText: { fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
-  // Insight Details Modal Specs
+
+  // Insight Details Modal
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  modalContentInsight: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
+  modalHeaderInsight: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
   modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
-
   insightRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   insightRowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
-  insightIconWrap: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  insightIconCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   insightTextWrap: { flex: 1 },
   insightRowMerchant: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
   insightRowCategory: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
