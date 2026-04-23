@@ -18,6 +18,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ArrowLeft, X, CheckCircle, ExternalLink } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { Colors, Radius, Spacing, Gradients } from '../theme/tokens';
 import { BASE_URL } from '../api/client';
 
 const API = `${BASE_URL}/transfers`;
@@ -51,6 +52,11 @@ export function ScanPayScreen() {
     return raw;
   };
 
+  const parseQRAmount = (raw: string): string => {
+    const match = raw.match(/[?&]am=([^&]+)/i);
+    return match ? match[1] : '';
+  };
+
   // ── QR scanner (v4 API) ──────────────────────────────────────────────────
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
@@ -63,6 +69,10 @@ export function ScanPayScreen() {
       setIsActive(false);
       setScannedData(value);
       setParsedRecipient(parseQRDisplay(value));
+      
+      const qrAmt = parseQRAmount(value);
+      if (qrAmt) setAmount(qrAmt);
+      
       setShowPayModal(true);
     }, []),
   });
@@ -121,16 +131,21 @@ export function ScanPayScreen() {
     try {
       let finalUrl = scannedData;
       
-      // Remove any existing amount or note to prevent overrides
-      finalUrl = finalUrl.replace(/([?&])am=[^&]*/g, '$1');
-      finalUrl = finalUrl.replace(/([?&])tn=[^&]*/g, '$1');
-      // Cleanup stray ampersands
+      // 1. Remove existing am/tn to avoid duplicates
+      finalUrl = finalUrl.replace(/([?&])am=[^&]*/g, '');
+      finalUrl = finalUrl.replace(/([?&])tn=[^&]*/g, '');
+      
+      // 2. Ensure cu=INR is present
+      if (!finalUrl.includes('cu=')) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'cu=INR';
+      }
+
+      // 3. Cleanup ampersands and separators
       finalUrl = finalUrl.replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/&$/, '');
 
-      // Append our amount formatted strictly to 2 decimal places (required by UPI spec)
+      // 4. Append our amount and note
       const formattedAmount = parseFloat(amount).toFixed(2);
-      finalUrl += finalUrl.includes('?') ? '&' : '?';
-      finalUrl += `am=${formattedAmount}`;
+      finalUrl += (finalUrl.includes('?') ? '&' : '?') + `am=${formattedAmount}`;
       if (note) {
         finalUrl += `&tn=${encodeURIComponent(note)}`;
       }
@@ -148,12 +163,11 @@ export function ScanPayScreen() {
         setSuccessMsg(`Google Pay opened! Please complete the payment.`);
         setPaySuccess(true);
       } else if (await Linking.canOpenURL(finalUrl)) {
-        // Fallback to generic UPI chooser
         await Linking.openURL(finalUrl);
         setSuccessMsg(`Payment intent opened. Please complete the payment!`);
         setPaySuccess(true);
       } else {
-        Alert.alert('App Not Found', 'No UPI app found on your device (tried GPay and generic UPI). Please install Google Pay.');
+        Alert.alert('App Not Found', 'No UPI app found on your device. Please install Google Pay.');
       }
     } catch (err: any) {
       Alert.alert('UPI Error', err.message || 'Could not open UPI app.');
@@ -215,7 +229,10 @@ export function ScanPayScreen() {
       />
 
       {/* Dark overlay */}
-      <View style={styles.overlay}>
+      <LinearGradient 
+        colors={['rgba(10,11,30,0.4)', 'rgba(44,4,80,0.7)']} 
+        style={styles.overlay}
+      >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -238,7 +255,7 @@ export function ScanPayScreen() {
           </View>
           <Text style={styles.scanHint}>QR code will be detected automatically</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Pay Modal */}
       <Modal visible={showPayModal} transparent animationType="slide">
@@ -261,7 +278,7 @@ export function ScanPayScreen() {
               </View>
             ) : (
               <>
-                <View style={styles.modalHeader}>
+                <View style={[styles.modalHeader, { paddingTop: Platform.OS === 'ios' ? 10 : 0 }]}>
                   <Text style={styles.modalTitle}>Pay via QR</Text>
                   <TouchableOpacity onPress={resetAndScanAgain}>
                     <X size={22} color="#FFF" />
@@ -353,8 +370,8 @@ const CORNER_THICKNESS = 4;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000' },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#05050A', padding: 24 },
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'space-between' },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0b1e', padding: 24 },
+  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20,
@@ -364,46 +381,47 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
-  },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  viewfinderContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  scanInstructions: { color: '#FFF', fontSize: 16, textAlign: 'center', marginBottom: 32, lineHeight: 24 },
-  viewfinder: { width: 240, height: 240, position: 'relative' },
-  corner: { position: 'absolute', width: CORNER_SIZE, height: CORNER_SIZE, borderColor: '#d1fc00' },
-  tl: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderTopLeftRadius: 6 },
-  tr: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderTopRightRadius: 6 },
-  bl: { bottom: 0, left: 0, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderBottomLeftRadius: 6 },
-  br: { bottom: 0, right: 0, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderBottomRightRadius: 6 },
-  scanHint: { color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 32 },
-  permissionTitle: { color: '#FFF', fontSize: 22, fontWeight: '700', textAlign: 'center', marginBottom: 12 },
-  permissionSub: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  grantBtn: { backgroundColor: '#A855F7', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 30 },
-  grantBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalSheet: {
-    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    padding: 24, paddingBottom: 40,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
-  },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
-  scannedTag: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12, marginBottom: 20,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-  },
-  scannedLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
-  scannedValue: { color: '#A855F7', fontSize: 14, fontWeight: '600' },
-  inputLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16,
-    color: '#FFF', fontSize: 18, fontWeight: '600', marginBottom: 16,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  payBtnText: { fontSize: 15, fontWeight: '800', color: '#000', letterSpacing: 0.5 },
+  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+  viewfinderContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
+  scanInstructions: { color: '#FFF', fontSize: 16, textAlign: 'center', marginBottom: 32, lineHeight: 24, fontWeight: '600' },
+  viewfinder: { width: 260, height: 260, position: 'relative' },
+  corner: { position: 'absolute', width: CORNER_SIZE, height: CORNER_SIZE, borderColor: Colors.neonLime },
+  tl: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderTopLeftRadius: 12 },
+  tr: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderTopRightRadius: 12 },
+  bl: { bottom: 0, left: 0, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderBottomLeftRadius: 12 },
+  br: { bottom: 0, right: 0, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderBottomRightRadius: 12 },
+  scanHint: { color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 32, fontWeight: '500' },
+  permissionTitle: { color: '#FFF', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
+  permissionSub: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  grantBtn: { backgroundColor: Colors.neonLime, paddingHorizontal: 32, paddingVertical: 14, borderRadius: Radius.lg },
+  grantBtnText: { color: '#000', fontSize: 15, fontWeight: '800' },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
+  modalSheet: {
+    backgroundColor: '#12142d', borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    padding: 24, paddingBottom: 40,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { color: '#FFF', fontSize: 22, fontWeight: '800' },
+  scannedTag: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginBottom: 24,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  scannedLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
+  scannedValue: { color: Colors.neonLime, fontSize: 16, fontWeight: '800' },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16,
+    color: '#FFF', fontSize: 18, fontWeight: '700', marginBottom: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  payBtn: { borderRadius: Radius.xl, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
+  payBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 0.5 },
   successContainer: { alignItems: 'center', paddingVertical: 20 },
-  successTitle: { color: '#FFF', fontSize: 26, fontWeight: '800', marginTop: 16, marginBottom: 8 },
-  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  doneBtn: { backgroundColor: '#34c759', paddingHorizontal: 48, paddingVertical: 16, borderRadius: 30 },
-  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  successTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  doneBtn: { backgroundColor: Colors.success, paddingHorizontal: 48, paddingVertical: 18, borderRadius: Radius.xl },
+  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });

@@ -97,14 +97,30 @@ async def search_airports(
     async with httpx.AsyncClient(timeout=15.0) as client:
         try:
             resp = await client.get(url, headers=headers, params=params)
+            
+            # Try parsing JSON immediately
+            try:
+                data = resp.json()
+            except Exception:
+                if "Access to this page has been denied" in resp.text:
+                    raise HTTPException(status_code=403, detail="RapidAPI blocked the request (Bot Protection/Captcha).")
+                raise HTTPException(status_code=502, detail="Invalid response from RapidAPI.")
+                
+            # Check for RapidAPI embedded error message even on 200 OK
+            if isinstance(data, dict) and "message" in data:
+                # E.g. "You have exceeded the MONTHLY quota..."
+                raise HTTPException(status_code=429, detail=data["message"])
+
             resp.raise_for_status()
-            data = resp.json()
+            
         except httpx.HTTPStatusError as e:
-            logger.error(f"RapidAPI airport search error: {e.response.status_code}")
-            raise HTTPException(status_code=502, detail="Airport search failed")
-        except Exception as e:
-            logger.error(f"Airport search exception: {e}")
-            raise HTTPException(status_code=502, detail="Airport search unavailable")
+            try:
+                err_data = e.response.json()
+                msg = err_data.get("message", f"API Error: {e.response.status_code}")
+            except:
+                msg = f"API Error: {e.response.status_code}"
+            logger.error(f"RapidAPI airport search error: {msg}")
+            raise HTTPException(status_code=e.response.status_code, detail=msg)
 
     raw_results = data.get("data", [])
     airports = []
@@ -169,14 +185,30 @@ async def search_flights(
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.get(url, headers=headers, params=params)
+            
+            # Try parsing JSON immediately
+            try:
+                data = resp.json()
+            except Exception:
+                if "Access to this page has been denied" in resp.text:
+                    raise HTTPException(status_code=403, detail="RapidAPI blocked the request (Bot Protection/Captcha).")
+                raise HTTPException(status_code=502, detail="Invalid response from RapidAPI.")
+                
+            # Check for RapidAPI embedded error message even on 200 OK
+            if isinstance(data, dict) and "message" in data:
+                # E.g. "You have exceeded the MONTHLY quota..."
+                raise HTTPException(status_code=429, detail=data["message"])
+
             resp.raise_for_status()
-            data = resp.json()
+            
         except httpx.HTTPStatusError as e:
-            logger.error(f"Flight search HTTP error: {e.response.status_code}")
-            # Fallback to mock data instead of raising exception
-        except Exception as e:
-            logger.error(f"Flight search exception (e.g. Captcha HTML): {e}")
-            # Fallback to mock data instead of raising exception
+            try:
+                err_data = e.response.json()
+                msg = err_data.get("message", f"API Error: {e.response.status_code}")
+            except:
+                msg = f"API Error: {e.response.status_code}"
+            logger.error(f"RapidAPI flight search error: {msg}")
+            raise HTTPException(status_code=e.response.status_code, detail=msg)
 
     # Parse the response into a clean format
     itineraries_raw = data.get("data", {}).get("itineraries", []) if isinstance(data, dict) else []
@@ -266,14 +298,29 @@ async def get_price_calendar(
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.get(url, headers=headers, params=params)
+            
+            # Try parsing JSON immediately
+            try:
+                data = resp.json()
+            except Exception:
+                if "Access to this page has been denied" in resp.text:
+                    raise HTTPException(status_code=403, detail="RapidAPI blocked the request (Bot Protection/Captcha).")
+                raise HTTPException(status_code=502, detail="Invalid response from RapidAPI.")
+                
+            # Check for RapidAPI embedded error message even on 200 OK
+            if isinstance(data, dict) and "message" in data:
+                raise HTTPException(status_code=429, detail=data["message"])
+
             resp.raise_for_status()
-            data = resp.json()
+            
         except httpx.HTTPStatusError as e:
-            logger.error(f"Price calendar HTTP error: {e.response.status_code}")
-            raise HTTPException(status_code=502, detail="Price calendar failed")
-        except Exception as e:
-            logger.error(f"Price calendar exception: {e}")
-            raise HTTPException(status_code=502, detail="Price calendar unavailable")
+            try:
+                err_data = e.response.json()
+                msg = err_data.get("message", f"API Error: {e.response.status_code}")
+            except:
+                msg = f"API Error: {e.response.status_code}"
+            logger.error(f"RapidAPI price calendar error: {msg}")
+            raise HTTPException(status_code=e.response.status_code, detail=msg)
 
     _set_to_cache(_flight_cache, cache_key, data)
     return data
@@ -316,14 +363,29 @@ async def get_flight_details(
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             resp = await client.get(url, headers=headers, params=params)
+            
+            # Try parsing JSON immediately
+            try:
+                data = resp.json()
+            except Exception:
+                if "Access to this page has been denied" in resp.text:
+                    raise HTTPException(status_code=403, detail="RapidAPI blocked the request (Bot Protection/Captcha).")
+                raise HTTPException(status_code=502, detail="Invalid response from RapidAPI.")
+                
+            # Check for RapidAPI embedded error message even on 200 OK
+            if isinstance(data, dict) and "message" in data:
+                raise HTTPException(status_code=429, detail=data["message"])
+
             resp.raise_for_status()
-            data = resp.json()
+            
         except httpx.HTTPStatusError as e:
-            logger.error(f"Flight details HTTP error: {e.response.status_code}")
-            raise HTTPException(status_code=502, detail="Flight details failed")
-        except Exception as e:
-            logger.error(f"Flight details exception: {e}")
-            raise HTTPException(status_code=502, detail="Flight details unavailable")
+            try:
+                err_data = e.response.json()
+                msg = err_data.get("message", f"API Error: {e.response.status_code}")
+            except:
+                msg = f"API Error: {e.response.status_code}"
+            logger.error(f"RapidAPI flight details error: {msg}")
+            raise HTTPException(status_code=e.response.status_code, detail=msg)
 
     _set_to_cache(_flight_cache, cache_key, data)
     return data

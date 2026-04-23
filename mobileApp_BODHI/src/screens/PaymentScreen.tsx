@@ -25,8 +25,9 @@ import {
   Check,
   ChevronRight
 } from 'lucide-react-native'; // <-- Professional Vector Icons
-import { Colors, Typography, Spacing, Radius, Shadow } from '../theme';
-import { BottomNav, GradientCard, SectionHeader } from '../components/shared';
+import { Colors, Typography, Spacing, Radius, Shadow, Gradients } from '../theme/tokens';
+import LinearGradient from 'react-native-linear-gradient';
+import { BottomNav, GradientCard, SectionHeader } from '../components';
 import type { NavTab } from '../components/shared';
 import { PaymentAPI } from '../api/client';
 
@@ -407,13 +408,13 @@ export const PaymentScreen: React.FC<Props> = ({
         <Modal visible={showMyQr} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.myQrCard}>
-              <TouchableOpacity 
-                style={styles.closeQr} 
+              <TouchableOpacity
+                style={styles.closeQr}
                 onPress={() => setShowMyQr(false)}
               >
                 <X size={24} color={Colors.textPrimary} />
               </TouchableOpacity>
-              
+
               <View style={styles.myQrHeader}>
                 <View style={styles.myQrAvatar}>
                   <Text style={styles.myQrAvatarText}>{myProfile ? getInitials(myProfile.full_name) : 'U'}</Text>
@@ -424,7 +425,7 @@ export const PaymentScreen: React.FC<Props> = ({
 
               <View style={styles.realQrContainer}>
                 {myProfile ? (
-                  <Image 
+                  <Image
                     source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(getMyUpiString())}` }}
                     style={styles.realQrImage}
                   />
@@ -448,7 +449,12 @@ export const PaymentScreen: React.FC<Props> = ({
 
   // ── HOME SCREEN ────────────────────────────────────────────────────────────
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={Gradients.darkVibrant.colors}
+      start={Gradients.darkVibrant.start}
+      end={Gradients.darkVibrant.end}
+      style={styles.container}
+    >
       <View style={styles.homeHeader}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -645,320 +651,319 @@ export const PaymentScreen: React.FC<Props> = ({
       </ScrollView>
 
       <BottomNav active={activeTab} onPress={onNavigate} />
-    </View>
+    </LinearGradient>
   );
 };
 
 // ─── styles ─────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
+  container: { flex: 1 },
   scroll: { paddingBottom: 32 },
 
-  blob: { position: 'absolute', borderRadius: 999 },
-  blob1: { width: 260, height: 260, backgroundColor: '#3B1A6E', opacity: 0.18, top: -60, right: -60 },
-  blob2: { width: 200, height: 200, backgroundColor: Colors.pink, opacity: 0.12, bottom: 80, left: -50 },
-
   homeHeader: {
-    paddingHorizontal: Spacing.base,
+    paddingHorizontal: Spacing.lg,
     paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
     paddingBottom: Spacing.sm,
   },
-  pageHeader: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.lg },
-  pageTitle: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  pageSub: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1, marginTop: 2 },
+  pageHeader: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
+  pageTitle: { fontSize: 32, fontWeight: '900', color: '#FFF' },
+  pageSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, marginTop: 4, fontWeight: '700' },
 
-  balanceCard: { marginHorizontal: Spacing.base, marginBottom: Spacing.xl },
-  cardLabel: { fontSize: Typography.xs, color: 'rgba(255,255,255,0.75)', letterSpacing: 1, marginBottom: Spacing.xs },
-  cardBalance: { fontSize: Typography['3xl'], fontWeight: Typography.extrabold, color: Colors.textWhite, marginBottom: Spacing.lg },
+  balanceCard: { marginHorizontal: Spacing.lg, marginBottom: Spacing.xl, height: 180 },
+  cardLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 4, fontWeight: '800' },
+  cardBalance: { fontSize: 36, fontWeight: '900', color: '#FFF', marginBottom: Spacing.lg },
   cardActions: { flexDirection: 'row', justifyContent: 'space-around' },
   cardAction: { alignItems: 'center' },
   cardActionIcon: {
-    width: 52, height: 52, borderRadius: Radius.full,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  cardActionLabel: { fontSize: Typography.xs, color: Colors.textWhite, fontWeight: Typography.bold, letterSpacing: 0.5 },
+  cardActionLabel: { fontSize: 11, color: '#FFF', fontWeight: '800', letterSpacing: 0.5 },
 
-  section: { paddingHorizontal: Spacing.base, marginBottom: Spacing.xl },
+  section: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
 
   tabRow: {
-    flexDirection: 'row', backgroundColor: Colors.border,
-    borderRadius: Radius.lg, padding: 3, marginBottom: Spacing.md,
+    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: Radius.lg, padding: 4, marginBottom: Spacing.lg,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
-  tab: { flex: 1, paddingVertical: Spacing.xs, borderRadius: Radius.md, alignItems: 'center' },
-  tabActive: { backgroundColor: Colors.bgCard, ...Shadow.sm },
-  tabText: { fontSize: Typography.sm, color: Colors.textSecondary, fontWeight: Typography.medium },
-  tabTextActive: { color: Colors.purple, fontWeight: Typography.bold },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: Radius.md, alignItems: 'center' },
+  tabActive: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  tabText: { fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
+  tabTextActive: { color: Colors.neonLime, fontWeight: '800' },
 
   searchInput: {
-    backgroundColor: Colors.bgCard, borderRadius: Radius.md,
-    padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary,
-    marginBottom: Spacing.md, ...Shadow.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    padding: 16, fontSize: 15, color: '#FFF',
+    marginBottom: Spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   subLabel: {
-    fontSize: Typography.xs, color: Colors.textSecondary,
-    letterSpacing: 1, fontWeight: Typography.semibold, marginBottom: Spacing.sm,
+    fontSize: 11, color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 1.5, fontWeight: '800', marginBottom: Spacing.md,
   },
 
-  recentsRow: { marginHorizontal: -Spacing.base, paddingHorizontal: Spacing.base, marginBottom: Spacing.lg },
-  recentContact: { alignItems: 'center', marginRight: Spacing.lg, width: 62 },
+  recentsRow: { marginHorizontal: -Spacing.lg, paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
+  recentContact: { alignItems: 'center', marginRight: 20, width: 64 },
   recentAvatar: {
-    width: 54, height: 54, borderRadius: Radius.full,
-    backgroundColor: Colors.bgCard,
+    width: 60, height: 60, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: Spacing.xs,
-    borderWidth: 2, borderColor: Colors.purple,
-    ...Shadow.sm,
+    marginBottom: 8,
+    borderWidth: 1.5, borderColor: Colors.neonLime,
   },
-  recentName: { fontSize: Typography.xs, color: Colors.textSecondary, fontWeight: Typography.semibold, textAlign: 'center' },
+  recentName: { fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: '700', textAlign: 'center' },
 
   contactRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.bgCard, borderRadius: Radius.lg,
-    padding: Spacing.md, marginBottom: Spacing.sm, ...Shadow.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20,
+    padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
   contactAvatar: {
-    width: 44, height: 44, borderRadius: Radius.full,
-    backgroundColor: '#1E1E2A', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginRight: 16,
   },
   contactInfo: { flex: 1 },
-  contactName: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
-  contactPhone: { fontSize: Typography.sm, color: Colors.textSecondary, marginTop: 2 },
+  contactName: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  contactPhone: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
 
   phoneRow: {
-    flexDirection: 'row', backgroundColor: Colors.bgCard,
-    borderRadius: Radius.md, overflow: 'hidden', ...Shadow.sm,
+    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
   countryCode: {
-    paddingHorizontal: Spacing.md, paddingVertical: Spacing.md,
-    backgroundColor: Colors.bg, borderRightWidth: 1,
-    borderRightColor: Colors.border, justifyContent: 'center',
+    paddingHorizontal: 16, paddingVertical: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRightWidth: 1,
+    borderRightColor: 'rgba(255,255,255,0.1)', justifyContent: 'center',
   },
-  countryCodeText: { fontSize: Typography.base, color: Colors.textPrimary, fontWeight: Typography.medium },
-  phoneInput: { flex: 1, padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary },
+  countryCodeText: { fontSize: 15, color: '#FFF', fontWeight: '700' },
+  phoneInput: { flex: 1, padding: 16, fontSize: 16, color: '#FFF', fontWeight: '600' },
   upiInput: {
-    backgroundColor: Colors.bgCard, borderRadius: Radius.md,
-    padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary, ...Shadow.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    padding: 16, fontSize: 16, color: '#FFF', fontWeight: '600', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
 
   txRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.bgCard, borderRadius: Radius.lg,
-    padding: Spacing.md, marginBottom: Spacing.sm, ...Shadow.sm,
+    backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20,
+    padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
   },
   txAvatar: {
-    width: 44, height: 44, borderRadius: Radius.full,
-    backgroundColor: '#1E1E2A', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md,
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16,
   },
   txInfo: { flex: 1 },
-  txName: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
-  txTime: { fontSize: Typography.sm, color: Colors.textMuted, marginTop: 2 },
-  txAmount: { fontSize: Typography.base, fontWeight: Typography.bold },
-  txPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: Radius.full },
-  txPillText: { fontSize: 9, fontWeight: Typography.bold, letterSpacing: 0.5 },
+  txName: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  txTime: { fontSize: 13, color: 'rgba(255,255,255,0.3)', marginTop: 2 },
+  txAmount: { fontSize: 16, fontWeight: '800' },
+  txPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
+  txPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
 
   // ── send ──
   sendHeader: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: Spacing.base,
-    paddingTop: Platform.OS === 'ios' ? 56 : Spacing.lg,
-    paddingBottom: Spacing.md,
-    gap: Spacing.md, backgroundColor: Colors.bg,
-    borderBottomWidth: 1, borderBottomColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
+    paddingBottom: Spacing.lg,
+    gap: Spacing.md,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  backBtn: { padding: Spacing.xs },
-  sendHeaderContact: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  sendHeaderName: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary },
-  sendHeaderUpi: { fontSize: Typography.sm, color: Colors.textSecondary },
+  backBtn: { padding: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12 },
+  sendHeaderContact: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sendHeaderName: { fontSize: 18, fontWeight: '800', color: '#FFF' },
+  sendHeaderUpi: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
 
-  sendBody: { paddingHorizontal: Spacing.xl, paddingTop: Spacing['2xl'], paddingBottom: 140 },
-  enterAmtLabel: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, textAlign: 'center', marginBottom: Spacing.md },
-  amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.lg },
-  rupeeSymbol: { fontSize: 40, fontWeight: Typography.bold, color: Colors.textPrimary, marginRight: 4, marginBottom: 4 },
-  amountInput: { fontSize: 64, fontWeight: Typography.extrabold, color: Colors.textPrimary, minWidth: 100, textAlign: 'center' },
+  sendBody: { paddingHorizontal: 24, paddingTop: 40, paddingBottom: 140 },
+  enterAmtLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textAlign: 'center', marginBottom: 16, fontWeight: '800' },
+  amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  rupeeSymbol: { fontSize: 40, fontWeight: '300', color: '#FFF', marginRight: 8, marginBottom: 4 },
+  amountInput: { fontSize: 64, fontWeight: '900', color: '#FFF', minWidth: 120, textAlign: 'center' },
 
-  quickAmtsRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.sm, flexWrap: 'wrap', marginBottom: Spacing.xl },
+  quickAmtsRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 40 },
   quickAmtPill: {
-    paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs,
-    backgroundColor: Colors.bgCard, borderRadius: Radius.full,
-    borderWidth: 1, borderColor: Colors.border, ...Shadow.sm,
+    paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickAmtText: { fontSize: Typography.sm, color: Colors.purple, fontWeight: Typography.semibold },
+  quickAmtText: { fontSize: 14, color: Colors.neonLime, fontWeight: '700' },
 
   noteInput: {
-    backgroundColor: Colors.bgCard, borderRadius: Radius.md,
-    padding: Spacing.md, fontSize: Typography.base, color: Colors.textPrimary,
-    marginBottom: Spacing.md, ...Shadow.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
+    padding: 16, fontSize: 16, color: '#FFF',
+    marginBottom: 24, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
   },
   balanceInfo: {
     flexDirection: 'row', justifyContent: 'space-between',
-    backgroundColor: Colors.bg, borderRadius: Radius.md, padding: Spacing.md,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
-  balanceInfoText: { fontSize: Typography.sm, color: Colors.textSecondary },
-  balanceInfoAmt: { fontSize: Typography.sm, fontWeight: Typography.bold, color: Colors.textPrimary },
+  balanceInfoText: { fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  balanceInfoAmt: { fontSize: 13, fontWeight: '800', color: '#FFF' },
 
   sendFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: Spacing.base, paddingBottom: 32,
-    backgroundColor: Colors.bg,
-    borderTopWidth: 1, borderTopColor: Colors.border,
+    padding: 24, paddingBottom: 40,
   },
   proceedBtn: {
-    backgroundColor: Colors.purple, borderRadius: Radius.full,
-    padding: Spacing.lg, alignItems: 'center',
+    backgroundColor: Colors.neonLime, borderRadius: Radius.xl,
+    padding: 18, alignItems: 'center',
   },
   proceedBtnDisabled: { opacity: 0.4 },
-  proceedBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
+  proceedBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
 
   // ── confirm ──
   darkHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base,
-    paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 16,
   },
-  darkHeaderTitle: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary },
+  darkHeaderTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
 
-  confirmBody: { alignItems: 'center', padding: Spacing.xl, paddingBottom: 140 },
-  confirmAvatarWrap: { marginBottom: Spacing.md },
-  confirmTo: { fontSize: Typography.xs, color: Colors.textSecondary, letterSpacing: 1.5, marginBottom: 4 },
-  confirmName: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  confirmUpi: { fontSize: Typography.sm, color: Colors.textSecondary, marginTop: 4, marginBottom: Spacing.md },
-  confirmAmountBox: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: Spacing.xl },
-  confirmCurrency: { fontSize: Typography['2xl'], fontWeight: Typography.bold, color: Colors.textPrimary, marginBottom: 6 },
-  confirmAmount: { fontSize: 56, fontWeight: Typography.extrabold, color: Colors.textPrimary },
-  confirmNote: { fontSize: Typography.base, color: Colors.textSecondary, fontStyle: 'italic', marginBottom: Spacing.xl },
+  confirmBody: { alignItems: 'center', padding: 24, paddingBottom: 140 },
+  confirmAvatarWrap: { marginBottom: 24 },
+  confirmTo: { fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, marginBottom: 8, fontWeight: '800' },
+  confirmName: { fontSize: 28, fontWeight: '900', color: '#FFF' },
+  confirmUpi: { fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 4, marginBottom: 24 },
+  confirmAmountBox: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 32 },
+  confirmCurrency: { fontSize: 28, fontWeight: '400', color: '#FFF', marginBottom: 12, marginRight: 4 },
+  confirmAmount: { fontSize: 64, fontWeight: '900', color: '#FFF' },
+  confirmNote: { fontSize: 16, color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', marginBottom: 40, textAlign: 'center' },
   confirmMeta: {
-    width: '100%', backgroundColor: Colors.bgCard,
-    borderRadius: Radius.xl, padding: Spacing.lg, gap: Spacing.md, ...Shadow.sm,
+    width: '100%', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 24, padding: 20, gap: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   confirmMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  confirmMetaLabel: { fontSize: Typography.base, color: Colors.textSecondary },
-  confirmMetaValue: { fontSize: Typography.base, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  confirmMetaLabel: { fontSize: 15, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  confirmMetaValue: { fontSize: 15, fontWeight: '800', color: '#FFF' },
 
   confirmFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', gap: Spacing.md,
-    padding: Spacing.base, paddingBottom: 32,
-    backgroundColor: Colors.bg,
-    borderTopWidth: 1, borderTopColor: Colors.border,
+    flexDirection: 'row', gap: 16,
+    padding: 24, paddingBottom: 40,
   },
   editBtn: {
-    flex: 1, padding: Spacing.lg, borderRadius: Radius.full,
-    backgroundColor: Colors.bg, alignItems: 'center',
-    borderWidth: 1, borderColor: Colors.border,
+    flex: 1, padding: 18, borderRadius: Radius.xl,
+    backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  editBtnText: { fontSize: Typography.base, color: Colors.textSecondary, fontWeight: Typography.semibold },
-  payNowBtn: { flex: 2, backgroundColor: Colors.purple, borderRadius: Radius.full, padding: Spacing.lg, alignItems: 'center' },
-  payNowBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textWhite, letterSpacing: 1 },
+  editBtnText: { fontSize: 16, color: '#FFF', fontWeight: '800' },
+  payNowBtn: { flex: 2, backgroundColor: Colors.neonLime, borderRadius: Radius.xl, padding: 18, alignItems: 'center' },
+  payNowBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
 
   // ── success ──
   successContainer: {
-    flex: 1, backgroundColor: Colors.bg,
-    alignItems: 'center', justifyContent: 'center',
+    flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24,
   },
   successCircle: {
     width: 120, height: 120, borderRadius: 60,
-    backgroundColor: Colors.lime,
+    backgroundColor: Colors.neonLime,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: Spacing.xl, ...Shadow.lg,
+    marginBottom: 32,
   },
-  successTitle: { fontSize: Typography['2xl'], fontWeight: Typography.extrabold, color: Colors.textPrimary, marginBottom: Spacing.sm },
-  successSub: { fontSize: Typography.base, color: Colors.textSecondary, marginBottom: Spacing.sm },
-  successNote: { fontSize: Typography.sm, color: Colors.textMuted, letterSpacing: 1 },
+  successTitle: { fontSize: 32, fontWeight: '900', color: '#FFF', marginBottom: 12 },
+  successSub: { fontSize: 18, color: 'rgba(255,255,255,0.7)', marginBottom: 12, textAlign: 'center' },
+  successNote: { fontSize: 14, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, fontWeight: '700' },
 
   // ── QR ──
-  qrContainer: { flex: 1, backgroundColor: '#0A0A14' },
+  qrContainer: { flex: 1 },
   qrHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base,
-    paddingTop: Platform.OS === 'ios' ? 60 : Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 24,
   },
-  qrHeaderTitle: { fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textWhite },
+  qrHeaderTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
   qrViewfinder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   qrFrame: {
-    width: W * 0.65, height: W * 0.65,
-    borderRadius: Radius.lg,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    width: W * 0.75, height: W * 0.75,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,255,255,0.03)',
     alignItems: 'center', justifyContent: 'center',
     position: 'relative',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  qrCorner: { position: 'absolute', width: 32, height: 32, borderColor: Colors.lime, borderWidth: 3 },
-  qrTL: { top: -2, left: -2, borderBottomWidth: 0, borderRightWidth: 0, borderTopLeftRadius: Radius.sm },
-  qrTR: { top: -2, right: -2, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: Radius.sm },
-  qrBL: { bottom: -2, left: -2, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: Radius.sm },
-  qrBR: { bottom: -2, right: -2, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: Radius.sm },
-  qrScanLine: { position: 'absolute', width: '90%', height: 2, backgroundColor: Colors.lime, opacity: 0.8 },
-  qrMockGrid: { gap: 8 },
-  qrCell: { width: 28, height: 28, backgroundColor: Colors.textWhite, margin: 4, borderRadius: 3 },
-  qrHint: { color: 'rgba(255,255,255,0.5)', marginTop: Spacing.xl, fontSize: Typography.sm, textAlign: 'center' },
+  qrCorner: { position: 'absolute', width: 40, height: 40, borderColor: Colors.neonLime, borderWidth: 4 },
+  qrTL: { top: -2, left: -2, borderBottomWidth: 0, borderRightWidth: 0, borderTopLeftRadius: 20 },
+  qrTR: { top: -2, right: -2, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: 20 },
+  qrBL: { bottom: -2, left: -2, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: 20 },
+  qrBR: { bottom: -2, right: -2, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: 20 },
+  qrScanLine: { position: 'absolute', width: '90%', height: 3, backgroundColor: Colors.neonLime, opacity: 0.8 },
+  qrMockGrid: { gap: 10 },
+  qrCell: { width: 32, height: 32, backgroundColor: '#FFF', margin: 4, borderRadius: 6 },
+  qrHint: { color: 'rgba(255,255,255,0.5)', marginTop: 40, fontSize: 15, textAlign: 'center', fontWeight: '600' },
 
-  qrFooter: { padding: Spacing.xl, paddingBottom: 48, gap: Spacing.md },
+  qrFooter: { padding: 24, paddingBottom: 60, gap: 16 },
   qrScanBtn: {
-    backgroundColor: Colors.lime, borderRadius: Radius.full,
-    padding: Spacing.lg, alignItems: 'center',
+    backgroundColor: Colors.neonLime, borderRadius: Radius.xl,
+    padding: 20, alignItems: 'center',
   },
-  qrScanBtnText: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textPrimary, letterSpacing: 1 },
+  qrScanBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
   myQrBtn: {
-    borderRadius: Radius.full, padding: Spacing.md, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderRadius: Radius.xl, padding: 16, alignItems: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  myQrBtnText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.6)', fontWeight: Typography.semibold, letterSpacing: 1 },
+  myQrBtnText: { fontSize: 14, color: '#FFF', fontWeight: '800', letterSpacing: 1 },
 
   // ── MY QR MODAL STYLES ──
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.85)' },
   myQrCard: {
     width: W * 0.85,
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
+    backgroundColor: '#12142d',
+    borderRadius: 32,
+    padding: 32,
     alignItems: 'center',
     position: 'relative',
-    ...Shadow.lg,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   closeQr: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 20,
+    right: 20,
     padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12,
   },
   myQrHeader: {
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: 32,
   },
   myQrAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.purple,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: Colors.neonLime,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   myQrAvatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.textWhite,
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#000',
   },
   myQrName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFF',
   },
   myQrId: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: 16,
+    color: Colors.neonLime,
+    marginTop: 6,
+    fontWeight: '800',
   },
   realQrContainer: {
-    width: 220,
-    height: 220,
+    width: 240,
+    height: 240,
     backgroundColor: '#FFF',
-    padding: 10,
-    borderRadius: Radius.lg,
+    padding: 20,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: 32,
   },
   realQrImage: {
     width: 200,
@@ -968,21 +973,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   upiBadge: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginBottom: 12,
+    backgroundColor: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   upiBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#000',
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFF',
+    letterSpacing: 1,
   },
   scanToPayText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
+    fontWeight: '600',
   },
 });
