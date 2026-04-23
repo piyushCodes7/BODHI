@@ -837,16 +837,16 @@ const styles = StyleSheet.create({
     marginLeft: 16, 
     paddingHorizontal: 12, 
     borderWidth: 1, 
-    borderColor: 'rgba(255,255,255,0.15)', 
+    borderColor: 'rgba(255,255,255,0.18)', 
     overflow: 'hidden', 
-    backgroundColor: 'rgba(0,0,0,0.18)' 
+    backgroundColor: 'rgba(5, 5, 15, 0.4)' 
   },
   pillItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   pillIconGlass: { 
     width: 44, 
     height: 44, 
     borderRadius: 22, 
-    backgroundColor: 'rgba(255,255,255,0.06)', 
+    backgroundColor: 'rgba(255,255,255,0.02)', 
     alignItems: 'center', 
     justifyContent: 'center', 
     borderWidth: 1, 
