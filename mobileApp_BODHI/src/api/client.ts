@@ -101,6 +101,10 @@ export const AuthAPI = {
     const res = await apiClient.post('/auth/send-register-otp', data);
     return res.data;
   },
+  checkPhone: async (phone: string) => {
+    const res = await apiClient.post('/auth/check-phone', { phone });
+    return res.data;
+  },
   verifyRegisterOtp: async (data: { email?: string; phone?: string; otp: string }) => {
     const res = await apiClient.post('/auth/verify-register-otp', data);
     return res.data;
@@ -272,6 +276,45 @@ export const processVoiceCommand = async (fileUri: string): Promise<VoiceCommand
     console.error("API Client Error in voice command:", error);
     return null;
   }
+};
+
+export const TravelAPI = {
+  searchAirports: async (query: string) => {
+    const res = await apiClient.get('/travel/airports/search', { params: { query } });
+    return res.data;
+  },
+  searchFlights: async (data: {
+    origin_sky_id: string;
+    destination_sky_id: string;
+    origin_entity_id: string;
+    destination_entity_id: string;
+    travel_date: string;
+    adults?: number;
+    cabin_class?: string;
+  }) => {
+    const res = await apiClient.post('/travel/flights/search', data);
+    return res.data;
+  },
+  getPriceCalendar: async (data: {
+    origin_sky_id: string;
+    destination_sky_id: string;
+    from_date: string;
+    currency?: string;
+  }) => {
+    const res = await apiClient.post('/travel/flights/price-calendar', data);
+    return res.data;
+  },
+  getFlightDetails: async (data: {
+    itinerary_id: string;
+    legs: string;
+    session_id: string;
+    adults?: number;
+    cabin_class?: string;
+    currency?: string;
+  }) => {
+    const res = await apiClient.post('/travel/flights/details', data);
+    return res.data;
+  },
 };
 
 export { BASE_URL };

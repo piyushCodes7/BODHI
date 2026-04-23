@@ -42,6 +42,9 @@ class UserCreate(BaseModel):
     age: int
     gender: str
 
+class PhoneCheck(BaseModel):
+    phone: str
+
 class PasswordResetRequest(BaseModel):
     email: EmailStr
 
@@ -65,12 +68,19 @@ register_otps = {}
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     print(f"📝 Attempting to register user: {user_data.email}")
     try:
-        # Check if user already exists
-        result = await db.execute(select(User).where(User.email == user_data.email))
-        if result.scalar_one_or_none():
-            print(f"⚠️ Registration failed: Email {user_data.email} already exists.")
-            raise HTTPException(status_code=400, detail="Username already registered")
-            
+        # Check if email or phone already exists
+        result = await db.execute(
+            select(User).where((User.email == user_data.email) | (User.phone == user_data.phone_number))
+        )
+        existing_user = result.scalar_one_or_none()
+        if existing_user:
+            if existing_user.email == user_data.email:
+                print(f"⚠️ Registration failed: Email {user_data.email} already exists.")
+                raise HTTPException(status_code=400, detail="Email already registered")
+            else:
+                print(f"⚠️ Registration failed: Phone {user_data.phone_number} already exists.")
+                raise HTTPException(status_code=400, detail="Phone number already registered")
+                
         # Create new user
         print("🔐 Hashing PINs...")
         hashed_mpin = get_password_hash(user_data.m_pin)
@@ -120,6 +130,13 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
                 "type": type(e).__name__
             }
         )
+
+@router.post("/check-phone")
+async def check_phone(data: PhoneCheck, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.phone == data.phone))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+    return {"available": True}
 
 # Note: OAuth2PasswordRequestForm expects form data (username & password), not JSON!
 @router.post("/token")
