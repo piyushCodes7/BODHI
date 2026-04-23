@@ -70,18 +70,16 @@ export function ProfileScreen() {
           text: "Logout", 
           style: "destructive",
           onPress: async () => {
-            await AsyncStorage.multiRemove(['bodhi_access_token', 'user_full_name']);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Auth' }],
-            });
+            await AsyncStorage.removeItem('bodhi_access_token');
+            await AsyncStorage.removeItem('user_full_name');
+            navigation.navigate('Auth');
           }
         }
       ]
     );
   };
 
-  const handleSecureAction = (type: 'update' | 'delete') => {
+  const handleSecureAction = (type: 'update') => {
     setModalType(type);
     setPassword('');
     setIsModalVisible(true);
@@ -107,15 +105,6 @@ export function ProfileScreen() {
         setOriginalData({ ...originalData, full_name: fullName, phone, age: parseInt(age), gender });
         setIsModalVisible(false);
         Alert.alert("Success", "Profile updated successfully!");
-      } else {
-        await UsersAPI.deleteAccount(password);
-        setIsModalVisible(false);
-        await AsyncStorage.multiRemove(['bodhi_access_token', 'user_full_name']);
-        Alert.alert("Account Deleted", "Your account and all associated data have been permanently removed.");
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Auth' }],
-        });
       }
     } catch (error: any) {
       console.error("Profile Action Error:", error.response?.data);
@@ -399,10 +388,7 @@ export function ProfileScreen() {
               <Text style={styles.logoutBtnText}>Logout Session</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.deleteBtn} onPress={() => handleSecureAction('delete')}>
-              <Trash2 size={18} color="#FF4B4B" />
-              <Text style={styles.deleteBtnText}>Delete Account Permanently</Text>
-            </TouchableOpacity>
+
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -420,11 +406,9 @@ export function ProfileScreen() {
           <BlurView blurType="dark" blurAmount={30} style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ShieldCheck size={24} color={modalType === 'delete' ? '#FF4B4B' : Colors.neonLime} />
-              <Text style={styles.modalTitle}>{modalType === 'delete' ? 'Delete Account' : 'Authorize Update'}</Text>
+              <Text style={styles.modalTitle}>Authorize Update</Text>
               <Text style={styles.modalSub}>
-                {modalType === 'delete' 
-                  ? 'Please enter your M-PIN to confirm account deletion. This action is irreversible.'
-                  : 'Enter your M-PIN to authorize profile changes.'}
+                Enter your M-PIN to authorize profile changes.
               </Text>
             </View>
 
@@ -455,7 +439,7 @@ export function ProfileScreen() {
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
                   <Text style={styles.modalConfirmText}>
-                    {modalType === 'delete' ? 'Confirm Delete' : 'Verify & Save'}
+                    Verify & Save
                   </Text>
                 )}
               </TouchableOpacity>

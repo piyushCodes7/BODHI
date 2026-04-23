@@ -13,7 +13,7 @@ import models.portfolio
 import models.social  # This ensures the Social tables get registered to the Base
 
 # Routers
-from routers import auth, trade, search, prices, simulate, social, ai, notification
+from routers import auth, trade, search, prices, simulate, social, ai, notification, travel
 from routers.social import router as social_router
 from routers import payments, insurance, wallets, expenses, users, subscriptions
 
@@ -93,6 +93,7 @@ app.include_router(oauth_router, tags=["oauth"])
 app.include_router(ai.router)
 app.include_router(notification.router, prefix="/notifications", tags=["Notifications"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(travel.router, prefix="/travel", tags=["Travel"])
 
 # ─── NEW: Transfers (P2P, QR, Requests, Razorpay) ───
 from routers import transfers

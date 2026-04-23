@@ -1,3 +1,4 @@
+// FORCE RELOAD 1
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -29,11 +30,12 @@ import { SubscriptionHubScreen }         from '../screens/SubscriptionHubScreen'
 import { 
   BankAccountsScreen, 
   SecuritySettingsScreen, 
-  TravelBookingScreen 
 } from '../screens/PlaceholderScreens';
+import { TravelBookingScreen } from '../screens/TravelBookingScreen';
 
 // ─── COMPONENT IMPORTS ───
 import { BodhiTabBar } from '../components/BodhiTabBar';
+import HomeStack from './HomeStack';
 
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator();
@@ -45,7 +47,7 @@ function MainTabNavigator() {
       tabBar={(props) => <BodhiTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen name="Vault" component={VaultScreen} />
+      <Tab.Screen name="Vault" component={HomeStack} />
       <Tab.Screen
         name="Social"
         component={SocialScreen}

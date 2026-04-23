@@ -42,6 +42,9 @@ class UserCreate(BaseModel):
     age: int
     gender: str
 
+class PhoneCheck(BaseModel):
+    phone: str
+
 class PasswordResetRequest(BaseModel):
     email: EmailStr
 
@@ -63,10 +66,16 @@ register_otps = {}
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    # Check if user already exists
-    result = await db.execute(select(User).where(User.email == user_data.email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already registered")
+    # Check if email or phone already exists
+    result = await db.execute(
+        select(User).where((User.email == user_data.email) | (User.phone == user_data.phone_number))
+    )
+    existing_user = result.scalar_one_or_none()
+    if existing_user:
+        if existing_user.email == user_data.email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        else:
+            raise HTTPException(status_code=400, detail="Phone number already registered")
         
     # Create new user with ₹1,00,000 starting balance
     hashed_mpin = get_password_hash(user_data.m_pin)
@@ -84,6 +93,13 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(new_user)
     await db.commit()
     return {"message": "User created successfully. Welcome to BODHI!"}
+
+@router.post("/check-phone")
+async def check_phone(data: PhoneCheck, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.phone == data.phone))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+    return {"available": True}
 
 # Note: OAuth2PasswordRequestForm expects form data (username & password), not JSON!
 @router.post("/token")

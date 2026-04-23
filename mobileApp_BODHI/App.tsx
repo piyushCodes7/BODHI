@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar, LogBox } from 'react-native';
 import { configureGoogleSignIn } from './src/hooks/useOAuthSignIn'; 
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { CalculatorProvider } from './src/context/CalculatorContext';
+import { FloatingCalculator } from './src/components/FloatingCalculator';
 
 // Screens
 import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
@@ -24,6 +26,7 @@ export default function App() {
   return (
     <>
       {/* Dynamically match the status bar. Splash and Onboarding are dark, App is light */}
+    <CalculatorProvider>
       <StatusBar barStyle={(showSplash || showOnboarding) ? "light-content" : "dark-content"} />
       
       {showSplash ? (
@@ -36,6 +39,8 @@ export default function App() {
         // Step 3: Boot up the main application
         <AppNavigator />
       )}
+      <FloatingCalculator />
+    </CalculatorProvider>
     </>
   );
 }
