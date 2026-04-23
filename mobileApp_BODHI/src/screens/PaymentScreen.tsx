@@ -90,6 +90,28 @@ export const PaymentScreen: React.FC<Props> = ({
   const [paySuccess, setPaySuccess] = useState(false);
   const [inputTab, setInputTab] = useState<'contacts' | 'phone' | 'upi'>('contacts');
   const [qrScanning, setQrScanning] = useState(false);
+  const [showMyQr, setShowMyQr] = useState(false);
+  const [myProfile, setMyProfile] = useState<any>(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await UsersAPI.fetchProfile();
+      setMyProfile(data);
+    } catch (e) {
+      console.error('Failed to load profile', e);
+    }
+  };
+
+  const getMyUpiString = () => {
+    if (!myProfile) return '';
+    const pa = `${myProfile.phone || myProfile.id}@bodhi`;
+    const pn = encodeURIComponent(myProfile.full_name);
+    return `upi://pay?pa=${pa}&pn=${pn}&cu=INR`;
+  };
 
   const successAnim = useRef(new Animated.Value(0)).current;
 
@@ -376,10 +398,50 @@ export const PaymentScreen: React.FC<Props> = ({
               {qrScanning ? 'Scanning…' : 'TAP TO SIMULATE SCAN'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.myQrBtn}>
+          <TouchableOpacity style={styles.myQrBtn} onPress={() => setShowMyQr(true)}>
             <Text style={styles.myQrBtnText}>SHOW MY QR CODE</Text>
           </TouchableOpacity>
         </View>
+
+        {/* ── MY QR MODAL ── */}
+        <Modal visible={showMyQr} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.myQrCard}>
+              <TouchableOpacity 
+                style={styles.closeQr} 
+                onPress={() => setShowMyQr(false)}
+              >
+                <X size={24} color={Colors.textPrimary} />
+              </TouchableOpacity>
+              
+              <View style={styles.myQrHeader}>
+                <View style={styles.myQrAvatar}>
+                  <Text style={styles.myQrAvatarText}>{myProfile ? getInitials(myProfile.full_name) : 'U'}</Text>
+                </View>
+                <Text style={styles.myQrName}>{myProfile?.full_name || 'Loading...'}</Text>
+                <Text style={styles.myQrId}>{myProfile ? `${myProfile.phone}@bodhi` : ''}</Text>
+              </View>
+
+              <View style={styles.realQrContainer}>
+                {myProfile ? (
+                  <Image 
+                    source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(getMyUpiString())}` }}
+                    style={styles.realQrImage}
+                  />
+                ) : (
+                  <ActivityIndicator color={Colors.purple} />
+                )}
+              </View>
+
+              <View style={styles.myQrFooter}>
+                <View style={styles.upiBadge}>
+                  <Text style={styles.upiBadgeText}>BHIM UPI</Text>
+                </View>
+                <Text style={styles.scanToPayText}>Scan with any UPI app like GPay, PhonePe or Paytm to pay me</Text>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -843,4 +905,84 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   myQrBtnText: { fontSize: Typography.sm, color: 'rgba(255,255,255,0.6)', fontWeight: Typography.semibold, letterSpacing: 1 },
+
+  // ── MY QR MODAL STYLES ──
+  myQrCard: {
+    width: W * 0.85,
+    backgroundColor: Colors.bgCard,
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    position: 'relative',
+    ...Shadow.lg,
+  },
+  closeQr: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+  },
+  myQrHeader: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  myQrAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  myQrAvatarText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.textWhite,
+  },
+  myQrName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  myQrId: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  realQrContainer: {
+    width: 220,
+    height: 220,
+    backgroundColor: '#FFF',
+    padding: 10,
+    borderRadius: Radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.xl,
+  },
+  realQrImage: {
+    width: 200,
+    height: 200,
+  },
+  myQrFooter: {
+    alignItems: 'center',
+  },
+  upiBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+  upiBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#000',
+  },
+  scanToPayText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
 });

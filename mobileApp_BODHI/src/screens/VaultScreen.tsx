@@ -50,6 +50,7 @@ import { Colors, Spacing, Radius } from '../theme/tokens';
 import { InsuranceScreen } from './InsuranceScreen';
 import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 import { NotificationAPI, UsersAPI } from '../api/client';
+import { useCalculator } from '../context/CalculatorContext';
 
 const { width: W } = Dimensions.get('window');
 
@@ -61,7 +62,7 @@ const QUICK_SERVICES = [
   { id: '4', label: 'History', icon: FileText, color: '#00E676', route: 'TransactionHistory' },
   { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3399FF' },
   { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFD700' },
-  { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF' },
+  { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF', route: 'TravelBooking' },
   { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2' },
 ];
 
@@ -87,6 +88,8 @@ export function VaultScreen() {
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
   const [uPin, setUPin] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+
+  const { toggleCalculator } = useCalculator();
 
   // Fetch user data from storage
   const fetchUserData = useCallback(async () => {
@@ -130,6 +133,10 @@ export function VaultScreen() {
     } catch (error) {
       console.error("Failed to fetch unread count:", error);
     }
+  }, []);
+
+  useEffect(() => {
+    // Vault Screen Mounted
   }, []);
 
   useFocusEffect(
@@ -436,6 +443,11 @@ export function VaultScreen() {
                 style={styles.serviceItem}
                 activeOpacity={0.7}
                 onPress={() => {
+                  if (item.label === 'Calculator' || item.id === '3') {
+                    toggleCalculator();
+                    return;
+                  }
+                  
                   if (item.route === 'InsuranceStories') {
                     setShowInsurance(true);
                   } else if (item.route) {

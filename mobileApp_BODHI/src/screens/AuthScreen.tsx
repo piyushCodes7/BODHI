@@ -59,6 +59,26 @@ export function AuthScreen({ navigation }: any) {
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
+  const resetForm = () => {
+    setName('');
+    setAge('');
+    setGender('');
+    setPhone('');
+    setEmail('');
+    setPassword('');
+    setMPin('');
+    setUPin('');
+    setOtp('');
+    setCurrentStep(0);
+    setIsEmailVerified(false);
+    setIsPhoneVerified(false);
+  };
+
+  const switchMode = (mode: AuthMode) => {
+    resetForm();
+    setAuthMode(mode);
+  };
+
   // ─── HANDLERS ────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -232,7 +252,7 @@ export function AuthScreen({ navigation }: any) {
         }
 
         Alert.alert('Success', 'Account created! Welcome to BODHI.');
-        setAuthMode('login');
+        switchMode('login');
         setCurrentStep(0);
       }
     } catch (error: any) {
@@ -303,9 +323,7 @@ export function AuthScreen({ navigation }: any) {
       if (!response.ok) throw new Error(data.detail || 'Invalid or expired code.');
 
       Alert.alert('Success 🎉', 'Your password has been reset!');
-      setAuthMode('login');
-      setOtp('');
-      setNewPassword('');
+      switchMode('login');
     } catch (error: any) {
       Alert.alert('Reset Failed', error.message);
     } finally {
@@ -332,7 +350,7 @@ export function AuthScreen({ navigation }: any) {
     <View style={styles.toggleContainer}>
       <TouchableOpacity
         style={styles.toggleBtn}
-        onPress={() => setAuthMode('login')}
+        onPress={() => switchMode('login')}
         activeOpacity={0.8}
       >
         {authMode === 'login' ? (
@@ -350,7 +368,7 @@ export function AuthScreen({ navigation }: any) {
 
       <TouchableOpacity
         style={styles.toggleBtn}
-        onPress={() => setAuthMode('signup')}
+        onPress={() => switchMode('signup')}
         activeOpacity={0.8}
       >
         {authMode === 'signup' ? (
@@ -460,10 +478,10 @@ export function AuthScreen({ navigation }: any) {
                   </View>
 
                   <View style={styles.linksRow}>
-                    <TouchableOpacity onPress={() => setAuthMode('signup')}>
+                    <TouchableOpacity onPress={() => switchMode('signup')}>
                       <Text style={styles.linkText}>Sign Up</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setAuthMode('forgot')}>
+                    <TouchableOpacity onPress={() => switchMode('forgot')}>
                       <Text style={styles.linkText}>Forgot password?</Text>
                     </TouchableOpacity>
                   </View>
@@ -604,7 +622,7 @@ export function AuthScreen({ navigation }: any) {
                       </View>
                     </View>
 
-                    <Text style={styles.inputLabel}>PHONE NUMBER (Optional)</Text>
+                    <Text style={styles.inputLabel}>PHONE NUMBER</Text>
                     <View style={styles.inputWrapper}>
                       <Smartphone size={18} color="#A855F7" style={styles.inputIcon} />
                       <TextInput
@@ -619,12 +637,33 @@ export function AuthScreen({ navigation }: any) {
 
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => name && age && setCurrentStep(1)}
+                      onPress={async () => {
+                        if (!name || !age || !phone || !gender) {
+                          Alert.alert("Required Fields", "Please fill in your Name, Age, Phone number, and Gender to continue.");
+                          return;
+                        }
+                        
+                        setIsLoading(true);
+                        try {
+                          await AuthAPI.checkPhone(phone);
+                          setCurrentStep(1);
+                        } catch (error: any) {
+                          Alert.alert("Registration Error", error.response?.data?.detail || "This phone number is already registered.");
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
                       style={{ marginTop: 32 }}
                     >
                       <LinearGradient colors={['#FFE259', '#C8FF00']} style={styles.primaryBtn}>
-                        <Text style={styles.primaryBtnText}>Continue</Text>
-                        <ChevronRight size={20} color="#000" style={{ position: 'absolute', right: 20 }} />
+                        {isLoading ? (
+                          <ActivityIndicator color="#000" />
+                        ) : (
+                          <>
+                            <Text style={styles.primaryBtnText}>Continue</Text>
+                            <ChevronRight size={20} color="#000" style={{ position: 'absolute', right: 20 }} />
+                          </>
+                        )}
                       </LinearGradient>
                     </TouchableOpacity>
                   </>
@@ -754,7 +793,7 @@ export function AuthScreen({ navigation }: any) {
                       <Text style={styles.linkText}>← Previous Step</Text>
                     </TouchableOpacity>
                   )}
-                  <TouchableOpacity onPress={() => { setAuthMode('login'); setCurrentStep(0); }}>
+                  <TouchableOpacity onPress={() => switchMode('login')}>
                     <Text style={styles.linkText}>Back to Login</Text>
                   </TouchableOpacity>
                 </View>
@@ -797,7 +836,7 @@ export function AuthScreen({ navigation }: any) {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => setAuthMode('login')}>
+                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => switchMode('login')}>
                   <Text style={styles.forgotText}>← Back to Login</Text>
                 </TouchableOpacity>
               </View>
@@ -849,7 +888,7 @@ export function AuthScreen({ navigation }: any) {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => setAuthMode('forgot')}>
+                <TouchableOpacity style={{ alignItems: 'center', marginTop: 32 }} onPress={() => switchMode('forgot')}>
                   <Text style={styles.forgotText}>← Resend Code</Text>
                 </TouchableOpacity>
               </View>

@@ -93,57 +93,56 @@ async def execute_buy(db, user_id, symbol, amount_inr, current_price, is_market_
     await db.commit()
     return {"status": "success", "message": msg, "order_status": txn_status}
 
-async def execute_sell(db, user_id, symbol, amount_inr, current_price, is_market_open):
-    # 1. Fetch the user
+async def execute_sell(db, user_id, symbol, quantity_to_sell, current_price, is_market_open):
+    # 1. Fetch the user and their holding
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     
-    # Calculate quantity
-    qty = int(amount_inr / current_price)
-    total_cost = qty * current_price
+    portfolio_result = await db.execute(
+        select(PortfolioItem).where(PortfolioItem.user_id == user_id, PortfolioItem.symbol == symbol)
+    )
+    holding = portfolio_result.scalars().first()
 
-    if qty <= 0:
-        return {"error": "Amount too low to buy even 1 share."}
-    if user.paper_balance < total_cost:
-        return {"error": "Insufficient virtual funds."}
+    # 2. Validation
+    if not holding or holding.quantity < quantity_to_sell:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient holdings. You only have {holding.quantity if holding else 0} shares of {symbol}."
+        )
 
-    # 2. Block the funds (We do this immediately so they can't double-spend overnight)
-    user.paper_balance -= total_cost
+    total_credit = quantity_to_sell * current_price
 
     if is_market_open:
         # 🟢 MARKET IS OPEN: Execute Immediately
-        # Add to Portfolio logic...
-        portfolio_result = await db.execute(
-            select(PortfolioItem).where(PortfolioItem.user_id == user_id, PortfolioItem.symbol == symbol)
-        )
-        holding = portfolio_result.scalars().first()
+        holding.quantity -= quantity_to_sell
         
-        if holding:
-            old_total = holding.quantity * holding.average_buy_price
-            holding.quantity += qty
-            holding.average_buy_price = (old_total + total_cost) / holding.quantity
-        else:
-            new_holding = PortfolioItem(user_id=user_id, symbol=symbol, quantity=qty, average_buy_price=current_price)
-            db.add(new_holding)
-
+        # If quantity becomes 0, remove the holding
+        if holding.quantity <= 0:
+            await db.delete(holding)
+            
+        # Credit the funds
+        user.paper_balance += total_credit
         txn_status = "EXECUTED"
-        msg = f"Successfully bought {qty} shares of {symbol}."
-        
+        msg = f"Successfully sold {quantity_to_sell} shares of {symbol}."
     else:
-        # 🌙 MARKET IS CLOSED: Send to AMO Waiting Room
-        # Note: We already blocked their cash above, but we DO NOT add the stock to their portfolio yet!
+        # 🌙 MARKET IS CLOSED: AMO
+        # We block the shares (decrement from portfolio) but don't credit cash until execution
+        holding.quantity -= quantity_to_sell
+        if holding.quantity <= 0:
+            await db.delete(holding)
+            
         txn_status = "PENDING_AMO"
-        msg = "Market is closed. Your order is placed as an AMO and will execute at 9:15 AM."
+        msg = "Market is closed. Your sell order is placed as an AMO."
 
     # 3. Record the Transaction
     new_txn = Transaction(
         user_id=user_id,
-        type="BUY",
+        type="SELL",
         symbol=symbol,
-        quantity=qty,
+        quantity=quantity_to_sell,
         price=current_price,
-        total_value=total_cost,
-        status=txn_status  # <-- Save the status!
+        total_value=total_credit,
+        status=txn_status
     )
     db.add(new_txn)
     

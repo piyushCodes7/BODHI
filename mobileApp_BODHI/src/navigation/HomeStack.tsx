@@ -16,10 +16,11 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { VaultScreen as HomeScreen } from '../screens/VaultScreen';
-import PaperTradeScreen from '../screens/PaperTradeScreen';
-import PersonalDetailsScreen from '../screens/PersonalDetailsScreen';
-import BankAccountsScreen from '../screens/BankAccountsScreen';
-import SecuritySettingsScreen from '../screens/SecuritySettingsScreen';
+import { 
+  PaperTradeScreen,
+  BankAccountsScreen, 
+  SecuritySettingsScreen 
+} from '../screens/PlaceholderScreens';
 
 import { Colors } from '../theme/tokens';
 
@@ -28,7 +29,6 @@ import { Colors } from '../theme/tokens';
 export type HomeStackParamList = {
   Home:             undefined;
   PaperTrade:       undefined;
-  PersonalDetails:  undefined;
   BankAccounts:     undefined;
   SecuritySettings: undefined;
 };
@@ -58,11 +58,6 @@ const HomeStack: React.FC = () => (
       name="PaperTrade"
       component={PaperTradeScreen}
       options={{ title: '📈 Paper Trade' }}
-    />
-    <Stack.Screen
-      name="PersonalDetails"
-      component={PersonalDetailsScreen}
-      options={{ title: 'Personal Details' }}
     />
     <Stack.Screen
       name="BankAccounts"

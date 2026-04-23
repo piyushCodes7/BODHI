@@ -86,7 +86,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(255), nullable=False, unique=True, index=True
     )
-    phone: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True)
+    phone: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
