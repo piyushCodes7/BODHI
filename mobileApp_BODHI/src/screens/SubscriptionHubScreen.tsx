@@ -15,11 +15,8 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-<<<<<<< Updated upstream
 import { SafeAreaView } from 'react-native-safe-area-context';
-=======
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
->>>>>>> Stashed changes
 import LinearGradient from 'react-native-linear-gradient';
 import {
   Tv, Gamepad2, Briefcase, Music, BookOpen,
@@ -562,17 +559,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#C6FF0015', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
     borderWidth: 1, borderColor: '#C6FF0040',
   },
-<<<<<<< Updated upstream
-  popularBadgeText: { color: '#C6FF00', fontSize: 10, fontWeight: '700' },
-  planCardName: { color: '#FFF', fontSize: 20, fontWeight: '800' },
-  planCardFeatures: { color: '#555', fontSize: 13, marginTop: 4 },
-  planCardRight: { alignItems: 'flex-start', gap: 4, minWidth: 80 },
-=======
   popularBadgeText: { color: '#C6FF00', fontSize: responsiveFont(10), fontWeight: '700' },
   planCardName: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '800' },
   planCardFeatures: { color: '#555', fontSize: responsiveFont(13), marginTop: 4 },
   planCardRight: { alignItems: 'flex-end', gap: 4 },
->>>>>>> Stashed changes
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
   planPriceSym: { color: '#C6FF00', fontSize: responsiveFont(13), fontWeight: '700' },
   planPriceVal: { color: '#C6FF00', fontSize: responsiveFont(26), fontWeight: '900' },
