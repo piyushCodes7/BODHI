@@ -58,55 +58,6 @@
             </div>
         </div>
 
-        <!-- Setup Screen for newly invited admins -->
-        <div class="login-wrapper" id="setup-wrapper" style="display: none;">
-            <div class="brand">
-                <div class="logo">B</div>
-                <h2>Set Up Admin Account</h2>
-                <p>Welcome to the BODHI Team</p>
-            </div>
-            
-            <form id="setup-form">
-                <div class="input-group">
-                    <label>Create a Password</label>
-                    <input type="password" id="setup-password" placeholder="••••••••" required>
-                </div>
-                <div class="input-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="setup-confirm-password" placeholder="••••••••" required>
-                </div>
-                <div class="input-group">
-                    <label>Master Verification Passcode</label>
-                    <input type="password" id="setup-secret" placeholder="Enter the secret code" required>
-                </div>
-                <button type="submit" class="btn-primary">Create Account</button>
-            </form>
-            <div id="setup-error" class="error-msg"></div>
-            <div id="setup-error" class="error-msg"></div>
-            <div id="setup-success" class="error-msg" style="color: var(--success); display: none;"></div>
-        </div>
-
-        <!-- First Time Install Screen -->
-        <div class="login-wrapper" id="bootstrap-wrapper" style="display: none;">
-            <div class="brand">
-                <div class="logo">B</div>
-                <h2>System Bootstrap</h2>
-                <p>Add the initial root administrator emails.</p>
-            </div>
-            
-            <form id="bootstrap-form">
-                <div class="input-group">
-                    <label>Admin Emails (comma separated)</label>
-                    <input type="text" id="bootstrap-emails" placeholder="e.g. rahul@bodhi.com, piyush@bodhi.com" required>
-                </div>
-                <div class="input-group">
-                    <label>Master Verification Passcode</label>
-                    <input type="password" id="bootstrap-secret" placeholder="Enter the secret code" required>
-                </div>
-                <button type="submit" class="btn-primary">Initialize System Emails</button>
-            </form>
-            <div id="bootstrap-error" class="error-msg"></div>
-            <div id="bootstrap-success" class="error-msg" style="color: var(--success); display: none;"></div>
         </div>
     </div>
 
@@ -214,17 +165,16 @@
 
             <div id="view-users" class="view" style="display: none;">
                 <div class="table-actions">
-                    <h3>User Directory</h3>
-                    <input type="text" placeholder="Search by name or email..." class="search-input">
+                    <h3>User Directory Control</h3>
+                    <input type="text" placeholder="Search users..." class="search-input">
                 </div>
                 <div class="table-container">
                     <table id="users-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th>ID</th>
                                 <th>Email</th>
-                                <th>Balance</th>
-                                <th>Status</th>
+                                <th>Role</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>

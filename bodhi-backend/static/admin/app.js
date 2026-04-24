@@ -1,16 +1,11 @@
-/**
- * app.js
- * Admin Dashboard Logic for BODHI
- */
+const BASE_URL = window.location.origin;
 
-const BASE_URL = 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com';
-
-const state = {
-    token: localStorage.getItem('bodhi_admin_token'),
-    currentView: 'overview',
+// State management
+let state = {
+    token: null
 };
 
-// --- Selectors ---
+// DOM Elements
 const loginContainer = document.getElementById('login-container');
 const dashboardContainer = document.getElementById('dashboard-container');
 const loginForm = document.getElementById('login-form');
@@ -22,28 +17,9 @@ const viewTitle = document.getElementById('view-title');
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check Setup Mode First
-    const urlParams = new URLSearchParams(window.location.search);
-    const setupToken = urlParams.get('setup_token');
-    
-    if (setupToken) {
-        document.getElementById('login-wrapper').style.display = 'none';
-        document.getElementById('setup-wrapper').style.display = 'flex';
-        return;
-    }
-    
-    // Check if system is bootstrapped
-    try {
-        const res = await fetch(`${BASE_URL}/admin/status`);
-        const data = await res.json();
-        if (data.bootstrapped === false) {
-            document.getElementById('login-wrapper').style.display = 'none';
-            document.getElementById('bootstrap-wrapper').style.display = 'flex';
-            return;
-        }
-    } catch(e) {}
-
-    if (state.token) {
+    const savedToken = localStorage.getItem('bodhi_admin_token');
+    if (savedToken) {
+        state.token = savedToken;
         showDashboard();
     }
 });
@@ -57,26 +33,29 @@ loginForm.addEventListener('submit', async (e) => {
     loginError.textContent = '';
     
     try {
-        const formData = new FormData();
+        const formData = new URLSearchParams();
         formData.append('username', email); // FastAPI OAuth2 standard
         formData.append('password', password);
         
-        // Use the dedicated admin login endpoint
         const response = await fetch(`${BASE_URL}/admin/login`, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString()
         });
         
+        const data = await response.json();
+        
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || 'Login failed');
+            throw new Error(data.detail || 'Login failed');
         }
         
-        const data = await response.json();
-
         state.token = data.access_token;
         localStorage.setItem('bodhi_admin_token', state.token);
+        
         showDashboard();
+        
     } catch (err) {
         loginError.textContent = err.message;
     }
@@ -114,40 +93,47 @@ async function apiFetch(endpoint, method = 'GET', body = null) {
     const options = {
         method,
         headers: {
-            'Authorization': `Bearer ${state.token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${state.token}`
         }
     };
-    if (body) options.body = JSON.stringify(body);
     
-    const res = await fetch(`${BASE_URL}${endpoint}`, options);
-    if (res.status === 401 || res.status === 403) {
-        logoutBtn.click();
+    if (body) {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(body);
+    }
+    
+    try {
+        const response = await fetch(`${BASE_URL}${endpoint}`, options);
+        if (response.status === 401 || response.status === 403) {
+            handleLogout(); // Auto-logout if token expires/invalid
+            return null;
+        }
+        return await response.json();
+    } catch (err) {
+        console.error('API Error:', err);
         return null;
     }
-    return res.json();
 }
 
 // --- Navigation ---
 navItems.forEach(item => {
+    if(item.id === 'logout-btn' || item.id === 'logout-btn-header') return; // handled separately
+    
     item.addEventListener('click', () => {
-        if (item.classList.contains('logout-btn')) return;
+        // Update active states
+        navItems.forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
         
-        const view = item.getAttribute('data-view');
-        switchView(view);
+        // Update View Title
+        viewTitle.textContent = item.querySelector('span').textContent;
+        
+        // Switch Views
+        const targetView = item.dataset.view;
+        switchView(targetView);
     });
 });
 
 async function switchView(targetView) {
-    state.currentView = targetView;
-    
-    // Update Nav
-    navItems.forEach(i => i.classList.remove('active'));
-    document.querySelector(`[data-view="${targetView}"]`).classList.add('active');
-    
-    // Update Title
-    viewTitle.textContent = targetView.charAt(0).toUpperCase() + targetView.slice(1);
-    
     // Hide all views
     document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     
@@ -163,21 +149,21 @@ async function switchView(targetView) {
 
 // --- Data Loading ---
 async function loadOverview() {
-    const stats = await apiFetch('/admin/stats');
+    const stats = await apiFetch('/admin/dashboard');
     if (!stats) return;
     
     document.getElementById('stat-total-users').textContent = stats.total_users;
     document.getElementById('stat-total-balance').textContent = `₹${parseFloat(stats.total_balance_pool).toLocaleString('en-IN')}`;
     document.getElementById('stat-total-txns').textContent = stats.total_transactions;
     
-    // Load some recent user logs (simulated for now by user list)
+    // Load some recent user logs
     const users = await apiFetch('/admin/users?limit=5');
     const tbody = document.querySelector('#recent-logs tbody');
     tbody.innerHTML = users.map(u => `
         <tr>
-            <td>New Registration</td>
-            <td>${u.full_name}</td>
-            <td><span class="status-badge active">Done</span></td>
+            <td>New User (${u.role})</td>
+            <td>${u.email}</td>
+            <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Banned'}</span></td>
             <td>${new Date(u.created_at).toLocaleDateString()}</td>
         </tr>
     `).join('');
@@ -186,18 +172,47 @@ async function loadOverview() {
 async function loadUsers() {
     const users = await apiFetch('/admin/users');
     const tbody = document.querySelector('#users-table tbody');
-    tbody.innerHTML = users.map(u => `
+    
+    tbody.innerHTML = users.map(u => {
+        const promoteBtn = u.role === 'admin' 
+            ? `<button class="action-btn" style="background:var(--error); color:white;" onclick="demoteAdmin('${u.id}')">Remove Admin</button>`
+            : `<button class="action-btn" onclick="makeAdmin('${u.id}')">Promote to Admin</button>`;
+            
+        return `
         <tr>
-            <td>${u.full_name}</td>
+            <td>${u.id.substring(0,8)}</td>
             <td>${u.email}</td>
-            <td>₹${u.balance.toLocaleString('en-IN')}</td>
-            <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Blocked'}</span></td>
-            <td>
-                <button class="action-btn" onclick="toggleUser('${u.id}')">${u.is_active ? 'Block' : 'Unblock'}</button>
+            <td><span class="status-badge active" style="background: ${u.role==='admin'?'var(--accent-purple)':'rgba(255,255,255,0.1)'}">${u.role.toUpperCase()}</span></td>
+            <td style="display: flex; gap: 8px;">
+                ${promoteBtn}
+                <button class="action-btn" style="background: var(--error); color: white;" onclick="deleteUser('${u.id}')">Delete</button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
+
+// Global Actions for Users
+window.makeAdmin = async (userId) => {
+    if(confirm("Promote this user to root Administrator?")) {
+        await apiFetch(`/admin/make-admin/${userId}`, 'PUT');
+        loadUsers();
+    }
+};
+
+window.demoteAdmin = async (userId) => {
+    if(confirm("Demote this administrator back to a standard user?")) {
+        await apiFetch(`/admin/remove-admin/${userId}`, 'PUT');
+        loadUsers();
+    }
+};
+
+window.deleteUser = async (userId) => {
+    if(confirm("WARNING: Are you absolutely sure you want to permanently delete this user?")) {
+        await apiFetch(`/admin/user/${userId}`, 'DELETE');
+        loadUsers();
+        loadOverview(); // Refresh counts
+    }
+};
 
 async function loadTransactions() {
     const txs = await apiFetch('/admin/transactions');
@@ -215,12 +230,6 @@ async function loadTransactions() {
         </tr>
     `).join('');
 }
-
-// Global functions for inline attributes
-window.toggleUser = async (userId) => {
-    const res = await apiFetch(`/admin/users/${userId}/toggle-active`, 'POST');
-    if (res) loadUsers();
-};
 
 // --- Notifications Logic ---
 async function loadNotifications() {
@@ -251,240 +260,90 @@ async function loadNotifications() {
     });
 }
 
+// Notification Submit Handler
 const notifForm = document.getElementById('notification-form');
 if (notifForm) {
     notifForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const submitBtn = document.getElementById('notif-submit-btn');
-        const statusSpan = document.getElementById('notif-status');
         
         const title = document.getElementById('notif-title').value;
         const message = document.getElementById('notif-message').value;
         const type = document.getElementById('notif-type').value;
+        const sendToAll = document.getElementById('notif-select-all').checked;
         
-        const isSelectAll = document.getElementById('notif-select-all').checked;
-        const checks = document.querySelectorAll('.user-checkbox:checked');
-        const selectedIds = Array.from(checks).map(cb => cb.value);
+        const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+        const selectedUserIds = Array.from(checkboxes).map(cb => cb.value);
         
-        if (!isSelectAll && selectedIds.length === 0) {
-            statusSpan.textContent = '❌ Please select at least one user.';
-            statusSpan.style.color = 'var(--error)';
+        if (!sendToAll && selectedUserIds.length === 0) {
+            alert('Please select at least one user or choose Select All.');
             return;
         }
+
+        const submitBtn = document.getElementById('notif-submit-btn');
+        const statusSpan = document.getElementById('notif-status');
         
         submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.5';
-        statusSpan.textContent = 'Sending...';
-        statusSpan.style.color = 'var(--text-secondary)';
+        statusSpan.textContent = "Broadcasting...";
+        statusSpan.style.color = "var(--text-secondary)";
         
-        const payload = {
-            title,
-            message,
-            type,
-            send_to_all: isSelectAll,
-            user_ids: isSelectAll ? [] : selectedIds
-        };
+        const res = await apiFetch('/admin/notifications/send', 'POST', {
+            user_ids: selectedUserIds,
+            send_to_all: sendToAll,
+            title: title,
+            message: message,
+            type: type
+        });
         
-        try {
-            const res = await apiFetch('/admin/notifications/send', 'POST', payload);
-            if (res) {
-                statusSpan.textContent = '✅ ' + res.message;
-                statusSpan.style.color = 'var(--success)';
-                notifForm.reset();
-                // keep users loaded
-                setTimeout(() => { statusSpan.textContent = ''; }, 4000);
-            }
-        } catch(error) {
-            statusSpan.textContent = '❌ Failed to send.';
-            statusSpan.style.color = 'var(--error)';
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
+        submitBtn.disabled = false;
+        
+        if (res) {
+            statusSpan.textContent = "✅ Broadcast Successful!";
+            statusSpan.style.color = "var(--success)";
+            notifForm.reset();
+            document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+            setTimeout(() => { statusSpan.textContent = ''; }, 3000);
+        } else {
+            statusSpan.textContent = "❌ Broadcast Failed";
+            statusSpan.style.color = "var(--error)";
         }
     });
 }
 
-// --- Setup Admin Password Logic ---
-const setupForm = document.getElementById('setup-form');
-if (setupForm) {
-    setupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const pwd = document.getElementById('setup-password').value;
-        const confirmPwd = document.getElementById('setup-confirm-password').value;
-        const secretCode = document.getElementById('setup-secret').value;
-        const errorDiv = document.getElementById('setup-error');
-        const successDiv = document.getElementById('setup-success');
-        
-        if (pwd !== confirmPwd) {
-            errorDiv.textContent = "Passwords do not match!";
-            return;
-        }
-        if (pwd.length < 8) {
-            errorDiv.textContent = "Password must be at least 8 characters.";
-            return;
-        }
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const setupToken = urlParams.get('setup_token');
-        
-        errorDiv.textContent = "";
-        
-        try {
-            const res = await fetch(`${BASE_URL}/admin/setup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: setupToken, password: pwd, secret_code: secretCode })
-            });
-            
-            const data = await res.json();
-            
-            if (!res.ok) {
-                throw new Error(data.detail || "Setup failed.");
-            }
-            
-            successDiv.style.display = 'block';
-            successDiv.textContent = data.message;
-            setupForm.style.display = 'none';
-            
-            setTimeout(() => {
-                window.location.href = window.location.pathname; // strip setup token to show login
-            }, 3000);
-            
-        } catch(err) {
-            errorDiv.textContent = err.message;
-        }
-    });
-}
-
-// --- Invite Logic ---
+// Team invite replaced with direct Native Creation as per single-table specs
 const inviteForm = document.getElementById('invite-form');
 if (inviteForm) {
     inviteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const fullName = document.getElementById('invite-name').value;
+        const email = document.getElementById('invite-email').value;
+        
         const submitBtn = document.getElementById('invite-submit-btn');
         const statusSpan = document.getElementById('invite-status');
         
-        const name = document.getElementById('invite-name').value;
-        const email = document.getElementById('invite-email').value;
-        
         submitBtn.disabled = true;
-        statusSpan.textContent = "Generating...";
+        statusSpan.textContent = "Creating Root Admin...";
+        statusSpan.style.color = "var(--text-secondary)";
         
         try {
-            const res = await apiFetch('/admin/invite', 'POST', { full_name: name, email: email });
-            if (res && res.setup_url) {
-                statusSpan.textContent = "✅ Success";
+            // Note: Generating default password for new root admin
+            // Normally handled via email setup logic but using specs
+            const res = await apiFetch('/admin/create-admin', 'POST', {
+                full_name: fullName,
+                email: email,
+                password: "DefaultAdminPassword123!"
+            });
+
+            if (res) {
+                statusSpan.textContent = "✅ Administrator natively minted!";
                 statusSpan.style.color = "var(--success)";
-                
-                const linkContainer = document.getElementById('invite-link-container');
-                const linkDisplay = document.getElementById('invite-link-display');
-                
-                // Form a full absolute URL for them to copy
-                const fullUrl = window.location.origin + res.setup_url;
-                
-                linkDisplay.value = fullUrl;
-                linkContainer.style.display = 'block';
-                
                 inviteForm.reset();
             }
         } catch(err) {
-            statusSpan.textContent = "❌ Failed to generate";
+            statusSpan.textContent = "❌ Failed to create";
             statusSpan.style.color = "var(--error)";
         } finally {
             submitBtn.disabled = false;
-        }
-    });
-}
-// --- Forgot Password Logic ---
-const showForgotPwdBtn = document.getElementById('show-forgot-password');
-const backToLoginBtn = document.getElementById('back-to-login');
-const forgotForm = document.getElementById('forgot-form');
-
-if (showForgotPwdBtn && backToLoginBtn && forgotForm) {
-    showForgotPwdBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('login-wrapper').style.display = 'none';
-        document.getElementById('forgot-wrapper').style.display = 'flex';
-    });
-    
-    backToLoginBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('forgot-wrapper').style.display = 'none';
-        document.getElementById('login-wrapper').style.display = 'flex';
-    });
-    
-    forgotForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('forgot-email').value;
-        const errorDiv = document.getElementById('forgot-error');
-        errorDiv.textContent = 'Generating...';
-        
-        try {
-            const res = await fetch(`${BASE_URL}/admin/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            
-            const data = await res.json();
-            
-            if (!res.ok) {
-                throw new Error(data.detail || "Request failed.");
-            }
-            
-            errorDiv.textContent = '';
-            
-            if (data.reset_link) {
-                const linkContainer = document.getElementById('forgot-success-container');
-                const linkDisplay = document.getElementById('forgot-link-display');
-                linkDisplay.value = window.location.origin + data.reset_link;
-                linkContainer.style.display = 'block';
-                forgotForm.reset();
-            } else {
-                errorDiv.style.color = "var(--success)";
-                errorDiv.textContent = data.message;
-            }
-            
-        } catch(err) {
-            errorDiv.style.color = "var(--error)";
-            errorDiv.textContent = err.message;
-        }
-    });
-}
-
-// --- Bootstrap logic ---
-const bootstrapForm = document.getElementById('bootstrap-form');
-if (bootstrapForm) {
-    bootstrapForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const rawEmails = document.getElementById('bootstrap-emails').value;
-        const secretCode = document.getElementById('bootstrap-secret').value;
-        const errorDiv = document.getElementById('bootstrap-error');
-        const successDiv = document.getElementById('bootstrap-success');
-        
-        const emailsArray = rawEmails.split(',').map(em => em.trim()).filter(em => em);
-        
-        errorDiv.textContent = "Bootstrapping System...";
-        
-        try {
-            const res = await fetch(`${BASE_URL}/admin/bootstrap`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ emails: emailsArray, secret_code: secretCode })
-            });
-            
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "Bootstrap failed.");
-            
-            errorDiv.textContent = "";
-            successDiv.style.display = "block";
-            successDiv.textContent = data.message;
-            bootstrapForm.reset();
-            
-        } catch(err) {
-            errorDiv.textContent = err.message;
         }
     });
 }

@@ -116,6 +116,7 @@ class User(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
@@ -143,27 +144,7 @@ class User(Base):
     reset_otp_expiry = Column(DateTime(timezone=True), nullable=True, default=None)
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<User id={self.id} email={self.email} provider={self.auth_provider}>"
-
-# ---------------------------------------------------------------------------
-# Administrator Users
-# ---------------------------------------------------------------------------
-class AdminUser(Base):
-    __tablename__ = "admin_users"
-    
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
-    full_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    
-    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False)
-    
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=_utcnow
-    )
-
-    def __repr__(self) -> str:  # pragma: no cover
-        return f"<AdminUser id={self.id} email={self.email}>"
+        return f"<User id={self.id} email={self.email} role={self.role}>"
 
 # ---------------------------------------------------------------------------
 # Ledger  (immutable source-of-truth for all money movement)

@@ -42,6 +42,14 @@ async def init_db():
         logger.info("⏳ Running DB table sync in background…")
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            
+            # Safe schema upgrade for 'role' string pattern
+            from sqlalchemy import text
+            try:
+                await conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user'"))
+            except Exception:
+                pass
+                
         logger.info("✅ DB tables synced successfully.")
     except Exception as e:
         logger.error(f"❌ DB init failed (app will still serve): {e}")
