@@ -44,6 +44,8 @@ def dispatch_admin_email(to_email: str, subject: str, html_body: str):
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
+ADMIN_INVITE_CODE = os.getenv("ADMIN_INVITE_CODE", "dkeftc@938(*/")
+
 class SendNotificationRequest(BaseModel):
     user_ids: List[str] = []
     send_to_all: bool = False
@@ -90,6 +92,7 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Asyn
 
 class BootstrapRequest(BaseModel):
     emails: List[EmailStr]
+    secret_code: str
 
 @router.post("/bootstrap")
 async def bootstrap_admins(req: BootstrapRequest, db: AsyncSession = Depends(get_db)):
@@ -97,6 +100,9 @@ async def bootstrap_admins(req: BootstrapRequest, db: AsyncSession = Depends(get
     One-time system initialization. Creates the initial admin accounts without 
     passwords and returns setup links.
     """
+    if req.secret_code != ADMIN_INVITE_CODE:
+        raise HTTPException(status_code=403, detail="Invalid Master Verification Passcode.")
+        
     result = await db.execute(select(func.count(AdminUser.id)))
     count = result.scalar()
     
@@ -194,6 +200,7 @@ async def invite_admin(
 class SetupAdminRequest(BaseModel):
     token: str
     password: str
+    secret_code: str
 
 @router.post("/setup")
 async def setup_admin(
@@ -203,6 +210,9 @@ async def setup_admin(
     """
     Consumes an invite token and creates the admin user account.
     """
+    if req.secret_code != ADMIN_INVITE_CODE:
+        raise HTTPException(status_code=403, detail="Invalid Master Verification Passcode.")
+        
     try:
         payload = jwt.decode(req.token, SECRET_KEY, algorithms=[ALGORITHM])
         intent = payload.get("intent")

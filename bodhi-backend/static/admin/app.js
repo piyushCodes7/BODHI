@@ -275,6 +275,7 @@ if (setupForm) {
         
         const pwd = document.getElementById('setup-password').value;
         const confirmPwd = document.getElementById('setup-confirm-password').value;
+        const secretCode = document.getElementById('setup-secret').value;
         const errorDiv = document.getElementById('setup-error');
         const successDiv = document.getElementById('setup-success');
         
@@ -296,7 +297,7 @@ if (setupForm) {
             const res = await fetch(`${BASE_URL}/admin/setup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: setupToken, password: pwd })
+                body: JSON.stringify({ token: setupToken, password: pwd, secret_code: secretCode })
             });
             
             const data = await res.json();
