@@ -39,3 +39,4 @@ numpy>=1.26.0
 
 # OAuth
 requests>=2.31.0
+email-validator
