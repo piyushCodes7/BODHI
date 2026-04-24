@@ -145,7 +145,6 @@ async def list_users(
             "balance": u.balance,
             "is_active": u.is_active,
             "is_verified": u.is_verified,
-            "is_admin": u.is_admin,
             "created_at": u.created_at
         } for u in users
     ]
