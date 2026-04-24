@@ -15,11 +15,8 @@ import {
   Share,
   Dimensions
 } from 'react-native';
-<<<<<<< Updated upstream
 import { SafeAreaView } from 'react-native-safe-area-context';
-=======
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
->>>>>>> Stashed changes
 import { 
   ChevronLeft, TrendingUp, Vote, Plus, 
   BarChart2, Wallet, MessageCircle, Activity, 

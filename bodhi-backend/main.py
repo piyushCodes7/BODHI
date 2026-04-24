@@ -24,7 +24,7 @@ from routers import auth, trade, search, prices, simulate, social, ai, notificat
 from routers.social import router as social_router
 from routers.collaboration import router as collaboration_router
 from routers import payments, insurance, wallets, expenses, users, subscriptions
-from routers import transfers
+from routers import transfers, admin
 
 import models.wallets
 import models.expenses
@@ -42,6 +42,14 @@ async def init_db():
         logger.info("⏳ Running DB table sync in background…")
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            
+            # Safe schema upgrade for 'role' string pattern
+            from sqlalchemy import text
+            try:
+                await conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user'"))
+            except Exception:
+                pass
+                
         logger.info("✅ DB tables synced successfully.")
     except Exception as e:
         logger.error(f"❌ DB init failed (app will still serve): {e}")
@@ -86,7 +94,9 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 # Serve static files (avatars, etc.)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # 3. Middleware
 app.add_middleware(
@@ -116,6 +126,17 @@ async def custom_swagger_ui_html():
 async def health_check():
     return {"status": "alive", "message": "BODHI API is running"}
 
+@app.get("/admin-panel", response_class=HTMLResponse, include_in_schema=False)
+async def admin_panel():
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "static", "admin", "index.html")
+    try:
+        with open(file_path, "r") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Error: Admin Panel file not found</h1><p>Expected path: " + file_path + "</p>", status_code=404)
+
 # 4. Attach all routers
 app.include_router(auth.router,         prefix="/auth",          tags=["Authentication"])
 app.include_router(trade.router,        prefix="/trade",         tags=["Trade"])
@@ -135,3 +156,4 @@ app.include_router(users.router,        prefix="/users",         tags=["Users"])
 app.include_router(travel.router,       prefix="/travel",        tags=["Travel"])
 app.include_router(transfers.router)
 app.include_router(collaboration_router, prefix="/collaboration", tags=["Collaboration"])
+app.include_router(admin.router)

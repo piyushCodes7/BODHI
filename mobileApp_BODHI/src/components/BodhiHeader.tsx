@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-<<<<<<< Updated upstream
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
-=======
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
->>>>>>> Stashed changes
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';

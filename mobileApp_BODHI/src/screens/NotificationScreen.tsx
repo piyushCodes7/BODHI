@@ -9,11 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-<<<<<<< Updated upstream
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-=======
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
->>>>>>> Stashed changes
 import { ChevronLeft, Bell, CheckCheck, Info, AlertTriangle, Briefcase, CheckCircle2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NotificationAPI } from '../api/client';

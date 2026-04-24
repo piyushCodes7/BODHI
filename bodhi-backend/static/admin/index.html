@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BODHI Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/admin/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dark-mode">
+    <!-- Login Screen -->
+    <div id="login-container" class="auth-wrapper">
+        <div class="auth-card">
+            <div class="logo">BODHI <span>ADMIN</span></div>
+            <h1>Welcome Back</h1>
+            <p>Enter your administrator credentials to continue</p>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Master Username</label>
+                    <input type="text" id="email" placeholder="admin" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign In to Dashboard</button>
+            </form>
+            <div id="login-error" class="error-msg"></div>
+            <div style="text-align: center; margin-top: 16px;">
+                <a href="#" id="show-forgot-password" style="font-size: 13px; color: var(--accent-purple); text-decoration: none;">Forgot Password?</a>
+            </div>
+        </div>
+
+        <!-- Forgot Password Screen -->
+        <div class="login-wrapper" id="forgot-wrapper" style="display: none;">
+            <div class="brand">
+                <div class="logo">B</div>
+                <h2>Reset Password</h2>
+                <p>Enter your admin email to receive a secure link.</p>
+            </div>
+            
+            <form id="forgot-form">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgot-email" placeholder="e.g. rahul@bodhi.com" required>
+                </div>
+                <button type="submit" class="btn-primary">Send Reset Link</button>
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="#" id="back-to-login" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">Back to Login</a>
+                </div>
+            </form>
+            <div id="forgot-error" class="error-msg"></div>
+            <div id="forgot-success-container" style="display: none; margin-top: 24px; padding: 16px; background: rgba(52, 199, 89, 0.1); border: 1px solid rgba(52, 199, 89, 0.3); border-radius: 12px;">
+                <p style="color: var(--success); font-size: 13px; font-weight: 600; margin-bottom: 8px;">✅ Reset generated! Admin, use this secure link (do not share it):</p>
+                <input type="text" id="forgot-link-display" style="width: 100%; font-family: monospace; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; border-radius: 6px;" readonly>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" class="dashboard-root" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">BODHI</div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="overview">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Overview</span>
+                </button>
+                <button class="nav-item" data-view="users">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </button>
+                <button class="nav-item" data-view="transactions">
+                    <i data-lucide="arrow-left-right"></i>
+                    <span>Transactions</span>
+                </button>
+                <button class="nav-item" data-view="notifications">
+                    <i data-lucide="bell-ring"></i>
+                    <span>Notifications</span>
+                </button>
+                <button class="nav-item" data-view="team">
+                    <i data-lucide="users-round"></i>
+                    <span>Admin Team</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item logout-btn" id="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h2 id="view-title">Dashboard Overview</h2>
+                <div class="user-pill" style="position: relative; cursor: pointer;" onclick="const drop = document.getElementById('profile-dropdown'); drop.style.display = drop.style.display === 'none' ? 'block' : 'none';">
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 12px;">
+                        <span id="admin-name" style="font-weight: 600; font-size: 14px;">Admin</span>
+                        <span id="admin-role" style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Master Account</span>
+                    </div>
+                    <div class="avatar">A</div>
+                    
+                    <!-- Dropdown -->
+                    <div id="profile-dropdown" style="display: none; position: absolute; top: calc(100% + 12px); right: 0; background: var(--bg-dark); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 8px; min-width: 180px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(20px);">
+                        <button class="nav-item logout-btn" id="logout-btn-header" style="width: 100%; text-align: left; background: transparent; border: none; color: #ff3b30; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;">
+                            <i data-lucide="log-out" style="width: 16px;"></i> <span style="font-weight: 600;">Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Views -->
+            <div id="view-overview" class="view">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i data-lucide="users"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Users</h3>
+                            <p id="stat-total-users">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i data-lucide="wallet"></i></div>
+                        <div class="stat-info">
+                            <h3>Balance Pool</h3>
+                            <p id="stat-total-balance">₹0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i data-lucide="activity"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Txns</h3>
+                            <p id="stat-total-txns">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-header">
+                    <h3>Recent System Activity</h3>
+                </div>
+                <div class="table-container">
+                    <table id="recent-logs">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>User</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Logs go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-users" class="view" style="display: none;">
+                <div class="table-actions">
+                    <h3>User Directory Control</h3>
+                    <input type="text" placeholder="Search users..." class="search-input">
+                </div>
+                <div class="table-container">
+                    <table id="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Users go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-transactions" class="view" style="display: none;">
+                <div class="table-actions">
+                    <h3>Global Transaction Ledger</h3>
+                </div>
+                <div class="table-container">
+                    <table id="tx-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User ID</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Transactions go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-notifications" class="view" style="display: none;">
+                <div class="table-actions" style="margin-bottom: 24px;">
+                    <h3>Notification Center</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Broadcast alerts, updates, or personal messages directly to users' devices.</p>
+                </div>
+                
+                <div class="stat-card" style="display: block;">
+                    <form id="notification-form">
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 300px;">
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label>Message Title</label>
+                                    <input type="text" id="notif-title" placeholder="e.g., System Maintenance" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label>Message Body</label>
+                                    <textarea id="notif-message" placeholder="Type your notification here..." style="width: 100%; height: 120px; background: var(--glass); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; color: white; font-family: 'Outfit'; font-size: 15px; resize: vertical;" required></textarea>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 24px;">
+                                    <label>Notification Type</label>
+                                    <select id="notif-type" style="width: 100%; background: var(--glass); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; color: white; font-size: 15px; appearance: none;">
+                                        <option value="INFO" style="color: black;">Information (Blue)</option>
+                                        <option value="SUCCESS" style="color: black;">Success (Green)</option>
+                                        <option value="WARNING" style="color: black;">Warning (Yellow)</option>
+                                        <option value="ALERT" style="color: black;">Alert (Red)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <label style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Select Recipients</label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                        <input type="checkbox" id="notif-select-all" style="width: 16px; height: 16px; accent-color: var(--accent-purple);">
+                                        Select All Users
+                                    </label>
+                                </div>
+                                <div id="notif-users-list" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--bg-dark);">
+                                    <!-- User checkboxes populated via JS -->
+                                    <p style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">Loading users...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; text-align: right; border-top: 1px solid var(--border); padding-top: 24px;">
+                            <span id="notif-status" style="margin-right: 16px; font-weight: 600; font-size: 14px;"></span>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 12px 32px;" id="notif-submit-btn">
+                                <i data-lucide="send" style="width: 16px; margin-right: 8px; vertical-align: middle;"></i> Broadcast Array
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Team Invite View -->
+            <div id="view-team" class="view" style="display: none;">
+                <div class="table-actions" style="margin-bottom: 24px;">
+                    <h3>Admin Team Management</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Securely invite new administrators to the dashboard.</p>
+                </div>
+                
+                <div class="stat-card" style="display: block; max-width: 600px;">
+                    <form id="invite-form">
+                        <div class="input-group" style="margin-bottom: 16px;">
+                            <label>Full Name</label>
+                            <input type="text" id="invite-name" placeholder="e.g. Rahul Kumar" required>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 24px;">
+                            <label>Email Address (used for their username)</label>
+                            <input type="email" id="invite-email" placeholder="rahul@bodhi.com" required>
+                        </div>
+                        
+                        <div style="margin-top: 24px; text-align: right;">
+                            <span id="invite-status" style="margin-right: 16px; font-weight: 600; font-size: 14px;"></span>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 12px 32px;" id="invite-submit-btn">
+                                <i data-lucide="mail-plus" style="width: 16px; margin-right: 8px; vertical-align: middle;"></i> Generate Invite
+                            </button>
+                        </div>
+                    </form>
+                    <div id="invite-link-container" style="display: none; margin-top: 24px; padding: 16px; background: rgba(52, 199, 89, 0.1); border: 1px solid rgba(52, 199, 89, 0.3); border-radius: 12px;">
+                        <p style="color: var(--success); font-size: 13px; font-weight: 600; margin-bottom: 8px;">✅ Invite generated! Share this exact link with them securely:</p>
+                        <input type="text" id="invite-link-display" style="width: 100%; font-family: monospace; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; border-radius: 6px;" readonly>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/admin/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
