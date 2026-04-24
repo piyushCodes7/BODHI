@@ -277,3 +277,33 @@ async def send_admin_notification(req: SendNotificationRequest, db: AsyncSession
     db.add_all(notifications)
     await db.commit()
     return {"message": f"Successfully sent notifications to {len(target_ids)} users"}
+
+@router.get("/bootstrap", tags=["System Boot"])
+async def bootstrap_admin(db: AsyncSession = Depends(get_db)):
+    """A one-time emergency endpoint to create the first system administrator."""
+    # Check if any admin exists
+    admin_check = await db.execute(select(User).where(User.role == "admin"))
+    if admin_check.scalar_one_or_none():
+         return {"message": "System already has an administrator. Use the login panel."}
+    
+    # Create the root admin
+    from services.auth_service import get_password_hash
+    root_admin = User(
+        id=str(os.urandom(16).hex()),
+        full_name="System Admin",
+        email="admin@bodhi.com",
+        hashed_password=get_password_hash("Admin@123"), # Change this after login!
+        role="admin",
+        is_active=True,
+        is_verified=True
+    )
+    db.add(root_admin)
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Root Administrator Minted Successfully.",
+        "email": "admin@bodhi.com",
+        "password": "Admin@123",
+        "next_step": "Login at /static/admin/login.html and CHANGE YOUR PASSWORD."
+    }
