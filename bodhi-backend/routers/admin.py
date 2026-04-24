@@ -280,30 +280,37 @@ async def send_admin_notification(req: SendNotificationRequest, db: AsyncSession
 
 @router.get("/bootstrap", tags=["System Boot"])
 async def bootstrap_admin(db: AsyncSession = Depends(get_db)):
-    """A one-time emergency endpoint to create the first system administrator."""
-    # Check if any admin exists
-    admin_check = await db.execute(select(User).where(User.role == "admin"))
-    if admin_check.scalar_one_or_none():
-         return {"message": "System already has an administrator. Use the login panel."}
-    
-    # Create the root admin
-    from services.auth_service import get_password_hash
-    root_admin = User(
-        id=str(os.urandom(16).hex()),
-        full_name="System Admin",
-        email="admin@bodhi.com",
-        hashed_password=get_password_hash("Admin@123"), # Change this after login!
-        role="admin",
-        is_active=True,
-        is_verified=True
-    )
-    db.add(root_admin)
-    await db.commit()
-    
-    return {
-        "status": "success",
-        "message": "Root Administrator Minted Successfully.",
-        "email": "admin@bodhi.com",
-        "password": "Admin@123",
-        "next_step": "Login at /static/admin/login.html and CHANGE YOUR PASSWORD."
-    }
+    try:
+        from sqlalchemy import select, text
+        from services.auth_service import get_password_hash
+        import time
+        
+        # Verify columns exist (double check)
+        await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'"))
+        await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_pass VARCHAR"))
+        
+        # Check if admin exists
+        result = await db.execute(select(User).where(User.email == "admin@bodhi.com"))
+        admin = result.scalar_one_or_none()
+        
+        if admin:
+            # Update password to ensure it's correct
+            admin.hashed_password = get_password_hash("Admin@123")
+            admin.role = "admin"
+            admin.is_active = True
+            await db.commit()
+            return {"status": "success", "message": "Admin already existed. Password reset to Admin@123"}
+        
+        new_admin = User(
+            email="admin@bodhi.com",
+            hashed_password=get_password_hash("Admin@123"),
+            role="admin",
+            is_active=True,
+            verify_pass="ROOT_ADMIN_" + str(int(time.time()))
+        )
+        db.add(new_admin)
+        await db.commit()
+        return {"status": "success", "message": "Root admin created: admin@bodhi.com / Admin@123"}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
