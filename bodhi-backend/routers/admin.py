@@ -1,6 +1,9 @@
 import os
 import jwt
 from datetime import timedelta
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,8 +14,33 @@ from typing import List, Dict, Any
 from database import get_db
 from models.core import User, Ledger, Payment, AdminUser
 from models.notification import Notification, NotificationType
-from services.auth_service import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM, pwd_context, get_password_hash
+from services.auth_service import (
+    create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM, pwd_context, get_password_hash,
+    SENDER_EMAIL, SENDER_PASSWORD, SMTP_SERVER, SMTP_PORT
+)
 from pydantic import BaseModel, EmailStr
+
+def dispatch_admin_email(to_email: str, subject: str, html_body: str):
+    """Sends authentic branded emails directly to admin accounts routing setup links."""
+    if not SENDER_EMAIL or not SENDER_PASSWORD:
+        print(f"Warning: SMTP credentials missing in .env! Simulated dispatch to {to_email}")
+        return
+        
+    msg = MIMEMultipart()
+    msg['From'] = f"BODHI Administrative System <{SENDER_EMAIL}>"
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(html_body, 'html'))
+    
+    try:
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ Auth Mail dispatched to {to_email}")
+    except Exception as e:
+        print(f"❌ Failed to send auth mail to {to_email}: {e}")
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -89,7 +117,15 @@ async def bootstrap_admins(req: BootstrapRequest, db: AsyncSession = Depends(get
             data={"sub": email, "name": new_admin.full_name, "intent": "admin_setup"}, 
             expires_delta=timedelta(days=7)
         )
-        links.append({"email": email, "setup_link": f"/admin-panel?setup_token={invite_token}"})
+        base_domain = os.getenv("API_BASE_URL", "http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com")
+        setup_url = f"{base_domain}/admin-panel?setup_token={invite_token}"
+        links.append({"email": email, "setup_link": setup_url})
+        
+        dispatch_admin_email(
+            to_email=email,
+            subject="BODHI Admin: System Initialization Access",
+            html_body=f"<h3>Welcome to BODHI</h3><p>You have been assigned root master privileges. Please setup your password to secure your account:</p><p><a href='{setup_url}'><b>Set My Password</b></a></p>"
+        )
     
     await db.commit()
     return {
@@ -113,27 +149,19 @@ async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends
         expires_delta=timedelta(hours=2)
     )
     
+    base_domain = os.getenv("API_BASE_URL", "http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com")
+    reset_url = f"{base_domain}/admin-panel?setup_token={reset_token}"
+    
+    dispatch_admin_email(
+        to_email=admin.email,
+        subject="BODHI Admin: Password Reset Requested",
+        html_body=f"<h3>Password Recovery</h3><p>A request was made to edit your administrative password. If this was you, please click the secure link below to change it. This link permanently expires in 2 hours.</p><p><a href='{reset_url}'><b>Reset My Password</b></a></p>"
+    )
+    
     return {
         "message": "Reset request accepted.", 
-        "reset_link": f"/admin-panel?setup_token={reset_token}"
+        "reset_link": reset_url
     }
-
-    result = await db.execute(select(AdminUser).where(AdminUser.email == form_data.username))
-    db_admin = result.scalar_one_or_none()
-    
-    if db_admin and pwd_context.verify(form_data.password, db_admin.hashed_password):
-        access_token_expires = timedelta(minutes=60 * 24)
-        access_token = create_access_token(
-            data={"sub": db_admin.email, "role": "superuser"}, 
-            expires_delta=access_token_expires
-        )
-        return {"access_token": access_token, "token_type": "bearer"}
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Incorrect admin username or password",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
 
 class InviteAdminRequest(BaseModel):
     email: EmailStr
@@ -152,10 +180,16 @@ async def invite_admin(
         expires_delta=timedelta(days=3)
     )
     
-    # In a real production system with configured SMTP, we would call send_email here.
-    # For now, we return the secure setup link so the Master Admin can share it privately.
-    setup_url = f"/admin-panel?setup_token={invite_token}"
-    return {"message": "Invite generated successfully.", "setup_url": setup_url}
+    base_domain = os.getenv("API_BASE_URL", "http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com")
+    setup_url = f"{base_domain}/admin-panel?setup_token={invite_token}"
+    
+    dispatch_admin_email(
+        to_email=req.email,
+        subject="BODHI Admin: Exclusive Team Invitation",
+        html_body=f"<h3>You have been invited to BODHI Admin!</h3><p>{admin.get('username', 'An administrator')} has invited you to help manage the platform.</p><p>Please accept your invitation and create your password securely below:</p><p><a href='{setup_url}'><b>Accept Invitation</b></a></p>"
+    )
+    
+    return {"message": "Invite authenticated and emailed successfully.", "setup_url": setup_url}
 
 class SetupAdminRequest(BaseModel):
     token: str
