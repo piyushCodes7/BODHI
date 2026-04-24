@@ -110,6 +110,38 @@ async def delete_user(user_id: str, admin: User = Depends(get_current_admin), db
     await db.commit()
     return {"message": f"User {user.email} successfully deleted"}
 
+@router.get("/user/{user_id}")
+async def get_specific_user(user_id: str, admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    """Return specific user details."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role,
+        "is_active": user.is_active,
+        "balance": user.balance,
+        "created_at": user.created_at
+    }
+
+@router.get("/users/search")
+async def search_users(q: str, admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    """Search users by email prefix."""
+    result = await db.execute(select(User).where(User.email.ilike(f"%{q}%")).limit(20))
+    users = result.scalars().all()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "role": u.role,
+            "is_active": u.is_active
+        } for u in users
+    ]
+
 # ───────────────────────────────────────────────────────────────────────
 # 3. Roles and Core Admin Privileges
 # ───────────────────────────────────────────────────────────────────────
@@ -184,11 +216,15 @@ async def get_dashboard_stats(admin: User = Depends(get_current_admin), db: Asyn
     tx_res = await db.execute(select(func.count(Ledger.id)))
     total_txns = tx_res.scalar() or 0
     
+    active_res = await db.execute(select(func.count(User.id)).where(User.is_active == True))
+    active_users = active_res.scalar() or 0
+    
     return {
         "total_users": total_users,
         "total_admins": total_admins,
         "total_balance_pool": total_balance,
-        "total_transactions": total_txns
+        "total_transactions": total_txns,
+        "active_users": active_users
     }
 
 # ───────────────────────────────────────────────────────────────────────
@@ -205,7 +241,7 @@ async def list_transactions(skip: int = 0, limit: int = 50, db: AsyncSession = D
         } for t in txs
     ]
 
-@router.post("/users/{user_id}/toggle-active")
+@router.put("/toggle-active/{user_id}")
 async def toggle_user_active(user_id: str, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
