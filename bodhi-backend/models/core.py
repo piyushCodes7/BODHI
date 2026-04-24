@@ -113,6 +113,7 @@ class User(Base):
     balance: Mapped[float] = mapped_column(Float, nullable=False, default=100000.0)
 
     paper_balance = Column(Float, default=100000.0, nullable=False)
+    verify_pass = Column(String, nullable=True) # Secret verification token
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
