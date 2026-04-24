@@ -5,6 +5,7 @@ import {
   Animated, Dimensions, Alert, ActivityIndicator, Platform,
   TextInput, KeyboardAvoidingView,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import DocumentPicker from 'react-native-document-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { 
@@ -350,7 +351,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
         {phase === 'chat' && (
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
             <View style={styles.chatHeader}>
-              <TouchableOpacity style={styles.chatBackBtn} onPress={() => setPhase(slides.length > 0 ? 'stories' : 'upload')}><Text style={{ fontSize: 20, color: '#FFF' }}>←</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.chatBackBtn} onPress={() => setPhase(slides.length > 0 ? 'stories' : 'upload')}><Text style={{ fontSize: responsiveFont(20), color: '#FFF' }}>←</Text></TouchableOpacity>
               <View style={styles.chatHeaderInfo}>
                 <View style={styles.storyAvatar}><Text style={styles.storyAvatarText}>AI</Text></View>
                 <View><Text style={styles.chatHeaderTitle}>Policy Assistant</Text></View>
@@ -386,7 +387,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
             <View style={styles.chatInputBar}>
               <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} multiline />
               <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]} onPress={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
-                <Text style={{ fontSize: 18, color: '#000', fontWeight: '700' }}>→</Text>
+                <Text style={{ fontSize: responsiveFont(18), color: '#000', fontWeight: '700' }}>→</Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
@@ -402,7 +403,7 @@ const styles = StyleSheet.create({
   // ── UPLOAD PHASE CYBERPUNK UI ──
   uploadPhase: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40, position: 'relative' },
   closeIconBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 50 : 30, right: 20, zIndex: 10 },
-  closeIconText: { fontSize: 24, color: 'rgba(255,255,255,0.5)', fontWeight: '300' },
+  closeIconText: { fontSize: responsiveFont(24), color: 'rgba(255,255,255,0.5)', fontWeight: '300' },
   
   uploadContent: { paddingHorizontal: 20, paddingBottom: 60, alignItems: 'center' },
   
@@ -422,17 +423,17 @@ const styles = StyleSheet.create({
   orbCore: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
   orbInnerCutout: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#1A0033', alignItems: 'center', justifyContent: 'center' },
 
-  mainTitle: { fontSize: 32, fontWeight: '800', color: '#FFF', textAlign: 'center', lineHeight: 38, marginBottom: 16, letterSpacing: -0.5 },
-  mainSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 10 },
+  mainTitle: { fontSize: responsiveFont(32), fontWeight: '800', color: '#FFF', textAlign: 'center', lineHeight: 38, marginBottom: 16, letterSpacing: -0.5 },
+  mainSubtitle: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 10 },
 
   featureList: { width: '100%', gap: 12, marginBottom: 32 },
   featureCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   featureIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   featureTextWrap: { flex: 1 },
-  featureTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, marginBottom: 4 },
-  featureDesc: { fontSize: 11, color: 'rgba(255,255,255,0.5)' },
+  featureTitle: { fontSize: responsiveFont(13), fontWeight: '800', letterSpacing: 0.5, marginBottom: 4 },
+  featureDesc: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.5)' },
   featureBadge: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
-  featureBadgeText: { fontSize: 10, fontWeight: '600' },
+  featureBadgeText: { fontSize: responsiveFont(10), fontWeight: '600' },
 
   buttonShadowWrapper: {
     width: '100%',
@@ -446,30 +447,30 @@ const styles = StyleSheet.create({
   uploadMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.neonLime, borderRadius: 20, padding: 12 },
   uploadIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
   uploadBtnTextWrap: { flex: 1 },
-  uploadBtnTitle: { fontSize: 15, fontWeight: '800', color: '#000', marginBottom: 2 },
-  uploadBtnSub: { fontSize: 12, color: 'rgba(0,0,0,0.6)', fontWeight: '500' },
+  uploadBtnTitle: { fontSize: responsiveFont(15), fontWeight: '800', color: '#000', marginBottom: 2 },
+  uploadBtnSub: { fontSize: responsiveFont(12), color: 'rgba(0,0,0,0.6)', fontWeight: '500' },
   uploadArrowCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center' },
 
   dividerRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginVertical: 24 },
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-  dividerText: { marginHorizontal: 16, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
+  dividerText: { marginHorizontal: 16, fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
 
   demoMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 12, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
 
   // ── PROCESSING, STORIES, CHAT STYLES ──
   processingCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 24, alignItems: 'center', width: W - 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  processingTitle: { fontSize: 18, fontWeight: '700', color: '#FFF', marginBottom: 8 },
-  processingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
+  processingTitle: { fontSize: responsiveFont(18), fontWeight: '700', color: '#FFF', marginBottom: 8 },
+  processingSubtitle: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
 
   storyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 68 : 48, paddingBottom: 16 },
   storyHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   storyAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-  storyAvatarText: { fontSize: 14, color: '#FFF', fontWeight: '700' },
-  storyUsername: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-  storySeriesLabel: { fontSize: 10, color: 'rgba(255,255,255,0.6)', letterSpacing: 1 },
-  closeBtn: { fontSize: 24, color: '#FFF', fontWeight: '300', padding: 4 },
+  storyAvatarText: { fontSize: responsiveFont(14), color: '#FFF', fontWeight: '700' },
+  storyUsername: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FFF' },
+  storySeriesLabel: { fontSize: responsiveFont(10), color: 'rgba(255,255,255,0.6)', letterSpacing: 1 },
+  closeBtn: { fontSize: responsiveFont(24), color: '#FFF', fontWeight: '300', padding: 4 },
   chatHeaderBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  chatHeaderBtnText: { fontSize: 13, color: '#FFF', fontWeight: '600' },
+  chatHeaderBtnText: { fontSize: responsiveFont(13), color: '#FFF', fontWeight: '600' },
 
   progressBars: { flexDirection: 'row', paddingHorizontal: 16, gap: 4, paddingBottom: 8, paddingTop: Platform.OS === 'ios' ? 56 : 36, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   progressBarTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 2, overflow: 'hidden' },
@@ -478,36 +479,36 @@ const styles = StyleSheet.create({
   storySlide: { flex: 1 },
   slideIconWrap: { alignItems: 'center', marginVertical: 40 },
   slideIconCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  slideIconText: { fontSize: 36, color: Colors.neonLime, fontWeight: '700' },
+  slideIconText: { fontSize: responsiveFont(36), color: Colors.neonLime, fontWeight: '700' },
   slideContent: { flex: 1, paddingHorizontal: 24, paddingBottom: 175 },
-  slideTitle: { fontSize: 28, fontWeight: '800', color: '#FFF', marginBottom: 16, lineHeight: 34 },
-  slideSubtitle: { fontSize: 16, color: 'rgba(255,255,255,0.8)', lineHeight: 24, marginBottom: 24 },
+  slideTitle: { fontSize: responsiveFont(28), fontWeight: '800', color: '#FFF', marginBottom: 16, lineHeight: 34 },
+  slideSubtitle: { fontSize: responsiveFont(16), color: 'rgba(255,255,255,0.8)', lineHeight: 24, marginBottom: 24 },
   confidenceBadge: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', gap: 6, marginBottom: 12 },
   confidenceDot: { width: 8, height: 8, borderRadius: 4 },
-  confidenceText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-  clauseRef: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  confidenceText: { fontSize: responsiveFont(12), fontWeight: '700', letterSpacing: 0.5 },
+  clauseRef: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)' },
 
   tapLeft:  { position: 'absolute', left: 0,  top: 100, bottom: 200, width: W * 0.35 },
   tapRight: { position: 'absolute', right: 0, top: 100, bottom: 200, width: W * 0.35 },
 
   storyFooter: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: 40 },
   queryBtn: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 30, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  queryBtnText: { fontSize: 15, color: '#FFF', fontWeight: '600' },
+  queryBtnText: { fontSize: responsiveFont(15), color: '#FFF', fontWeight: '600' },
 
   chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 16, backgroundColor: '#05001F', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   chatBackBtn: { padding: 8 },
   chatHeaderInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginLeft: 8 },
-  chatHeaderTitle: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  chatHeaderTitle: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FFF' },
   chatMessages: { flex: 1, backgroundColor: '#05001F' },
   chatMessagesContent: { padding: 20, gap: 16, paddingBottom: 24 },
   msgBubble: { maxWidth: '85%', borderRadius: 20, padding: 16 },
   msgBubbleUser: { alignSelf: 'flex-end', backgroundColor: '#A855F7', borderBottomRightRadius: 4 },
   msgBubbleAI: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.08)', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  msgText: { fontSize: 15, color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
+  msgText: { fontSize: responsiveFont(15), color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
   msgTextUser: { color: '#FFF' },
-  typingText: { fontSize: 14, color: 'rgba(255,255,255,0.5)' },
+  typingText: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.5)' },
   chatInputBar: { flexDirection: 'row', alignItems: 'flex-end', backgroundColor: '#05001F', padding: 12, paddingHorizontal: 20, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingBottom: Platform.OS === 'ios' ? 28 : 16 },
-  chatInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, fontSize: 15, color: '#FFF', maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  chatInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, fontSize: responsiveFont(15), color: '#FFF', maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   sendBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.neonLime, alignItems: 'center', justifyContent: 'center' },
 
   presetsScroll: { maxHeight: 52, backgroundColor: '#05001F', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
@@ -516,11 +517,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
     borderWidth: 1, borderColor: 'rgba(168,85,247,0.35)',
   },
-  presetChipText: { fontSize: 12, color: '#C084FC', fontWeight: '600' },
+  presetChipText: { fontSize: responsiveFont(12), color: '#C084FC', fontWeight: '600' },
 
   msgConfidenceBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 8, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, gap: 4 },
   msgConfidenceDot: { width: 6, height: 6, borderRadius: 3 },
-  msgConfidenceText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4 },
+  msgConfidenceText: { fontSize: responsiveFont(10), fontWeight: '700', letterSpacing: 0.4 },
 });
 
 export default InsuranceScreen;

@@ -16,6 +16,7 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -313,6 +314,7 @@ export function VaultScreen() {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         {/* ── HERO SECTION ── */}
         <LinearGradient
           colors={['#A84DFF', '#FF2D95']}
@@ -507,12 +509,13 @@ style={styles.heroSection}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <FileText size={20} color="#C8FF00" />
-              <Text style={{ color: '#C8FF00', fontSize: 16, fontWeight: '700' }}>View Transaction History</Text>
+              <Text style={{ color: '#C8FF00', fontSize: responsiveFont(16), fontWeight: '700' }}>View Transaction History</Text>
             </View>
             <ChevronRight size={20} color="#C8FF00" style={{ position: 'absolute', right: 20 }} />
           </TouchableOpacity>
 
           <View style={{ height: 150 }} />
+        </View>
         </View>
       </ScrollView>
 
@@ -537,7 +540,7 @@ style={styles.heroSection}
             <View style={styles.sheetModalHeader}>
               <Text style={styles.sheetModalTitle}>Add Money to Wallet</Text>
               <TouchableOpacity onPress={() => setShowAddMoney(false)}>
-                <Text style={{ color: '#FFF', fontSize: 24 }}>✕</Text>
+                <Text style={{ color: '#FFF', fontSize: responsiveFont(24) }}>✕</Text>
               </TouchableOpacity>
             </View>
             <Text style={styles.inputLabel}>AMOUNT (₹)</Text>
@@ -615,6 +618,7 @@ style={styles.heroSection}
 }
 
 const styles = StyleSheet.create({
+<<<<<<< Updated upstream
   root: {
     flex: 1,
     backgroundColor: '#000000',
@@ -691,18 +695,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+=======
+  root: { flex: 1, backgroundColor: '#05001F' },
+  // Common Modal Styles
+  modalOverlayCenter: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', padding: 24 },
+  modalOverlayBottom: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+  modalHeaderCommon: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700' },
+>>>>>>> Stashed changes
 
   // U-PIN Modal
-  modalContentUPin: { borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
+  modalContentUPin: { borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', width: '100%', maxWidth: isTablet ? (isLandscape() ? 500 : 400) : '100%', alignSelf: 'center' },
   modalHeaderUPin: { alignItems: 'center', marginBottom: 24 },
-  modalSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  modalSub: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), textAlign: 'center', marginTop: 8, lineHeight: 20 },
   modalInputWrapper: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
-  modalInput: { height: 56, paddingHorizontal: 20, color: '#FFF', fontSize: 16, textAlign: 'center' },
+  modalInput: { height: 56, paddingHorizontal: 20, color: '#FFF', fontSize: responsiveFont(16), textAlign: 'center' },
   modalActions: { flexDirection: 'row', gap: 12 },
   modalCancel: { flex: 1, height: 50, alignItems: 'center', justifyContent: 'center' },
-  modalCancelText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '600' },
+  modalCancelText: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(16), fontWeight: '600' },
   modalConfirm: { flex: 1.5, height: 50, backgroundColor: Colors.neonLime, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  modalConfirmText: { color: '#000', fontSize: 16, fontWeight: '700' },
+  modalConfirmText: { color: '#000', fontSize: responsiveFont(16), fontWeight: '700' },
 
   // Hero Section
   heroSection: {
@@ -716,7 +728,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 44 },
   avatarContainer: { position: 'relative' },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-  avatarText: { fontSize: 20, fontWeight: '800', color: '#FFF' },
+  avatarText: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFF' },
   onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7' },
   logo: { height: 30, width: 120, tintColor: '#FFF' },
   iconBtn: { overflow: 'hidden', borderRadius: 22 },
@@ -726,6 +738,7 @@ const styles = StyleSheet.create({
   },
 
   balanceArea: { marginBottom: 0 },
+<<<<<<< Updated upstream
   greeting: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', marginBottom: 16 },
   netWorthHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   netWorthLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
@@ -734,8 +747,18 @@ const styles = StyleSheet.create({
   currencySymbol: { color: '#FFFFFF', fontSize: 22, fontWeight: '400', marginRight: 6 },
   balanceMain: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: -1 },
   balanceDecimals: { color: '#FFFFFF', fontSize: 22, fontWeight: '700' },
+=======
+  greeting: { color: 'rgba(255,255,255,0.9)', fontSize: responsiveFont(18), fontWeight: '700', marginBottom: 12 },
+  netWorthHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  netWorthLabel: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(12), fontWeight: '800', letterSpacing: 1.2 },
+  revealBtn: { marginLeft: 10, opacity: 0.6 },
+  balanceRow: { flexDirection: 'row', alignItems: 'baseline', marginVertical: 2 },
+  currencySymbol: { color: '#FFF', fontSize: responsiveFont(26), fontWeight: '400', marginRight: 6 },
+  balanceMain: { color: '#FFF', fontSize: responsiveFont(48), fontWeight: '900', letterSpacing: -1 },
+  balanceDecimals: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(22), fontWeight: '700' },
+>>>>>>> Stashed changes
   growthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  growthTxt: { color: Colors.neonLime, fontSize: 12, fontWeight: '800' },
+  growthTxt: { color: Colors.neonLime, fontSize: responsiveFont(12), fontWeight: '800' },
 
   parallelActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -42, paddingHorizontal: 20, zIndex: 20 },
   scanBtnContainer: { alignItems: 'center', gap: 6 },
@@ -758,7 +781,7 @@ const styles = StyleSheet.create({
   scanBtnContainer: { alignItems: 'center', justifyContent: 'center' },
   scanGlassRing: { padding: 0, borderRadius: 40 },
   scanBtn: { width: 72, height: 72, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
-  scanBtnLabel: { color: Colors.neonLime, fontSize: 12, fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
+  scanBtnLabel: { color: Colors.neonLime, fontSize: responsiveFont(12), fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -786,21 +809,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionBtnLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: '700', marginTop: 6 },
+  actionBtnLabel: { color: 'rgba(255,255,255,0.85)', fontSize: responsiveFont(11), fontWeight: '700', marginTop: 6 },
 
   // Content
   contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },
-  sectionTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  viewAll: { color: '#A855F7', fontSize: 13, fontWeight: '600' },
+  sectionTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
+  viewAll: { color: '#A855F7', fontSize: responsiveFont(13), fontWeight: '600' },
 
-  servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 24 },
-  serviceItem: { width: '23%', alignItems: 'center', gap: 8 },
+  servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 8, paddingHorizontal: isTablet ? 20 : 0 },
+  serviceItem: { width: isTablet ? '18%' : '23%', alignItems: 'center', gap: 8, marginBottom: 16 },
   serviceIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: '#111827', alignItems: 'center', justifyContent: 'center' },
-  serviceLabel: { color: '#FFF', fontSize: 11, textAlign: 'center', fontWeight: '600' },
+  serviceLabel: { color: '#FFF', fontSize: responsiveFont(11), textAlign: 'center', fontWeight: '600' },
 
 
   insightsScroll: { paddingRight: 20, gap: 16 },
+<<<<<<< Updated upstream
   insightCard: { width: 160, minHeight: 185, borderRadius: 24, padding: 16, justifyContent: 'space-between', marginRight: 12 },
   insightIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 12, fontWeight: '600' },
@@ -808,22 +832,40 @@ const styles = StyleSheet.create({
   insightSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 16, minHeight: 48, marginBottom: 8 },
   insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 'auto', paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
   insightLink: { color: Colors.neonLime, fontSize: 12, fontWeight: '700', marginRight: 4 },
+=======
+  insightCard: { width: 150, height: 170, borderRadius: 20, padding: 16, justifyContent: 'space-between' },
+  insightIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: responsiveFont(12), marginTop: 12 },
+  insightValue: { color: '#FFF', fontSize: responsiveFont(22), fontWeight: '800', marginVertical: 4 },
+  insightSub: { color: 'rgba(255,255,255,0.8)', fontSize: responsiveFont(11), lineHeight: 16, height: 32 },
+  insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  insightLink: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(11), fontWeight: '600', marginRight: 4 },
+>>>>>>> Stashed changes
 
   addAccountBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.15)' },
-  addAccountText: { color: '#A855F7', fontSize: 12, fontWeight: '700' },
+  addAccountText: { color: '#A855F7', fontSize: responsiveFont(12), fontWeight: '700' },
   accountCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#12121A', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   accountLeft: { flexDirection: 'row', alignItems: 'center' },
   bankLogoWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+<<<<<<< Updated upstream
   bankName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 4 },
   bankDetail: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
   primaryTag: { backgroundColor: 'rgba(212,255,0,0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginLeft: 8, alignSelf: 'flex-start' },
   primaryTagText: { color: Colors.neonLime, fontSize: 10, fontWeight: '700' },
+=======
+  bankName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '600', marginBottom: 4 },
+  bankDetail: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(12) },
+  rowCenter: { flexDirection: 'row', alignItems: 'center' },
+  primaryTag: { backgroundColor: 'rgba(212,255,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 8 },
+  primaryTagText: { color: Colors.neonLime, fontSize: responsiveFont(10), fontWeight: '700' },
+>>>>>>> Stashed changes
   accountRight: { flexDirection: 'row', alignItems: 'center' },
-  accountBalance: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  accountBalance: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '700' },
   paginationDots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
   dotActive: { width: 16, backgroundColor: '#A855F7' },
 
+<<<<<<< Updated upstream
   sheetModalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   sheetModalSheet: {
     backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
@@ -841,14 +883,27 @@ const styles = StyleSheet.create({
   insightModalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
   insightModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   insightModalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+=======
+  // Add Money Sheet
+  modalSheet: { backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', width: '100%', maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center' },
+  inputLabel: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(11), fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
+  input: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, color: '#FFF', fontSize: responsiveFont(18), fontWeight: '600', marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
+  payBtnText: { fontSize: responsiveFont(15), fontWeight: '800', letterSpacing: 0.5 },
+
+  // Insight Details Modal
+  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContentInsight: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%', width: '100%', maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center' },
+  modalHeaderInsight: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+>>>>>>> Stashed changes
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
-  modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  modalCloseText: { color: '#FFF', fontSize: responsiveFont(14), fontWeight: '600' },
   insightRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   insightRowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 },
   insightIconCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   insightTextWrap: { flex: 1 },
-  insightRowMerchant: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  insightRowCategory: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
+  insightRowMerchant: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '600', marginBottom: 4 },
+  insightRowCategory: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(12) },
   insightRowRight: { alignItems: 'flex-end', flexShrink: 0 },
-  insightRowAmount: { fontSize: 16, fontWeight: '800' }
+  insightRowAmount: { fontSize: responsiveFont(16), fontWeight: '800' }
 });

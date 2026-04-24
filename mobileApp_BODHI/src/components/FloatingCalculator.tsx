@@ -9,6 +9,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { X, Delete, Divide, Minus, Plus, Equal, Percent, Hash } from 'lucide-react-native';
 import { Colors, Radius, Spacing, Shadow } from '../theme/tokens';
 import { useCalculator } from '../context/CalculatorContext';
@@ -250,12 +251,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   expressionText: {
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     color: 'rgba(255,255,255,0.4)',
     marginBottom: 4,
   },
   displayText: {
-    fontSize: 36,
+    fontSize: responsiveFont(36),
     color: '#FFF',
     fontWeight: '700',
   },
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
     aspectRatio: undefined,
   },
   btnText: {
-    fontSize: 18,
+    fontSize: responsiveFont(18),
     color: '#FFF',
     fontWeight: '600',
   },

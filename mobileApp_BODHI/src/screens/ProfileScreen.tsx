@@ -15,6 +15,7 @@ import {
   Platform,
   Image,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
@@ -717,7 +718,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#FFF',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '800',
     letterSpacing: 2,
     fontFamily: Fonts.label,
@@ -751,7 +752,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarText: {
-    fontSize: 44,
+    fontSize: responsiveFont(44),
     fontWeight: '900',
     color: '#FFF',
     includeFontPadding: false,
@@ -788,13 +789,13 @@ const styles = StyleSheet.create({
   },
   userNameText: {
     color: '#FFF',
-    fontSize: 24,
+    fontSize: responsiveFont(24),
     fontWeight: '700',
     marginTop: 16,
   },
   userEmailText: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     marginTop: 4,
   },
   // ... removed legacy QR and Balance styles ...
@@ -821,14 +822,14 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     color: 'rgba(255,255,255,0.3)',
-    fontSize: 10,
+    fontSize: responsiveFont(10),
     fontWeight: '800',
     letterSpacing: 1,
     marginBottom: 4,
   },
   fieldInput: {
     color: '#FFF',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '600',
     padding: 0,
     margin: 0,
@@ -839,7 +840,7 @@ const styles = StyleSheet.create({
   },
   readOnlyText: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '600',
   },
   divider: {
@@ -853,7 +854,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 11,
+    fontSize: responsiveFont(11),
     fontWeight: '800',
     letterSpacing: 1.5,
     marginTop: 32,
@@ -867,13 +868,13 @@ const styles = StyleSheet.create({
   },
   linkTitle: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: responsiveFont(15),
     fontWeight: '700',
     marginBottom: 2,
   },
   linkSub: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '500',
   },
   primaryBtn: {
@@ -889,7 +890,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnText: {
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '800',
     letterSpacing: 1,
   },
@@ -905,7 +906,7 @@ const styles = StyleSheet.create({
   },
   logoutBtnText: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 15,
+    fontSize: responsiveFont(15),
     fontWeight: '600',
   },
   deleteBtn: {
@@ -917,7 +918,7 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: {
     color: '#FF4B4B',
-    fontSize: 13,
+    fontSize: responsiveFont(13),
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -942,13 +943,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: '#FFF',
-    fontSize: 20,
+    fontSize: responsiveFont(20),
     fontWeight: '700',
     marginTop: 12,
   },
   modalSub: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
@@ -964,7 +965,7 @@ const styles = StyleSheet.create({
     height: 56,
     paddingHorizontal: 20,
     color: '#FFF',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     textAlign: 'center',
   },
   modalActions: {
@@ -979,7 +980,7 @@ const styles = StyleSheet.create({
   },
   modalCancelText: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '600',
   },
   modalConfirm: {
@@ -992,7 +993,7 @@ const styles = StyleSheet.create({
   },
   modalConfirmText: {
     color: '#000',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '700',
   },
   modalDelete: {
@@ -1037,14 +1038,14 @@ const styles = StyleSheet.create({
   },
   qrModalTitle: {
     color: Colors.neonLime,
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '900',
     letterSpacing: 4,
     marginBottom: 8,
   },
   qrModalSub: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '500',
   },
   qrMainCard: {
@@ -1073,7 +1074,7 @@ const styles = StyleSheet.create({
   },
   qrIdValue: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: responsiveFont(18),
     fontWeight: '700',
     letterSpacing: 0.5,
   },
@@ -1096,7 +1097,7 @@ const styles = StyleSheet.create({
   },
   qrActionText: {
     color: Colors.neonLime,
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '800',
     letterSpacing: 1,
   },

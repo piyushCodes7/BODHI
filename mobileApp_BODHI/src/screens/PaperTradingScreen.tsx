@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Dimensions, Modal, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, RefreshControl } from "react-native";
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { TrendingUp, Wallet, Zap, CheckCircle2, X, ChevronRight, Clock, Search, ArrowUpRight, ArrowDownLeft } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -259,6 +260,7 @@ export function PaperTradingScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} tintColor={LIME} onRefresh={() => { setRefreshing(true); fetchPaperData(); }} />}
       >
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         
         {/* ════ PORTFOLIO TAB ════ */}
         {activeTab === "portfolio" && (
@@ -404,7 +406,7 @@ export function PaperTradingScreen() {
                       <View style={{ alignItems: 'flex-end' }}>
                         <Text style={[styles.hName, { color: t.type === "BUY" ? RED : LIME }]}>{t.type === "BUY" ? "-" : "+"}{fmt(totalVal)}</Text>
                         <View style={{ backgroundColor: t.type === "BUY" ? "rgba(244,63,94,0.1)" : "rgba(200,255,0,0.1)", paddingHorizontal: 6, borderRadius: 4, marginTop: 4 }}>
-                          <Text style={{ fontSize: 10, color: t.type === "BUY" ? RED : LIME, fontWeight: '700' }}>{t.type}</Text>
+                          <Text style={{ fontSize: responsiveFont(10), color: t.type === "BUY" ? RED : LIME, fontWeight: '700' }}>{t.type}</Text>
                         </View>
                       </View>
                     </View>
@@ -415,6 +417,7 @@ export function PaperTradingScreen() {
           </View>
         )}
         <View style={{ height: 100 }} />
+        </View>
       </ScrollView>
 
 
@@ -441,7 +444,7 @@ export function PaperTradingScreen() {
                   {chartLoading ? (
                     <View style={{ height: 200, justifyContent: 'center', alignItems: 'center', borderColor: CARD_BORDER, borderWidth: 1, borderRadius: 16 }}>
                       <ActivityIndicator color={PURPLE} />
-                      <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 10, fontSize: 12 }}>Loading 1M Chart...</Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 10, fontSize: responsiveFont(12) }}>Loading 1M Chart...</Text>
                     </View>
                   ) : candleData.length > 0 ? (
                     <CandlestickChart data={candleData} height={200} />
@@ -461,7 +464,7 @@ export function PaperTradingScreen() {
                 <View style={styles.mSummaryCard}>
                   <View style={styles.mSummaryRow}><Text style={styles.mSumLabel}>Quantity</Text><Text style={styles.mSumVal}>{qty} shares</Text></View>
                   <View style={styles.mSummaryRow}><Text style={styles.mSumLabel}>Est. Price</Text><Text style={styles.mSumVal}>{livePrice === 0 ? "..." : fmt(livePrice)}</Text></View>
-                  <View style={[styles.mSummaryRow, { borderTopWidth: 1, borderColor: CARD_BORDER, paddingTop: 12, marginTop: 4 }]}><Text style={styles.mSumLabel}>Total Value</Text><Text style={[styles.mSumVal, { color: LIME, fontSize: 18 }]}>{livePrice === 0 ? "..." : fmt(total)}</Text></View>
+                  <View style={[styles.mSummaryRow, { borderTopWidth: 1, borderColor: CARD_BORDER, paddingTop: 12, marginTop: 4 }]}><Text style={styles.mSumLabel}>Total Value</Text><Text style={[styles.mSumVal, { color: LIME, fontSize: responsiveFont(18) }]}>{livePrice === 0 ? "..." : fmt(total)}</Text></View>
                 </View>
 
                 <TouchableOpacity style={[styles.mActionBtn, { backgroundColor: tradeSide === "BUY" ? LIME : RED }]} onPress={() => setTradeStep("REVIEW")}>
@@ -485,7 +488,7 @@ export function PaperTradingScreen() {
 
                 <View style={[styles.mSummaryCard, { alignItems: 'center', paddingVertical: 30 }]}>
                   <Text style={styles.mSumLabel}>You are {tradeSide === "BUY" ? "buying" : "selling"}</Text>
-                  <Text style={{ fontSize: 40, fontWeight: '900', color: '#FFF', marginVertical: 8 }}>{qty}</Text>
+                  <Text style={{ fontSize: responsiveFont(40), fontWeight: '900', color: '#FFF', marginVertical: 8 }}>{qty}</Text>
                   <Text style={styles.mSumLabel}>shares of <Text style={{ color: PURPLE, fontWeight: '800' }}>{tradeSymbol}</Text></Text>
                 </View>
 
@@ -534,72 +537,72 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: DARK_BG },
   header: { paddingHorizontal: 30 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  pageTitle: { fontSize: 32, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
-  pageSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 },
+  pageTitle: { fontSize: responsiveFont(32), fontWeight: '900', color: '#FFF', letterSpacing: -1 },
+  pageSub: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.5)', marginTop: 4 },
   marketBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(200,255,0,0.1)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(200,255,0,0.2)' },
   marketDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: LIME, marginRight: 6 },
-  marketText: { fontSize: 11, fontWeight: '800', color: LIME },
+  marketText: { fontSize: responsiveFont(11), fontWeight: '800', color: LIME },
   
   tabContainer: { flexDirection: 'row', backgroundColor: CARD_BG, borderRadius: 16, padding: 6, marginTop: 24, marginBottom: 20, borderWidth: 1, borderColor: CARD_BORDER },
   tabBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 12 },
   tabBtnActive: { backgroundColor: 'rgba(255,255,255,0.1)' },
-  tabText: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.4)' },
+  tabText: { fontSize: responsiveFont(13), fontWeight: '700', color: 'rgba(255,255,255,0.4)' },
   tabTextActive: { color: '#FFF' },
 
   scroll: { paddingHorizontal: 20 },
-  sectionHeading: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5 },
+  sectionHeading: { fontSize: responsiveFont(10), fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5 },
   
   card: { backgroundColor: CARD_BG, borderRadius: 24, padding: 20, borderWidth: 1, borderColor: CARD_BORDER, marginBottom: 24 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  mainValue: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
-  pnlValue: { fontSize: 14, fontWeight: '700', marginTop: 4, marginBottom: 16 },
+  mainValue: { fontSize: responsiveFont(36), fontWeight: '900', color: '#FFF', letterSpacing: -1 },
+  pnlValue: { fontSize: responsiveFont(14), fontWeight: '700', marginTop: 4, marginBottom: 16 },
   
   statsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
   statBox: { flex: 1, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: CARD_BORDER, marginHorizontal: 4 },
-  statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: '700', marginBottom: 4 },
-  statVal: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+  statLabel: { fontSize: responsiveFont(10), color: 'rgba(255,255,255,0.4)', fontWeight: '700', marginBottom: 4 },
+  statVal: { fontSize: responsiveFont(14), fontWeight: '800', color: '#FFF' },
 
   holdingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: CARD_BORDER },
   holdingIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  holdingIconText: { color: PURPLE, fontWeight: '800', fontSize: 12 },
-  hName: { fontSize: 14, fontWeight: '700', color: '#FFF', marginBottom: 2 },
-  hMeta: { fontSize: 11, color: 'rgba(255,255,255,0.4)' },
+  holdingIconText: { color: PURPLE, fontWeight: '800', fontSize: responsiveFont(12) },
+  hName: { fontSize: responsiveFont(14), fontWeight: '700', color: '#FFF', marginBottom: 2 },
+  hMeta: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.4)' },
   hActions: { flexDirection: 'row', gap: 6 },
   hBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  hBtnText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
+  hBtnText: { fontSize: responsiveFont(11), fontWeight: '800', color: '#FFF' },
 
   searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: CARD_BG, borderRadius: 16, paddingHorizontal: 16, marginBottom: 24, borderWidth: 1, borderColor: CARD_BORDER },
-  searchInput: { flex: 1, paddingVertical: 16, paddingHorizontal: 12, color: '#FFF', fontSize: 15 },
+  searchInput: { flex: 1, paddingVertical: 16, paddingHorizontal: 12, color: '#FFF', fontSize: responsiveFont(15) },
 
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.8)' },
-  modalContent: { backgroundColor: CARD_BG, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, borderWidth: 1, borderColor: CARD_BORDER, maxHeight: '90%' },
+  modalContent: { backgroundColor: CARD_BG, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, borderWidth: 1, borderColor: CARD_BORDER, maxHeight: '90%', width: '100%', maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center' },
   modalClose: { position: 'absolute', top: 20, right: 20, zIndex: 10 },
   
   modalToggleRow: { flexDirection: 'row', gap: 8, marginBottom: 20, marginRight: 40 },
   mToggle: { flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center' },
-  mToggleText: { fontSize: 14, fontWeight: '800', color: 'rgba(255,255,255,0.4)' },
+  mToggleText: { fontSize: responsiveFont(14), fontWeight: '800', color: 'rgba(255,255,255,0.4)' },
   
-  mTitle: { fontSize: 24, fontWeight: '800', color: '#FFF' },
-  mSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4, marginBottom: 24 },
+  mTitle: { fontSize: responsiveFont(24), fontWeight: '800', color: '#FFF' },
+  mSub: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.5)', marginTop: 4, marginBottom: 24 },
   
   mInputToggleRow: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 4, marginBottom: 20 },
   mSubToggle: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
   mSubToggleActive: { backgroundColor: 'rgba(255,255,255,0.1)' },
   
   mainInputWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  inputCurrency: { fontSize: 32, fontWeight: '800', color: 'rgba(255,255,255,0.4)', marginRight: 8 },
-  hugeInput: { fontSize: 52, fontWeight: '800', color: '#FFF', minWidth: 100, textAlign: 'center' },
+  inputCurrency: { fontSize: responsiveFont(32), fontWeight: '800', color: 'rgba(255,255,255,0.4)', marginRight: 8 },
+  hugeInput: { fontSize: responsiveFont(52), fontWeight: '800', color: '#FFF', minWidth: 100, textAlign: 'center' },
   
   mSummaryCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: CARD_BORDER, marginBottom: 24 },
   mSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  mSumLabel: { fontSize: 13, color: 'rgba(255,255,255,0.5)' },
-  mSumVal: { fontSize: 14, fontWeight: '700', color: '#FFF' },
+  mSumLabel: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.5)' },
+  mSumVal: { fontSize: responsiveFont(14), fontWeight: '700', color: '#FFF' },
   
   mActionBtn: { paddingVertical: 18, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  mActionText: { fontSize: 15, fontWeight: '800', letterSpacing: 1 },
+  mActionText: { fontSize: responsiveFont(15), fontWeight: '800', letterSpacing: 1 },
 
   amoWarningBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 153, 0, 0.1)', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 153, 0, 0.3)', marginBottom: 20 },
-  amoWarningText: { flex: 1, fontSize: 12, color: '#FF9900', lineHeight: 18, marginLeft: 8 },
+  amoWarningText: { flex: 1, fontSize: responsiveFont(12), color: '#FF9900', lineHeight: 18, marginLeft: 8 },
 
   resetBtn: {
     flexDirection: 'row',
@@ -612,7 +615,7 @@ const styles = StyleSheet.create({
     opacity: 0.6
   },
   resetBtnText: {
-    fontSize: 11,
+    fontSize: responsiveFont(11),
     fontWeight: '800',
     color: 'rgba(255,255,255,0.4)',
     letterSpacing: 1,

@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   PermissionsAndroid,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -391,6 +392,7 @@ export function AIVoiceScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         {/* ─── Header ─── */}
         <View style={styles.header}>
           <TouchableOpacity 
@@ -574,6 +576,7 @@ export function AIVoiceScreen() {
             </TouchableOpacity>
           </ScrollView>
         </View>
+        </View>
       </ScrollView>
 
       {/* ─── Bottom Chat Input ─── */}
@@ -641,7 +644,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarImage: { width: '100%', height: '100%' },
-  avatarText: { fontSize: 20, fontWeight: '800', color: '#000' },
+  avatarText: { fontSize: responsiveFont(20), fontWeight: '800', color: '#000' },
   onlineDot: {
     position: 'absolute',
     bottom: -2,
@@ -721,16 +724,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     marginBottom: 15,
   },
-  greeting: { fontSize: 20, fontWeight: '500', color: '#FFF', marginBottom: 8 },
-  headline: { fontSize: 32, fontWeight: '800', color: '#FFF', letterSpacing: -0.5 },
+  greeting: { fontSize: responsiveFont(20), fontWeight: '500', color: '#FFF', marginBottom: 8 },
+  headline: { fontSize: responsiveFont(32), fontWeight: '800', color: '#FFF', letterSpacing: -0.5 },
   headlineAccent: {
-    fontSize: 32,
+    fontSize: responsiveFont(32),
     fontWeight: '800',
     color: Colors.neonLime,
     letterSpacing: -0.5,
     marginBottom: 8,
   },
-  subtitle: { fontSize: 14, fontWeight: '400', color: 'rgba(255,255,255,0.6)' },
+  subtitle: { fontSize: responsiveFont(14), fontWeight: '400', color: 'rgba(255,255,255,0.6)' },
   transcriptionContainer: {
     backgroundColor: 'rgba(212,255,0,0.05)',
     marginHorizontal: 20,
@@ -749,13 +752,13 @@ const styles = StyleSheet.create({
   },
   transcriptionLabel: {
     color: Colors.neonLime,
-    fontSize: 10,
+    fontSize: responsiveFont(10),
     fontWeight: '800',
     letterSpacing: 1,
   },
   transcriptionText: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: responsiveFont(15),
     fontStyle: 'italic',
     lineHeight: 22,
   },
@@ -766,7 +769,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 12,
   },
-  trySayingText: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '500' },
+  trySayingText: { color: 'rgba(255,255,255,0.8)', fontSize: responsiveFont(14), fontWeight: '500' },
   chipsScroll: { paddingRight: 40, gap: 12 },
   chip: {
     flexDirection: 'row',
@@ -781,7 +784,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '500',
     lineHeight: 16,
   },
@@ -806,7 +809,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  chatInput: { flex: 1, color: '#FFF', fontSize: 15, minHeight: 40 },
+  chatInput: { flex: 1, color: '#FFF', fontSize: responsiveFont(15), minHeight: 40 },
   sendBtn: {
     width: 36,
     height: 36,

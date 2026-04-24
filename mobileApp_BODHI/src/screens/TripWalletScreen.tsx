@@ -15,6 +15,7 @@ import {
   Share,
   Dimensions
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { 
   ChevronLeft, Receipt, Users, Plus, 
   CheckCircle2, MessageCircle, BarChart2, 
@@ -192,6 +193,7 @@ export function TripWalletScreen({ route, navigation }: any) {
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
         >
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
           <LinearGradient
             colors={['#1E293B', '#0E0C24']}
             style={styles.summaryCard}
@@ -267,6 +269,7 @@ export function TripWalletScreen({ route, navigation }: any) {
                 </View>
               </View>
             ))}
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -300,10 +303,10 @@ const styles = StyleSheet.create({
     borderColor: C.border
   },
   headerTitleContainer: { flex: 1, alignItems: 'center', paddingHorizontal: 10 },
-  headerTitle: { color: C.white, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  headerTitle: { color: C.white, fontSize: responsiveFont(18), fontWeight: '900', letterSpacing: -0.5 },
   headerBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
-  headerBadgeText: { color: C.whiteDim, fontSize: 10, fontWeight: '700' },
-  headerBadgeDot: { color: C.whiteDim, fontSize: 10 },
+  headerBadgeText: { color: C.whiteDim, fontSize: responsiveFont(10), fontWeight: '700' },
+  headerBadgeDot: { color: C.whiteDim, fontSize: responsiveFont(10) },
 
   // TABS
   tabContainer: { paddingVertical: 15 },
@@ -320,7 +323,7 @@ const styles = StyleSheet.create({
     gap: 8 
   },
   activeTab: { backgroundColor: C.neonLime, borderColor: C.neonLime },
-  tabText: { color: C.whiteDim, fontSize: 13, fontWeight: '800' },
+  tabText: { color: C.whiteDim, fontSize: responsiveFont(13), fontWeight: '800' },
   activeTabText: { color: C.bg },
 
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
@@ -336,8 +339,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  summaryLabel: { color: C.whiteDim, fontSize: 13, fontWeight: '700', marginBottom: 6 },
-  summaryValue: { color: C.white, fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  summaryLabel: { color: C.whiteDim, fontSize: responsiveFont(13), fontWeight: '700', marginBottom: 6 },
+  summaryValue: { color: C.white, fontSize: responsiveFont(32), fontWeight: '900', letterSpacing: -1 },
   summaryIconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(200,255,0,0.1)', alignItems: 'center', justifyContent: 'center' },
 
   // ACTIONS
@@ -351,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 18, 
     gap: 8 
   },
-  actionBtnText: { color: C.bg, fontSize: 15, fontWeight: '800' },
+  actionBtnText: { color: C.bg, fontSize: responsiveFont(15), fontWeight: '800' },
   actionBtnSecondary: { 
     flex: 1, 
     flexDirection: 'row', 
@@ -363,12 +366,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     gap: 8
   },
-  actionBtnTextSecondary: { color: C.neonLime, fontSize: 15, fontWeight: '800' },
+  actionBtnTextSecondary: { color: C.neonLime, fontSize: responsiveFont(15), fontWeight: '800' },
 
   // SECTIONS
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  sectionTitle: { color: C.white, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
-  viewAll: { color: C.purple, fontSize: 13, fontWeight: '700' },
+  sectionTitle: { color: C.white, fontSize: responsiveFont(17), fontWeight: '800', letterSpacing: -0.3 },
+  viewAll: { color: C.purple, fontSize: responsiveFont(13), fontWeight: '700' },
 
   expenseCard: { 
     flexDirection: 'row', 
@@ -381,20 +384,20 @@ const styles = StyleSheet.create({
     borderColor: C.border 
   },
   expenseIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
-  expDesc: { color: C.white, fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  expPaidBy: { color: C.whiteDim, fontSize: 11, fontWeight: '600' },
-  expAmount: { color: C.white, fontSize: 16, fontWeight: '800' },
+  expDesc: { color: C.white, fontSize: responsiveFont(15), fontWeight: '700', marginBottom: 2 },
+  expPaidBy: { color: C.whiteDim, fontSize: responsiveFont(11), fontWeight: '600' },
+  expAmount: { color: C.white, fontSize: responsiveFont(16), fontWeight: '800' },
 
   // MEMBERS
   memberList: { backgroundColor: C.cardBg, borderRadius: 24, padding: 8, borderWidth: 1, borderColor: C.border },
   memberRow: { flexDirection: 'row', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
   memberAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.purple, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  avatarText: { color: C.white, fontSize: 14, fontWeight: '800' },
-  memberName: { color: C.white, fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  memberSub: { color: C.whiteDim, fontSize: 11, fontWeight: '600' },
-  balanceValue: { fontSize: 15, fontWeight: '800', marginBottom: 2 },
-  balanceLabel: { color: C.whiteDim, fontSize: 9, fontWeight: '700', textTransform: 'uppercase' },
+  avatarText: { color: C.white, fontSize: responsiveFont(14), fontWeight: '800' },
+  memberName: { color: C.white, fontSize: responsiveFont(14), fontWeight: '700', marginBottom: 2 },
+  memberSub: { color: C.whiteDim, fontSize: responsiveFont(11), fontWeight: '600' },
+  balanceValue: { fontSize: responsiveFont(15), fontWeight: '800', marginBottom: 2 },
+  balanceLabel: { color: C.whiteDim, fontSize: responsiveFont(9), fontWeight: '700', textTransform: 'uppercase' },
 
   emptyState: { padding: 40, alignItems: 'center' },
-  emptyStateText: { color: C.whiteDim, fontSize: 14, fontWeight: '600' },
+  emptyStateText: { color: C.whiteDim, fontSize: responsiveFont(14), fontWeight: '600' },
 });

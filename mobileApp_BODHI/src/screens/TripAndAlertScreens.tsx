@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 
 // ─────────────────────────────────────────────────────────────
@@ -18,16 +19,16 @@ export function ImmuneSystemAlertScreen({ navigation }: any) {
       <View style={aStyles.header}>
         <Text style={aStyles.wordmark}>BODHI</Text>
         <View style={aStyles.avatarRing}>
-          <Text style={{ fontSize: 20 }}>👤</Text>
+          <Text style={{ fontSize: responsiveFont(20) }}>👤</Text>
         </View>
       </View>
 
       {/* AI status */}
       <View style={aStyles.statusWrap}>
         <View style={aStyles.statusCircle}>
-          <Text style={{ fontSize: 32 }}>🛡</Text>
+          <Text style={{ fontSize: responsiveFont(32) }}>🛡</Text>
           <View style={aStyles.boltBadge}>
-            <Text style={{ fontSize: 10, color: Colors.neonLimeDark }}>⚡</Text>
+            <Text style={{ fontSize: responsiveFont(10), color: Colors.neonLimeDark }}>⚡</Text>
           </View>
         </View>
         <Text style={aStyles.statusLabel}>IMMUNE SYSTEM ACTIVE</Text>
@@ -46,11 +47,11 @@ export function ImmuneSystemAlertScreen({ navigation }: any) {
         </Text>
         <View style={aStyles.chips}>
           <View style={aStyles.chip}>
-            <Text style={{ fontSize: 14 }}>📈</Text>
+            <Text style={{ fontSize: responsiveFont(14) }}>📈</Text>
             <Text style={aStyles.chipText}>BUDGET LIMIT: ₹8,000</Text>
           </View>
           <View style={aStyles.chip}>
-            <Text style={{ fontSize: 14 }}>🐷</Text>
+            <Text style={{ fontSize: responsiveFont(14) }}>🐷</Text>
             <Text style={aStyles.chipText}>GOAL RISK: HIGH</Text>
           </View>
         </View>
@@ -120,7 +121,7 @@ const aStyles = StyleSheet.create({
   },
   wordmark: {
     fontFamily:  Fonts.headline,
-    fontSize:    22,
+    fontSize: responsiveFont(22),
     fontWeight:  '900',
     fontStyle:   'italic',
     color:       '#a78bfa',
@@ -166,7 +167,7 @@ const aStyles = StyleSheet.create({
   },
   statusLabel: {
     fontFamily:  Fonts.label,
-    fontSize:    10,
+    fontSize: responsiveFont(10),
     fontWeight:  '700',
     color:       Colors.neonLime,
     letterSpacing: 2.4,
@@ -195,14 +196,14 @@ const aStyles = StyleSheet.create({
   },
   alertTitle: {
     fontFamily:  Fonts.headline,
-    fontSize:    26,
+    fontSize: responsiveFont(26),
     fontWeight:  '700',
     color:       '#fff',
     lineHeight:  34,
   },
   alertBody: {
     fontFamily:  Fonts.body,
-    fontSize:    16,
+    fontSize: responsiveFont(16),
     fontWeight:  '500',
     color:       Colors.surfaceHighest,
     lineHeight:  26,
@@ -219,7 +220,7 @@ const aStyles = StyleSheet.create({
   },
   chipText: {
     fontFamily:  Fonts.label,
-    fontSize:    11,
+    fontSize: responsiveFont(11),
     fontWeight:  '700',
     color:       '#e2e8f0',
     letterSpacing: 0.8,
@@ -249,7 +250,7 @@ const aStyles = StyleSheet.create({
   },
   cancelBtnText: {
     fontFamily:  Fonts.headline,
-    fontSize:    20,
+    fontSize: responsiveFont(20),
     fontWeight:  '700',
     color:       Colors.neonLimeDark,
     letterSpacing: 0.5,
@@ -264,13 +265,13 @@ const aStyles = StyleSheet.create({
   },
   proceedBtnText: {
     fontFamily:  Fonts.headline,
-    fontSize:    20,
+    fontSize: responsiveFont(20),
     fontWeight:  '700',
     color:       '#fff',
   },
   disclaimer: {
     fontFamily:  Fonts.label,
-    fontSize:    11,
+    fontSize: responsiveFont(11),
     color:       '#4b5563',   // slate-600
     textAlign:   'center',
     marginTop:   S.xxl,

@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#FFF' },
+  title: { fontSize: responsiveFont(18), fontWeight: '700', color: '#FFF' },
   listContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },
 
   txRow: {
@@ -252,23 +253,23 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   txTextWrap: { flex: 1 },
-  txMerchant: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  txCategory: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '500' },
+  txMerchant: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700', marginBottom: 4 },
+  txCategory: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(12), fontWeight: '500' },
   txRight: { alignItems: 'flex-end', flexShrink: 0 },
-  txAmount: { fontSize: 16, fontWeight: '800' },
+  txAmount: { fontSize: responsiveFont(16), fontWeight: '800' },
 
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  modalTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
-  modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  modalCloseText: { color: '#FFF', fontSize: responsiveFont(14), fontWeight: '600' },
   receiptMain: { alignItems: 'center' },
   receiptIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  receiptMerchant: { color: '#FFF', fontSize: 20, fontWeight: '700', marginBottom: 6 },
-  receiptAmount: { fontSize: 28, fontWeight: '800', marginBottom: 24 },
+  receiptMerchant: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700', marginBottom: 6 },
+  receiptAmount: { fontSize: responsiveFont(28), fontWeight: '800', marginBottom: 24 },
   receiptDivider: { width: '100%', height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: 24 },
   receiptRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16 },
-  receiptLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '500' },
-  receiptResult: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  receiptLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), fontWeight: '500' },
+  receiptResult: { color: '#FFF', fontSize: responsiveFont(14), fontWeight: '600' },
 });

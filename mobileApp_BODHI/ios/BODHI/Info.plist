@@ -66,6 +66,8 @@
 	<string>BODHI needs access to your contacts so you can send money to people you know.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Bodhi needs access to your microphone to understand your voice commands.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>PlusJakartaSans-MediumItalic.ttf</string>
@@ -113,7 +115,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSMicrophoneUsageDescription</key>
-<string>Bodhi needs access to your microphone to understand your voice commands.</string>
 </dict>
 </plist>

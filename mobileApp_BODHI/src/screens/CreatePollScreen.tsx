@@ -6,6 +6,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react-native';
@@ -136,12 +137,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border,
   },
   backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center' },
-  title: { color: C.white, fontSize: 18, fontWeight: '800' },
+  title: { color: C.white, fontSize: responsiveFont(18), fontWeight: '800' },
   content: { padding: 20, paddingBottom: 60 },
-  label: { color: C.dim, fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8, marginTop: 20 },
+  label: { color: C.dim, fontSize: responsiveFont(11), fontWeight: '700', letterSpacing: 1, marginBottom: 8, marginTop: 20 },
   input: {
     backgroundColor: C.card, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
-    color: C.white, fontSize: 15, borderWidth: 1, borderColor: C.border,
+    color: C.white, fontSize: responsiveFont(15), borderWidth: 1, borderColor: C.border,
   },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   removeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,51,102,0.1)', alignItems: 'center', justifyContent: 'center' },
@@ -150,10 +151,10 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(138,92,255,0.3)', borderStyle: 'dashed',
     paddingVertical: 12, paddingHorizontal: 16, marginTop: 4,
   },
-  addOptionText: { color: C.purple, fontSize: 14, fontWeight: '600' },
+  addOptionText: { color: C.purple, fontSize: responsiveFont(14), fontWeight: '600' },
   createBtn: {
     backgroundColor: C.lime, borderRadius: 18, paddingVertical: 18,
     alignItems: 'center', marginTop: 32,
   },
-  createBtnText: { color: C.bg, fontSize: 17, fontWeight: '800' },
+  createBtnText: { color: C.bg, fontSize: responsiveFont(17), fontWeight: '800' },
 });

@@ -23,6 +23,7 @@ import {
   StatusBar,
   Dimensions,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -386,7 +387,7 @@ export const TravelBookingScreen = () => {
           ListEmptyComponent={() => (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
               <Plane size={48} color="rgba(255,255,255,0.2)" style={{ marginBottom: 20 }} />
-              <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
+              <Text style={{ color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700', textAlign: 'center' }}>
                 Cannot fetch flights
               </Text>
               <Text style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 10, paddingHorizontal: 20 }}>
@@ -468,41 +469,41 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#05001F' },
   header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 15 },
   backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyCenter: 'center', paddingTop: 10, paddingLeft: 10 },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-  headerSub: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
+  headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800' },
+  headerSub: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(12) },
   scrollView: { flex: 1, paddingHorizontal: 20 },
   searchCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  cardTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', marginBottom: 20 },
+  cardTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800', marginBottom: 20 },
   fieldRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  fieldLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
-  fieldInput: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+  fieldLabel: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFont(10), fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  fieldInput: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '600' },
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginLeft: 30 },
   suggestions: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, marginTop: 4, marginLeft: 30 },
   sugItem: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
-  sugText: { color: '#FFF', fontSize: 14 },
+  sugText: { color: '#FFF', fontSize: responsiveFont(14) },
   paxWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  paxBtn: { color: Colors.neonLime, fontSize: 20, fontWeight: '800' },
-  paxNum: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  paxBtn: { color: Colors.neonLime, fontSize: responsiveFont(20), fontWeight: '800' },
+  paxNum: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
   searchBtn: { marginTop: 24, borderRadius: 16, overflow: 'hidden' },
   btnGrad: { height: 56, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10 },
-  btnText: { color: '#000', fontSize: 16, fontWeight: '800' },
+  btnText: { color: '#000', fontSize: responsiveFont(16), fontWeight: '800' },
   flightCard: { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: 20, marginBottom: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
   fcTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-  airlineName: { color: '#FFF', fontSize: 14, fontWeight: '700' },
-  flightPrice: { color: Colors.neonLime, fontSize: 18, fontWeight: '800' },
+  airlineName: { color: '#FFF', fontSize: responsiveFont(14), fontWeight: '700' },
+  flightPrice: { color: Colors.neonLime, fontSize: responsiveFont(18), fontWeight: '800' },
   fcRoute: { flexDirection: 'row', alignItems: 'center' },
-  fcTime: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-  fcCode: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 },
-  fcDur: { color: 'rgba(255,255,255,0.5)', fontSize: 11 },
+  fcTime: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800' },
+  fcCode: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(12), marginTop: 2 },
+  fcDur: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11) },
   fcLine: { flexDirection: 'row', alignItems: 'center', gap: 5, marginVertical: 5 },
   fcDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.neonLime },
   fcDash: { width: 40, height: 1, backgroundColor: 'rgba(255,255,255,0.2)' },
-  fcStops: { color: 'rgba(255,255,255,0.3)', fontSize: 10 },
+  fcStops: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFont(10) },
   formCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 24, padding: 20 },
   formInput: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 15, color: '#FFF', marginBottom: 15 },
   confirmWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
-  confirmTitle: { color: '#FFF', fontSize: 24, fontWeight: '800', marginTop: 20 },
-  confirmSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginTop: 10 },
+  confirmTitle: { color: '#FFF', fontSize: responsiveFont(24), fontWeight: '800', marginTop: 20 },
+  confirmSub: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), textAlign: 'center', marginTop: 10 },
 });
 
 export default TravelBookingScreen;

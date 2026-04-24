@@ -9,6 +9,7 @@ import {
   TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
   Alert, Dimensions, Image
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { 
   Send, Plus, CheckCircle2, User, 
   Share2, MoreHorizontal, Clock, Check,
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
-  tabTitle: { color: C.white, fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  tabTitle: { color: C.white, fontSize: responsiveFont(18), fontWeight: '800', letterSpacing: -0.5 },
 
   // CHAT
   chatList: { paddingHorizontal: 16, paddingVertical: 20 },
@@ -328,37 +329,37 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: '75%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 },
   bubbleMe: { backgroundColor: C.neonLime, borderBottomRightRadius: 4 },
   bubbleThem: { backgroundColor: C.card, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: C.border },
-  senderName: { color: C.purple, fontSize: 11, fontWeight: '800', marginBottom: 2 },
-  msgText: { color: C.white, fontSize: 15, lineHeight: 20 },
+  senderName: { color: C.purple, fontSize: responsiveFont(11), fontWeight: '800', marginBottom: 2 },
+  msgText: { color: C.white, fontSize: responsiveFont(15), lineHeight: 20 },
   msgFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4 },
-  msgTime: { color: C.dim, fontSize: 9, fontWeight: '600' },
+  msgTime: { color: C.dim, fontSize: responsiveFont(9), fontWeight: '600' },
   
   systemMsgContainer: { alignItems: 'center', marginVertical: 12 },
-  systemMsg: { color: C.dim, fontSize: 11, fontWeight: '600', backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10 },
+  systemMsg: { color: C.dim, fontSize: responsiveFont(11), fontWeight: '600', backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10 },
 
   inputContainer: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.border, backgroundColor: C.bg },
   inputWrapper: { flex: 1, flexDirection: 'row', backgroundColor: C.card, borderRadius: 24, borderWidth: 1, borderColor: C.border, alignItems: 'flex-end', paddingHorizontal: 8, minHeight: 48 },
   attachBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  input: { flex: 1, color: C.white, fontSize: 15, paddingHorizontal: 12, paddingVertical: 12, maxHeight: 100 },
+  input: { flex: 1, color: C.white, fontSize: responsiveFont(15), paddingHorizontal: 12, paddingVertical: 12, maxHeight: 100 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.neonLime, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 
   // POLLS
   pollHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 10 },
   newPollBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.neonLime, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, gap: 4 },
-  newPollText: { color: C.bg, fontSize: 12, fontWeight: '800' },
+  newPollText: { color: C.bg, fontSize: responsiveFont(12), fontWeight: '800' },
   pollList: { padding: 20 },
   pollCard: { backgroundColor: C.card, borderRadius: 24, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: C.border },
   pollMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
-  pollAuthor: { color: C.dim, fontSize: 11, fontWeight: '700', flex: 1 },
-  pollQuestion: { color: C.white, fontSize: 18, fontWeight: '800', marginBottom: 20, letterSpacing: -0.3 },
+  pollAuthor: { color: C.dim, fontSize: responsiveFont(11), fontWeight: '700', flex: 1 },
+  pollQuestion: { color: C.white, fontSize: responsiveFont(18), fontWeight: '800', marginBottom: 20, letterSpacing: -0.3 },
   pollOpt: { borderRadius: 16, borderWidth: 1, borderColor: C.border, marginBottom: 10, overflow: 'hidden', height: 52, justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.02)' },
   pollOptSelected: { borderColor: C.neonLime, backgroundColor: 'rgba(200,255,0,0.05)' },
   pollProgress: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(200,255,0,0.08)' },
   pollOptContent: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, alignItems: 'center', zIndex: 1 },
-  pollOptText: { color: C.white, fontSize: 15, fontWeight: '600' },
-  pollOptPct: { color: C.neonLime, fontSize: 14, fontWeight: '800' },
+  pollOptText: { color: C.white, fontSize: responsiveFont(15), fontWeight: '600' },
+  pollOptPct: { color: C.neonLime, fontSize: responsiveFont(14), fontWeight: '800' },
   pollFooter: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
-  votedNote: { color: C.neonLime, fontSize: 11, fontWeight: '700' },
+  votedNote: { color: C.neonLime, fontSize: responsiveFont(11), fontWeight: '700' },
 
   // FEED
   feedList: { padding: 20 },
@@ -367,10 +368,10 @@ const styles = StyleSheet.create({
   feedDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: C.purple, borderWidth: 2, borderColor: C.bg, zIndex: 2 },
   feedLine: { width: 2, flex: 1, backgroundColor: C.muted, marginVertical: -5 },
   feedCard: { flex: 1, backgroundColor: C.card, padding: 14, borderRadius: 18, marginBottom: 15, borderWidth: 1, borderColor: C.border },
-  feedText: { color: C.white, fontSize: 14, lineHeight: 20 },
+  feedText: { color: C.white, fontSize: responsiveFont(14), lineHeight: 20 },
   feedUser: { color: C.purple, fontWeight: '800' },
-  feedTime: { color: C.dim, fontSize: 10, marginTop: 6, fontWeight: '600' },
+  feedTime: { color: C.dim, fontSize: responsiveFont(10), marginTop: 6, fontWeight: '600' },
 
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 60, opacity: 0.5 },
-  emptyText: { color: C.white, fontSize: 14, fontWeight: '600', marginTop: 12 },
+  emptyText: { color: C.white, fontSize: responsiveFont(14), fontWeight: '600', marginTop: 12 },
 });

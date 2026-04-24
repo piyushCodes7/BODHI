@@ -15,11 +15,15 @@ import {
   Share,
   Dimensions
 } from 'react-native';
+<<<<<<< Updated upstream
 import { SafeAreaView } from 'react-native-safe-area-context';
+=======
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
+>>>>>>> Stashed changes
 import { 
   ChevronLeft, TrendingUp, Vote, Plus, 
   BarChart2, Wallet, MessageCircle, Activity, 
-  Share2, ArrowUpRight, ArrowDownLeft
+  Share2, ArrowUpRight, ArrowDownLeft, User
 } from 'lucide-react-native';
 import { apiClient } from '../api/client';
 import { CollaborationView } from '../components/CollaborationView';
@@ -195,6 +199,7 @@ export function VentureClubScreen({ route, navigation }: any) {
 
       {tab === 'PORTFOLIO' ? (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
           <LinearGradient
             colors={['#4F46E5', '#0E0C24']}
             style={styles.summaryCard}
@@ -273,6 +278,7 @@ export function VentureClubScreen({ route, navigation }: any) {
                 <Text style={styles.partnerShare}>{m.share || 0}% Share</Text>
               </View>
             ))}
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -306,10 +312,10 @@ const styles = StyleSheet.create({
     borderColor: C.border
   },
   headerTitleContainer: { flex: 1, alignItems: 'center', paddingHorizontal: 10 },
-  headerTitle: { color: C.white, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  headerTitle: { color: C.white, fontSize: responsiveFont(18), fontWeight: '900', letterSpacing: -0.5 },
   headerBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 },
-  headerBadgeText: { color: C.whiteDim, fontSize: 10, fontWeight: '700' },
-  headerBadgeDot: { color: C.whiteDim, fontSize: 10 },
+  headerBadgeText: { color: C.whiteDim, fontSize: responsiveFont(10), fontWeight: '700' },
+  headerBadgeDot: { color: C.whiteDim, fontSize: responsiveFont(10) },
 
   // TABS
   tabContainer: { paddingVertical: 15 },
@@ -326,7 +332,7 @@ const styles = StyleSheet.create({
     gap: 8 
   },
   activeTab: { backgroundColor: C.neonLime, borderColor: C.neonLime },
-  tabText: { color: C.whiteDim, fontSize: 13, fontWeight: '800' },
+  tabText: { color: C.whiteDim, fontSize: responsiveFont(13), fontWeight: '800' },
   activeTabText: { color: C.bg },
 
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
@@ -342,8 +348,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '700', marginBottom: 6 },
-  summaryValue: { color: C.white, fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  summaryLabel: { color: 'rgba(255,255,255,0.8)', fontSize: responsiveFont(13), fontWeight: '700', marginBottom: 6 },
+  summaryValue: { color: C.white, fontSize: responsiveFont(32), fontWeight: '900', letterSpacing: -1 },
   summaryIconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
 
   // ACTIONS
@@ -357,7 +363,7 @@ const styles = StyleSheet.create({
     borderRadius: 18, 
     gap: 8 
   },
-  actionBtnText: { color: C.bg, fontSize: 15, fontWeight: '800' },
+  actionBtnText: { color: C.bg, fontSize: responsiveFont(15), fontWeight: '800' },
   actionBtnSecondary: { 
     flex: 1, 
     flexDirection: 'row', 
@@ -369,12 +375,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     gap: 8
   },
-  actionBtnTextSecondary: { color: C.neonLime, fontSize: 15, fontWeight: '800' },
+  actionBtnTextSecondary: { color: C.neonLime, fontSize: responsiveFont(15), fontWeight: '800' },
 
   // SECTIONS
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  sectionTitle: { color: C.white, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
-  holdingCount: { color: C.whiteDim, fontSize: 12, fontWeight: '600' },
+  sectionTitle: { color: C.white, fontSize: responsiveFont(17), fontWeight: '800', letterSpacing: -0.3 },
+  holdingCount: { color: C.whiteDim, fontSize: responsiveFont(12), fontWeight: '600' },
 
   holdingCard: { 
     flexDirection: 'row', 
@@ -387,18 +393,18 @@ const styles = StyleSheet.create({
     borderColor: C.border 
   },
   holdingIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
-  symbol: { color: C.white, fontSize: 15, fontWeight: '800', marginBottom: 2 },
-  qty: { color: C.whiteDim, fontSize: 11, fontWeight: '600' },
-  currentPrice: { color: C.white, fontSize: 16, fontWeight: '800', marginBottom: 2 },
-  profit: { fontSize: 13, fontWeight: '700' },
+  symbol: { color: C.white, fontSize: responsiveFont(15), fontWeight: '800', marginBottom: 2 },
+  qty: { color: C.whiteDim, fontSize: responsiveFont(11), fontWeight: '600' },
+  currentPrice: { color: C.white, fontSize: responsiveFont(16), fontWeight: '800', marginBottom: 2 },
+  profit: { fontSize: responsiveFont(13), fontWeight: '700' },
 
   // PARTNERS
   partnerList: { backgroundColor: C.cardBg, borderRadius: 24, padding: 8, borderWidth: 1, borderColor: C.border },
   partnerRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
   partnerAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.purple, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  partnerName: { color: C.white, fontSize: 14, fontWeight: '700' },
-  partnerShare: { color: C.neonLime, fontSize: 14, fontWeight: '800' },
+  partnerName: { color: C.white, fontSize: responsiveFont(14), fontWeight: '700' },
+  partnerShare: { color: C.neonLime, fontSize: responsiveFont(14), fontWeight: '800' },
 
   emptyState: { padding: 40, alignItems: 'center' },
-  emptyStateText: { color: C.whiteDim, fontSize: 14, fontWeight: '600' },
+  emptyStateText: { color: C.whiteDim, fontSize: responsiveFont(14), fontWeight: '600' },
 });

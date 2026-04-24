@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -62,7 +63,7 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
 
       <View style={[styles.hairline, { backgroundColor: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }]} />
 
-      <View style={styles.row}>
+      <View style={[styles.row, { maxWidth: isTablet ? 700 : '100%', alignSelf: 'center', width: '100%' }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontFamily:    Fonts.label,
-    fontSize:      10, // Sized up slightly since we have more room with 5 tabs
+    fontSize: responsiveFont(10), // Sized up slightly since we have more room with 5 tabs
     fontWeight:    '600',
     letterSpacing: 0.5,
   },
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   },
   aiLabel: {
     fontFamily:    Fonts.label,
-    fontSize:      10,
+    fontSize: responsiveFont(10),
     fontWeight:    '700',
     letterSpacing: 1.2,
     marginTop:     8,

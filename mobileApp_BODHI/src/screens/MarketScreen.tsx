@@ -4,6 +4,7 @@ import {
   TextInput, StyleSheet, Dimensions, ActivityIndicator,
   Modal, FlatList, Alert, Platform
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { LineChart } from 'react-native-gifted-charts';
 import { useNavigation } from '@react-navigation/native';
@@ -246,6 +247,7 @@ export function MarketScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingTop: Math.max(insets.top, 20) }]}
       >
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         
         {/* ── HERO HEADER ── */}
         <View style={styles.headerSection}>
@@ -450,6 +452,7 @@ export function MarketScreen() {
             </View>
           </View>
         )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -462,36 +465,36 @@ const styles = StyleSheet.create({
   // ── HERO HEADER ──
   headerSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, marginTop: 10 },
   headerTextWrap: { flex: 1 },
-  pageTitle: { fontSize: 36, fontWeight: '800', color: '#FFF', letterSpacing: -1 },
-  pageSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 4, fontWeight: '500' },
+  pageTitle: { fontSize: responsiveFont(36), fontWeight: '800', color: '#FFF', letterSpacing: -1 },
+  pageSubtitle: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.6)', marginTop: 4, fontWeight: '500' },
   
   heroGlowBox: { width: 120, height: 120, position: 'relative', justifyContent: 'center', alignItems: 'center' },
   glowRing: { position: 'absolute', borderWidth: 1 },
 
   // ── INPUT GROUPS ──
   inputGroup: { marginBottom: 20 },
-  inputLabel: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.6)', letterSpacing: 1.4, marginBottom: 12 },
+  inputLabel: { fontSize: responsiveFont(11), fontWeight: '700', color: 'rgba(255,255,255,0.6)', letterSpacing: 1.4, marginBottom: 12 },
   
   glassRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   
   assetIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(168,85,247,0.1)', borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', alignItems: 'center', justifyContent: 'center' },
-  assetName: { fontSize: 15, fontWeight: '700', color: '#FFF', marginBottom: 2 },
-  assetTicker: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  assetName: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FFF', marginBottom: 2 },
+  assetTicker: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)' },
   
   liveTradeBtn: { backgroundColor: 'rgba(212,255,0,0.1)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(212,255,0,0.2)' },
-  liveTradeBtnText: { fontSize: 11, fontWeight: '800', color: Colors.neonLime, letterSpacing: 0.5 },
+  liveTradeBtnText: { fontSize: responsiveFont(11), fontWeight: '800', color: Colors.neonLime, letterSpacing: 0.5 },
 
-  currencyPrefix: { fontSize: 24, fontWeight: '700', color: '#FFF', marginRight: 12 },
-  textInput: { flex: 1, fontSize: 24, fontWeight: '700', color: '#FFF' },
+  currencyPrefix: { fontSize: responsiveFont(24), fontWeight: '700', color: '#FFF', marginRight: 12 },
+  textInput: { flex: 1, fontSize: responsiveFont(24), fontWeight: '700', color: '#FFF' },
   editIconBox: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
 
   toggleContainer: { flexDirection: 'row', backgroundColor: '#0B0A1A', borderRadius: 24, padding: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   toggleBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 20 },
   toggleActive: { backgroundColor: 'rgba(168,85,247,0.2)', borderWidth: 1, borderColor: '#A855F7' },
-  toggleText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  toggleText: { fontSize: responsiveFont(14), fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
   toggleTextActive: { color: '#FFF', fontWeight: '700' },
 
-  changeBtnText: { fontSize: 13, fontWeight: '700', color: '#A855F7' },
+  changeBtnText: { fontSize: responsiveFont(13), fontWeight: '700', color: '#A855F7' },
 
   // ── CALCULATE BUTTON ──
   buttonShadowWrapper: {
@@ -504,31 +507,31 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   calcBtn: { backgroundColor: Colors.neonLime, borderRadius: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  calcBtnText: { fontSize: 16, fontWeight: '800', color: '#000', letterSpacing: 1 },
+  calcBtnText: { fontSize: responsiveFont(16), fontWeight: '800', color: '#000', letterSpacing: 1 },
 
   // ── RESULTS ──
   impactCard: { borderRadius: 24, padding: 24, marginBottom: 16 },
-  impactLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 8 },
-  impactTitle: { fontSize: 24, fontWeight: '800', color: '#FFF', lineHeight: 32, marginBottom: 12 },
-  impactDesc: { fontSize: 14, color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
+  impactLabel: { fontSize: responsiveFont(10), fontWeight: '800', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 8 },
+  impactTitle: { fontSize: responsiveFont(24), fontWeight: '800', color: '#FFF', lineHeight: 32, marginBottom: 12 },
+  impactDesc: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
 
   resultCard: { backgroundColor: '#0B0A1A', borderRadius: 24, padding: 24, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   resultTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  resultLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2 },
-  resultPeriod: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  resultLabel: { fontSize: responsiveFont(10), fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2 },
+  resultPeriod: { fontSize: responsiveFont(11), fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
   resultAmtRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-  resultAmt: { fontSize: 36, fontWeight: '800', color: '#FFF', letterSpacing: -1 },
+  resultAmt: { fontSize: responsiveFont(36), fontWeight: '800', color: '#FFF', letterSpacing: -1 },
   resultBadge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
-  resultBadgeText: { fontSize: 12, fontWeight: '700' },
+  resultBadgeText: { fontSize: responsiveFont(12), fontWeight: '700' },
 
   chartArea: { marginTop: 8 },
   chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  chartLabelText: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
+  chartLabelText: { fontSize: responsiveFont(10), fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
 
   statsRow: { flexDirection: 'row', marginBottom: 16 },
   statCard: { backgroundColor: '#0B0A1A', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', flex: 1 },
-  statLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2, marginBottom: 8 },
-  statVal: { fontSize: 24, fontWeight: '800', color: '#FFF' },
+  statLabel: { fontSize: responsiveFont(10), fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.2, marginBottom: 8 },
+  statVal: { fontSize: responsiveFont(24), fontWeight: '800', color: '#FFF' },
   
   statRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   alphaBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden', width: '50%' },
@@ -537,18 +540,18 @@ const styles = StyleSheet.create({
   // ── MODALS ──
   modal: { flex: 1, backgroundColor: '#05001F' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFF' },
-  modalClose: { fontSize: 15, fontWeight: '700', color: '#A855F7' },
-  searchInput: { margin: 20, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, fontSize: 16, color: '#FFF', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  modalTitle: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFF' },
+  modalClose: { fontSize: responsiveFont(15), fontWeight: '700', color: '#A855F7' },
+  searchInput: { margin: 20, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, fontSize: responsiveFont(16), color: '#FFF', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   assetIconSmall: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
-  searchRowName: { fontSize: 15, fontWeight: '700', color: '#FFF', marginBottom: 2 },
-  searchRowMeta: { fontSize: 12, color: 'rgba(255,255,255,0.5)' },
+  searchRowName: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FFF', marginBottom: 2 },
+  searchRowMeta: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)' },
   
   eventRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   eventRowSelected: { backgroundColor: 'rgba(168,85,247,0.1)', borderRadius: 20, paddingHorizontal: 16, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
-  eventEmoji: { fontSize: 28, marginTop: 2 },
-  eventName: { fontSize: 16, fontWeight: '800', color: '#FFF', marginBottom: 4 },
-  eventDesc: { fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 20, marginBottom: 6 },
-  eventFall: { fontSize: 12, fontWeight: '700' },
+  eventEmoji: { fontSize: responsiveFont(28), marginTop: 2 },
+  eventName: { fontSize: responsiveFont(16), fontWeight: '800', color: '#FFF', marginBottom: 4 },
+  eventDesc: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.6)', lineHeight: 20, marginBottom: 6 },
+  eventFall: { fontSize: responsiveFont(12), fontWeight: '700' },
 });

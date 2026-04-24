@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -414,6 +415,7 @@ export function AuthScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
           <View style={styles.header}>
             <Image
               source={require('../../assets/images/bodhi-logo.png')}
@@ -595,7 +597,7 @@ export function AuthScreen({ navigation }: any) {
                         disabled={resendTimer > 0 || isLoading}
                         onPress={() => handleSendOtp('email')}
                       >
-                        <Text style={{ color: '#FF3366', fontWeight: '700', fontSize: 13 }}>
+                        <Text style={{ color: '#FF3366', fontWeight: '700', fontSize: responsiveFont(13) }}>
                           {resendTimer > 0 ? `Resend in ${resendTimer}s` : (isEmailSent ? "Resend Code" : "Send Code")}
                         </Text>
                       </TouchableOpacity>
@@ -784,6 +786,7 @@ export function AuthScreen({ navigation }: any) {
               </>
             )}
           </AuthCard>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -801,20 +804,20 @@ const styles = StyleSheet.create({
   },
   header: { alignItems: 'center', marginBottom: 40 },
   logoImage: { width: 160, height: 50, marginBottom: 12, tintColor: '#FFF' },
-  tagline: { fontSize: 16, color: '#FFF', letterSpacing: 0.5 },
+  tagline: { fontSize: responsiveFont(16), color: '#FFF', letterSpacing: 0.5 },
   taglineHighlight: { color: Colors.neonLime, fontWeight: '800' },
 
   // ── TOGGLE ──
   toggleContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
   toggleBtn: { flex: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', height: 44 },
   activeToggleBg: { width: '100%', height: '100%', borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8 },
-  toggleText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
-  toggleTextActive: { color: '#FFF', fontWeight: '800', fontSize: 14 },
+  toggleText: { fontSize: responsiveFont(14), fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+  toggleTextActive: { color: '#FFF', fontWeight: '800', fontSize: responsiveFont(14) },
 
   // ── FORM & TEXT ──
   form: { marginBottom: Spacing.sm },
   flowTitle: {
-    fontSize: 22,
+    fontSize: responsiveFont(22),
     fontWeight: '800',
     color: '#FFF',
     marginBottom: 6,
@@ -822,7 +825,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5
   },
   flowSub: {
-    fontSize: 12.5,
+    fontSize: responsiveFont(12.5),
     color: 'rgba(255,255,255,0.6)',
     marginBottom: 20,
     textAlign: 'center',
@@ -830,7 +833,7 @@ const styles = StyleSheet.create({
   },
 
   inputLabel: {
-    fontSize: 10.5,
+    fontSize: responsiveFont(10.5),
     fontWeight: '800',
     color: 'rgba(255,255,255,0.5)',
     letterSpacing: 1.2,
@@ -846,13 +849,13 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.neonLime,
     fontWeight: '700',
-    fontSize: 14
+    fontSize: responsiveFont(14)
   },
 
   socialSection: { marginTop: 40 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-  dividerText: { marginHorizontal: 16, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' },
+  dividerText: { marginHorizontal: 16, fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' },
   socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
   socialBtn: {
     width: 60,
@@ -873,7 +876,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     marginLeft: 8,
     fontWeight: '500'
   },
@@ -889,7 +892,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.08)'
   },
-  dropdownHeaderText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  dropdownHeaderText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
   dropdownList: {
     position: 'absolute',
     top: 60,
@@ -925,7 +928,7 @@ const styles = StyleSheet.create({
   navLink: {
     color: 'rgba(255,255,255,0.6)',
     fontWeight: '700',
-    fontSize: 14
+    fontSize: responsiveFont(14)
   },
 
   inputWrapper: {
