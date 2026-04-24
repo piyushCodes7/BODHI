@@ -158,20 +158,27 @@ async def _find_user_by_identifier(db: AsyncSession, identifier: str) -> Optiona
         result = await db.execute(
             select(User).where(User.email.like(f"{upi_prefix}@%"))
         )
-        user = result.scalar_one_or_none()
+        user = result.scalars().first()
         if user:
             return user
 
-    # 4. GAP ID (username.g.gap)
-    if raw.lower().endswith(".g.gap"):
-        username_part = raw.lower()[:-6]
-        # Search for user where email starts with username_part + '@'
-        result = await db.execute(
-            select(User).where(User.email.like(f"{username_part}@%"))
-        )
-        user = result.scalar_one_or_none()
-        if user:
-            return user
+    # 4. GAP ID (username.{domain_initial}.gap)
+    if raw.lower().endswith(".gap"):
+        # Parse: "harshit.g.gap" → username="harshit", domain_initial="g"
+        gap_str = raw.lower()[:-4]  # strip ".gap"
+        dot_pos = gap_str.rfind(".")
+        if dot_pos > 0:
+            username_part = gap_str[:dot_pos]
+            domain_initial = gap_str[dot_pos + 1:]
+            # Search for user whose email = username@{domain starting with domain_initial}
+            result = await db.execute(
+                select(User).where(
+                    User.email.like(f"{username_part}@{domain_initial}%")
+                )
+            )
+            user = result.scalars().first()
+            if user:
+                return user
 
     return None
 
@@ -249,7 +256,7 @@ async def send_money(
                       amount_paise=amount_paise, ref_id=txn_id,
                       description=f"Sent ₹{body.amount:.2f} to {recip.full_name}{f' — {body.note}' if body.note else ''}")
         _write_ledger(db, user_id=recip.id, entry_type=LedgerEntryType.CREDIT,
-                      amount_paise=amount_paise, ref_id=f"{txn_id}_rcv",
+                      amount_paise=amount_paise, ref_id=txn_id,
                       description=f"Received ₹{body.amount:.2f} from {sender.full_name}{f' — {body.note}' if body.note else ''}")
         recipient_name = recip.full_name
     else:
@@ -488,3 +495,32 @@ async def get_balance(
     result = await db.execute(select(User).where(User.id == current_user.id))
     user = result.scalar_one()
     return {"balance": user.balance, "email": user.email, "full_name": user.full_name}
+
+
+@router.get("/history")
+async def get_transfer_history(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Return the user's full ledger (wallet credits & debits) in reverse chronological order."""
+    result = await db.execute(
+        select(Ledger)
+        .where(Ledger.user_id == current_user.id)
+        .order_by(Ledger.created_at.desc())
+        .limit(100)
+    )
+    entries = result.scalars().all()
+
+    return {
+        "transactions": [
+            {
+                "id": e.id,
+                "type": e.entry_type.value,
+                "amount": e.amount / 100,  # paise → rupees
+                "description": e.description or "",
+                "status": e.status.value,
+                "created_at": e.created_at.isoformat(),
+            }
+            for e in entries
+        ]
+    }

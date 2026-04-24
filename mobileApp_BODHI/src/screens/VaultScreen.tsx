@@ -173,12 +173,12 @@ export function VaultScreen() {
     }
 
     return (
-      <View style={styles.modalBg}>
-        <View style={styles.modalContentInsight}>
-          <View style={styles.modalHeaderInsight}>
-            <Text style={styles.modalTitle}>{title}</Text>
-            <TouchableOpacity onPress={() => setActiveInsight(null)} style={styles.modalCloseBtn}>
-              <Text style={styles.modalCloseText}>Done</Text>
+      <View style={styles.insightModalBg}>
+        <View style={styles.insightModalContent}>
+          <View style={styles.insightModalHeader}>
+            <Text style={styles.insightModalTitle}>{title}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('QuickServices')}>
+              <Text style={styles.viewAll}>View All ›</Text>
             </TouchableOpacity>
           </View>
           <FlatList
@@ -340,10 +340,15 @@ style={styles.heroSection}
             />
 
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
-              <BlurView blurType="light" blurAmount={10} style={styles.glassCircle}>
+              <View style={styles.glassCircleContainer}>
+                {Platform.OS === 'ios' ? (
+                  <BlurView blurType="light" blurAmount={10} style={StyleSheet.absoluteFill} />
+                ) : (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+                )}
                 <Bell size={20} color="#FFF" />
                 {unreadCount > 0 && <View style={styles.notifBadge} />}
-              </BlurView>
+              </View>
             </TouchableOpacity>
           </View>
 
@@ -388,10 +393,16 @@ style={styles.heroSection}
             <Text style={styles.scanBtnLabel}>Scan & Pay</Text>
           </TouchableOpacity>
 
-          <BlurView blurType="light" blurAmount={32} style={styles.actionPill}>
-            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')} activeOpacity={0.7}>
-              <View style={styles.actionBtnCircle}>
-                <Send size={18} color="#FFF" strokeWidth={2.5} />
+          {/* Right: Pill Container */}
+          <View style={styles.actionPillContainer}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={32} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
+            )}
+            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
+              <View style={styles.pillIconGlass}>
+                <Send size={18} color="#FFF" />
               </View>
               <Text style={styles.actionBtnLabel}>Send</Text>
             </TouchableOpacity>
@@ -409,7 +420,7 @@ style={styles.heroSection}
               </View>
               <Text style={styles.actionBtnLabel}>Request</Text>
             </TouchableOpacity>
-          </BlurView>
+          </View>
         </View>
 
         {/* ── MAIN CONTENT ── */}
@@ -486,33 +497,7 @@ style={styles.heroSection}
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.accountCard} onPress={() => navigation.navigate('PersonalDetails')}>
-            <View style={styles.accountLeft}>
-              <View style={styles.bankLogoWrap}>
-                <Landmark size={20} color="#FF0000" />
-              </View>
-              <View>
-                <Text style={styles.bankName}>HDFC Bank</Text>
-                <View style={styles.rowCenter}>
-                  <Text style={styles.bankDetail}>Savings •••• 4589</Text>
-                  <View style={styles.primaryTag}>
-                    <Text style={styles.primaryTagText}>Primary</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={styles.accountRight}>
-              <Text style={styles.accountBalance}>₹ ••••••</Text>
-              <EyeOff size={16} color="rgba(255,255,255,0.5)" style={{ marginLeft: 8 }} />
-              <ChevronRight size={20} color="rgba(255,255,255,0.5)" style={{ marginLeft: 8 }} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.paginationDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-          </View>
+          {/* Transaction History Banner */}
 
           {/* Transaction History Banner */}
           <TouchableOpacity
@@ -531,17 +516,26 @@ style={styles.heroSection}
         </View>
       </ScrollView>
 
-      {/* Modals */}
-      <InsuranceScreen visible={showInsurance} onClose={() => setShowInsurance(false)} />
-      <Modal visible={!!activeInsight} animationType="slide" transparent>
+      {/* ── INSURANCE MODAL MOUNTED HERE ── */}
+      <InsuranceScreen
+        visible={showInsurance}
+        onClose={() => setShowInsurance(false)}
+      />
+
+      {/* ── DYNAMIC INSIGHTS MODAL ── */}
+      <Modal visible={!!activeInsight} animationType="slide" transparent onRequestClose={() => setActiveInsight(null)}>
         {renderInsightDetails()}
       </Modal>
 
-      <Modal visible={showAddMoney} transparent animationType="slide">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlayBottom}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeaderCommon}>
-              <Text style={styles.modalTitle}>Add Money to Wallet</Text>
+      {/* ── ADD MONEY MODAL ── */}
+      <Modal visible={showAddMoney} transparent animationType="slide" onRequestClose={() => {}}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.sheetModalOverlay}
+        >
+          <View style={styles.sheetModalSheet}>
+            <View style={styles.sheetModalHeader}>
+              <Text style={styles.sheetModalTitle}>Add Money to Wallet</Text>
               <TouchableOpacity onPress={() => setShowAddMoney(false)}>
                 <Text style={{ color: '#FFF', fontSize: 24 }}>✕</Text>
               </TouchableOpacity>
@@ -565,26 +559,29 @@ style={styles.heroSection}
         </KeyboardAvoidingView>
       </Modal>
 
-      <Modal visible={isPasswordModalVisible} transparent animationType="fade">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlayCenter}>
-          <BlurView blurType="dark" blurAmount={30} style={styles.modalContentUPin}>
-            <View style={styles.modalHeaderUPin}>
+      {/* ─── Security Password Modal ─── */}
+      <Modal
+        visible={isPasswordModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {}}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.securityModalOverlay}
+        >
+          <View style={styles.securityModalContent}>
+            {Platform.OS === 'ios' ? (
+              <BlurView blurType="dark" blurAmount={30} style={StyleSheet.absoluteFill} />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.85)' }]} />
+            )}
+            <View style={styles.securityModalHeader}>
               <ShieldCheck size={24} color={Colors.neonLime} />
-              <Text style={styles.modalTitle}>Enter U-PIN</Text>
-              <Text style={styles.modalSub}>Enter your secret 6-digit transaction PIN to reveal your balance.</Text>
-            </View>
-            <View style={styles.modalInputWrapper}>
-              <TextInput
-                style={[styles.modalInput, { letterSpacing: 10, fontWeight: '800' }]}
-                placeholder="••••••"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                secureTextEntry
-                value={uPin}
-                onChangeText={setUPin}
-                keyboardType="number-pad"
-                maxLength={6}
-                autoFocus
-              />
+              <Text style={styles.securityModalTitle}>Enter U-PIN</Text>
+              <Text style={styles.securityModalSub}>
+                Enter your secret 6-digit transaction PIN to reveal your balance.
+              </Text>
             </View>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setIsPasswordModalVisible(false)}>
@@ -594,7 +591,7 @@ style={styles.heroSection}
                 {isVerifying ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.modalConfirmText}>Verify</Text>}
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
     </View>
@@ -602,12 +599,82 @@ style={styles.heroSection}
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05001F' },
-  // Common Modal Styles
-  modalOverlayCenter: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', padding: 24 },
-  modalOverlayBottom: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalHeaderCommon: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+  root: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  securityModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  securityModalContent: {
+    borderRadius: 32,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  securityModalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  securityModalTitle: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 12,
+  },
+  securityModalSub: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  modalInputWrapper: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 24,
+  },
+  modalInput: {
+    height: 56,
+    paddingHorizontal: 20,
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancel: {
+    flex: 1,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalConfirm: {
+    flex: 1.5,
+    height: 50,
+    backgroundColor: Colors.neonLime,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalConfirmText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 
   // U-PIN Modal
   modalContentUPin: { borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
@@ -637,29 +704,40 @@ const styles = StyleSheet.create({
   onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7' },
   logo: { height: 30, width: 120, tintColor: '#FFF' },
   iconBtn: { overflow: 'hidden', borderRadius: 22 },
-  glassCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  notifBadge: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime },
+  glassCircleContainer: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  notifBadge: {
+    position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime,
+  },
 
   balanceArea: { marginBottom: 0 },
-  greeting: { color: 'rgba(255,255,255,0.9)', fontSize: 18, fontWeight: '700', marginBottom: 12 },
+  greeting: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', marginBottom: 16 },
   netWorthHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  netWorthLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '800', letterSpacing: 1.2 },
-  revealBtn: { marginLeft: 10, opacity: 0.6 },
+  netWorthLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  revealBtn: { marginLeft: 10, opacity: 0.8 },
   balanceRow: { flexDirection: 'row', alignItems: 'baseline', marginVertical: 2 },
-  currencySymbol: { color: '#FFF', fontSize: 26, fontWeight: '400', marginRight: 6 },
-  balanceMain: { color: '#FFF', fontSize: 48, fontWeight: '900', letterSpacing: -1 },
-  balanceDecimals: { color: 'rgba(255,255,255,0.7)', fontSize: 22, fontWeight: '700' },
+  currencySymbol: { color: '#FFFFFF', fontSize: 22, fontWeight: '400', marginRight: 6 },
+  balanceMain: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: -1 },
+  balanceDecimals: { color: '#FFFFFF', fontSize: 22, fontWeight: '700' },
   growthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   growthTxt: { color: Colors.neonLime, fontSize: 12, fontWeight: '800' },
 
-  // Actions
-  parallelActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: -30,
-    paddingHorizontal: 20,
-    zIndex: 20
+  parallelActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -42, paddingHorizontal: 20, zIndex: 20 },
+  scanBtnContainer: { alignItems: 'center', gap: 6 },
+  scanGlassRing: { padding: 4, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  scanBtn: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
+  scanLabel: { color: Colors.neonLime, fontSize: 10, fontWeight: '800', marginTop: 4, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 },
+  actionPillContainer: { 
+    flex: 1, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    height: 84, 
+    borderRadius: 42, 
+    marginLeft: 16, 
+    paddingHorizontal: 12, 
+    overflow: 'hidden', 
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderWidth: 1, 
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   scanBtnContainer: { alignItems: 'center', justifyContent: 'center' },
   scanGlassRing: { padding: 0, borderRadius: 40 },
@@ -707,13 +785,13 @@ const styles = StyleSheet.create({
 
 
   insightsScroll: { paddingRight: 20, gap: 16 },
-  insightCard: { width: 150, height: 170, borderRadius: 20, padding: 16, justifyContent: 'space-between' },
-  insightIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 12 },
-  insightValue: { color: '#FFF', fontSize: 22, fontWeight: '800', marginVertical: 4 },
-  insightSub: { color: 'rgba(255,255,255,0.8)', fontSize: 11, lineHeight: 16, height: 32 },
-  insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  insightLink: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '600', marginRight: 4 },
+  insightCard: { width: 160, minHeight: 185, borderRadius: 24, padding: 16, justifyContent: 'space-between', marginRight: 12 },
+  insightIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 12, fontWeight: '600' },
+  insightValue: { color: '#FFF', fontSize: 24, fontWeight: '800', marginVertical: 6 },
+  insightSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 16, minHeight: 48, marginBottom: 8 },
+  insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 'auto', paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  insightLink: { color: Colors.neonLime, fontSize: 12, fontWeight: '700', marginRight: 4 },
 
   addAccountBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.15)' },
   addAccountText: { color: '#A855F7', fontSize: 12, fontWeight: '700' },
@@ -722,8 +800,7 @@ const styles = StyleSheet.create({
   bankLogoWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   bankName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 4 },
   bankDetail: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
-  rowCenter: { flexDirection: 'row', alignItems: 'center' },
-  primaryTag: { backgroundColor: 'rgba(212,255,0,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 8 },
+  primaryTag: { backgroundColor: 'rgba(212,255,0,0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginLeft: 8, alignSelf: 'flex-start' },
   primaryTagText: { color: Colors.neonLime, fontSize: 10, fontWeight: '700' },
   accountRight: { flexDirection: 'row', alignItems: 'center' },
   accountBalance: { color: '#FFF', fontSize: 15, fontWeight: '700' },
@@ -731,17 +808,23 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
   dotActive: { width: 16, backgroundColor: '#A855F7' },
 
-  // Add Money Sheet
-  modalSheet: { backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
+  sheetModalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheetModalSheet: {
+    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    padding: 24, paddingBottom: 40,
+    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+  },
+  sheetModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  sheetModalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
   inputLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
   input: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, color: '#FFF', fontSize: 18, fontWeight: '600', marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   payBtn: { borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
   payBtnText: { fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
-
-  // Insight Details Modal
-  modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalContentInsight: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
-  modalHeaderInsight: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  // Insight Details Modal Specs
+  insightModalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  insightModalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, maxHeight: '70%' },
+  insightModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  insightModalTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
   modalCloseText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
   insightRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },

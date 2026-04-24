@@ -5,7 +5,7 @@ buildscript {
         compileSdkVersion = 34
         targetSdkVersion = 34
         ndkVersion = "25.1.8937393"
-        kotlinVersion = "2.1.0"
+        kotlinVersion = "1.8.10"
     }
     repositories {
         google()
@@ -19,3 +19,27 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.core:core:1.12.0'
+            force 'androidx.core:core-ktx:1.12.0'
+            force 'androidx.media3:media3-exoplayer:1.4.1'
+            force 'androidx.media3:media3-exoplayer-dash:1.4.1'
+            force 'androidx.media3:media3-exoplayer-hls:1.4.1'
+            force 'androidx.media3:media3-exoplayer-smoothstreaming:1.4.1'
+            force 'androidx.media3:media3-exoplayer-rtsp:1.4.1'
+            force 'androidx.media3:media3-session:1.4.1'
+            force 'androidx.media3:media3-ui:1.4.1'
+            force 'androidx.media3:media3-common:1.4.1'
+            force 'androidx.media3:media3-datasource:1.4.1'
+            force 'androidx.media3:media3-datasource-okhttp:1.4.1'
+            force 'androidx.media3:media3-decoder:1.4.1'
+            force 'androidx.media3:media3-extractor:1.4.1'
+            force 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+            force 'org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3'
+            force 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+        }
+    }
+}

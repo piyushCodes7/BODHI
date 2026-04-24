@@ -65,11 +65,11 @@ function MainTabNavigator() {
 
 function RootNavigator() {
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <RootStack.Navigator screenOptions={{ headerShown: false, gestureEnabled: false }}>
       <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
 
       <RootStack.Screen name="VentureClub" component={VentureClubScreen} options={{ animation: 'slide_from_right' }} />
-      <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="TripWallet" component={TripWalletScreen} options={{ animation: 'slide_from_right', gestureEnabled: false }} />
       <RootStack.Screen name="CreatePoll" component={CreatePollScreen} options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <RootStack.Screen name="PaymentScreen" component={PaymentScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TransactionHistory" component={TransactionHistoryScreen} options={{ animation: 'slide_from_bottom' }} />
@@ -93,7 +93,7 @@ export function AppNavigator() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade', gestureEnabled: false }}>
           <AuthStack.Screen name="Auth" component={AuthScreen} />
           <AuthStack.Screen name="Main" component={RootNavigator} />
         </AuthStack.Navigator>

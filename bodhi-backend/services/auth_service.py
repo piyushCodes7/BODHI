@@ -44,8 +44,8 @@ SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 SMS_KEY = os.getenv("SMS_API_KEY")
 SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "FSTSMS")
 
-# Using PBKDF2 instead of bcrypt to avoid the 72-char limit issues on some platforms
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+# Using passlib context to handle multiple hashing algorithms (bcrypt and pbkdf2)
+pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")
 
 # tokenUrl must match the actual login route: POST /auth/token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -56,19 +56,16 @@ def verify_password(plain_password: str, hashed_password: str):
     if not hashed_password:
         return False
     try:
-        return bcrypt.checkpw(
-            plain_password.encode('utf-8'), 
-            hashed_password.encode('utf-8')
-        )
+        # 1. Try standard verification
+        return pwd_context.verify(plain_password, hashed_password)
     except Exception:
+        # 2. Fallback: if it's a raw 4-digit PIN (legacy support)
+        if len(hashed_password) == 4 and hashed_password == plain_password:
+            return True
         return False
 
 def get_password_hash(password: str):
-    # bcrypt has a 72-character limit
-    pwd_bytes = password.encode('utf-8')[:72]
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(pwd_bytes, salt)
-    return hashed.decode('utf-8')
+    return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()

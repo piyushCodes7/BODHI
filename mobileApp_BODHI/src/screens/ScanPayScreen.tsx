@@ -3,12 +3,12 @@
  * QR scanner using react-native-vision-camera v4 (stable, widely used).
  * useCodeScanner detects QR codes natively via the camera.
  */
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  TextInput, Modal, KeyboardAvoidingView, Platform, Linking,
+  TextInput, Modal, KeyboardAvoidingView, Platform, Linking, AppState
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import {
   Camera,
   useCameraDevice,
@@ -25,11 +25,17 @@ const API = `${BASE_URL}/transfers`;
 
 export function ScanPayScreen() {
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const [isActive, setIsActive] = useState(true);
+  const [isScanning, setIsScanning] = useState(true);
+  const [appState, setAppState] = useState(AppState.currentState);
   const hasScanned = useRef(false);
+
+  // Safely determine if camera should be active
+  // using useIsFocused prevents TOO_MANY_OPEN_CAMERAS during navigation
+  const isActive = isFocused && isScanning;
 
   // Post-scan payment state
   const [scannedData, setScannedData] = useState<string | null>(null);  // raw QR
@@ -40,9 +46,18 @@ export function ScanPayScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paySuccess, setPaySuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // Parse a UPI QR URL into a clean pa= identifier
+  // Parse a QR code into a clean display label
   const parseQRDisplay = (raw: string): string => {
+    // BODHI payment QR: bodhi://pay?gap=username.g.gap
+    if (raw.toLowerCase().startsWith('bodhi://')) {
+      const match = raw.match(/[?&]gap=([^&]+)/i);
+      if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+      }
+    }
+    // UPI QR
     if (raw.toLowerCase().startsWith('upi://')) {
       const match = raw.match(/[?&]pa=([^&]+)/i);
       if (match && match[1]) {
@@ -50,6 +65,17 @@ export function ScanPayScreen() {
       }
     }
     return raw;
+  };
+
+  // Check if this is a BODHI GAP ID QR
+  const isBodhiQR = (raw: string): boolean => {
+    return raw.toLowerCase().startsWith('bodhi://');
+  };
+
+  // Extract GAP ID from bodhi:// URI
+  const extractGapId = (raw: string): string | null => {
+    const match = raw.match(/[?&]gap=([^&]+)/i);
+    return match ? decodeURIComponent(match[1]) : null;
   };
 
   const parseQRAmount = (raw: string): string => {
@@ -66,7 +92,7 @@ export function ScanPayScreen() {
       if (!value) return;
 
       hasScanned.current = true;
-      setIsActive(false);
+      setIsScanning(false);
       setScannedData(value);
       setParsedRecipient(parseQRDisplay(value));
       
@@ -80,37 +106,60 @@ export function ScanPayScreen() {
   // ── Payment handler (BODHI Wallet) ───────────────────────────────────────
   const handlePay = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      setPaymentError('Please enter a valid amount.');
       return;
     }
     if (!scannedData) return;
 
     setIsProcessing(true);
+    setPaymentError(null);
     try {
       const token = await AsyncStorage.getItem('bodhi_access_token');
-      const res = await fetch(`${API}/qr-pay`, {
+
+      // If it's a BODHI GAP ID QR, use /transfers/send with the GAP ID
+      let endpoint = `${API}/qr-pay`;
+      let body: any = {
+        qr_data: scannedData,
+        amount: parseFloat(amount),
+        note: note || undefined,
+      };
+
+      if (isBodhiQR(scannedData)) {
+        const gapId = extractGapId(scannedData);
+        if (!gapId) {
+          setPaymentError('Could not read GAP ID from this QR code.');
+          setIsProcessing(false);
+          return;
+        }
+        endpoint = `${API}/send`;
+        body = {
+          recipient_identifier: gapId,
+          amount: parseFloat(amount),
+          note: note || undefined,
+        };
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          qr_data: scannedData,
-          amount: parseFloat(amount),
-          note: note || undefined,
-        }),
+        body: JSON.stringify(body),
       });
 
       const rawText = await res.text();
       let data: any;
       try { data = JSON.parse(rawText); } catch { data = {}; }
 
-      if (!res.ok) throw new Error(data.detail || 'Payment failed. Please try again.');
+      if (!res.ok) {
+        throw new Error(data.detail || `Server Error ${res.status}: ${rawText.substring(0, 50)}`);
+      }
 
       setSuccessMsg(`₹${parseFloat(amount).toFixed(2)} sent to ${data.recipient_name} successfully!`);
       setPaySuccess(true);
     } catch (err: any) {
-      Alert.alert('Payment Failed', err.message);
+      setPaymentError(err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -131,23 +180,19 @@ export function ScanPayScreen() {
     try {
       let finalUrl = scannedData;
       
-      // 1. Remove existing am/tn to avoid duplicates
-      finalUrl = finalUrl.replace(/([?&])am=[^&]*/g, '');
-      finalUrl = finalUrl.replace(/([?&])tn=[^&]*/g, '');
-      
-      // 2. Ensure cu=INR is present
-      if (!finalUrl.includes('cu=')) {
-        finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'cu=INR';
-      }
-
-      // 3. Cleanup ampersands and separators
-      finalUrl = finalUrl.replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/&$/, '');
-
-      // 4. Append our amount and note
-      const formattedAmount = parseFloat(amount).toFixed(2);
-      finalUrl += (finalUrl.includes('?') ? '&' : '?') + `am=${formattedAmount}`;
-      if (note) {
-        finalUrl += `&tn=${encodeURIComponent(note)}`;
+      // If the QR code is dynamic (already has an amount or a signature), 
+      // DO NOT mutate the URL or it will fail bank security checks (Limit Reached / Invalid Signature).
+      if (!/[?&]am=/i.test(scannedData)) {
+        if (!finalUrl.includes('cu=')) {
+          finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'cu=INR';
+        }
+        finalUrl = finalUrl.replace(/&&+/g, '&').replace(/\?&/g, '?').replace(/&$/, '');
+        
+        const formattedAmount = parseFloat(amount).toFixed(2);
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + `am=${formattedAmount}`;
+        if (note) {
+          finalUrl += `&tn=${encodeURIComponent(note)}`;
+        }
       }
 
       // Try specific Google Pay schemes first to avoid WhatsApp taking over
@@ -184,7 +229,7 @@ export function ScanPayScreen() {
     setAmount('');
     setNote('');
     setPaySuccess(false);
-    setIsActive(true);
+    setIsScanning(true);
   };
 
   // ── No permission ─────────────────────────────────────────────────────────
@@ -303,12 +348,18 @@ export function ScanPayScreen() {
 
                 <Text style={styles.inputLabel}>NOTE (OPTIONAL)</Text>
                 <TextInput
-                  style={[styles.input, { marginBottom: 24 }]}
+                  style={[styles.input, { marginBottom: paymentError ? 8 : 24 }]}
                   value={note}
                   onChangeText={setNote}
                   placeholder="What's it for?"
                   placeholderTextColor="rgba(255,255,255,0.3)"
                 />
+
+                {paymentError && (
+                  <Text style={{ color: '#FF3366', fontSize: 13, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
+                    {paymentError}
+                  </Text>
+                )}
 
                 <View style={{ gap: 12 }}>
                   {isUpiQr && (
