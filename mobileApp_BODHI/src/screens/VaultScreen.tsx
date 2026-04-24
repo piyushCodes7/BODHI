@@ -583,14 +583,30 @@ style={styles.heroSection}
               <ShieldCheck size={24} color={Colors.neonLime} />
               <Text style={styles.securityModalTitle}>Enter U-PIN</Text>
               <Text style={styles.securityModalSub}>
-                Enter your secret 6-digit transaction PIN to reveal your balance.
+                Enter your 4-digit transaction U-PIN to reveal your balance.
               </Text>
+            </View>
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                value={uPin}
+                onChangeText={setUPin}
+                keyboardType="numeric"
+                maxLength={4}
+                secureTextEntry
+                placeholder="••••"
+                placeholderTextColor="rgba(255,255,255,0.2)"
+                autoFocus
+                importantForAutofill="no"
+                autoComplete="off"
+                textContentType="oneTimeCode"
+              />
             </View>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setIsPasswordModalVisible(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalConfirm} onPress={verifyBalanceUpin} disabled={isVerifying}>
+              <TouchableOpacity style={[styles.modalConfirm, { opacity: uPin.length === 4 ? 1 : 0.5 }]} onPress={verifyBalanceUpin} disabled={isVerifying || uPin.length < 4}>
                 {isVerifying ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.modalConfirmText}>Verify</Text>}
               </TouchableOpacity>
             </View>

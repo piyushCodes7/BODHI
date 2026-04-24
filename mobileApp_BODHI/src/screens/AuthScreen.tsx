@@ -89,6 +89,23 @@ export function AuthScreen({ navigation }: any) {
     setAuthMode(mode);
   };
 
+  const formatError = (error: any): string => {
+    // 1. Handle Axios/Fetch responses with JSON bodies
+    const data = error.response?.data || error.data;
+    if (data && data.detail) {
+      if (Array.isArray(data.detail)) {
+        return data.detail.map((d: any) => `${d.msg || JSON.stringify(d)}${d.loc ? ` (${d.loc.join('/')})` : ''}`).join('\n');
+      }
+      return typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+    }
+    
+    // 2. Handle standard Error objects
+    if (error.message) return String(error.message);
+    
+    // 3. Fallback for everything else
+    return typeof error === 'object' ? JSON.stringify(error) : String(error);
+  };
+
   useEffect(() => {
     let interval: any;
     if (resendTimer > 0) {
@@ -153,8 +170,7 @@ export function AuthScreen({ navigation }: any) {
       Alert.alert("Sent!", `OTP has been sent to your ${target}`);
     } catch (error: any) {
       console.error("OTP Error:", error);
-      const errorMsg = error.response?.data?.detail || error.message || "Unknown Network Error";
-      Alert.alert("Error", `Failed to send OTP: ${errorMsg}`);
+      Alert.alert("Error", `Failed to send OTP: ${formatError(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +189,7 @@ export function AuthScreen({ navigation }: any) {
       setResendTimer(0);
       setCurrentStep(2);
     } catch (error: any) {
-      Alert.alert("Invalid Code", error.response?.data?.detail || "Verification failed");
+      Alert.alert("Invalid Code", formatError(error));
     } finally {
       setIsLoading(false);
     }
@@ -210,7 +226,7 @@ export function AuthScreen({ navigation }: any) {
         const formBody = [];
         const details: any = {
           username: email.trim().toLowerCase(),
-          password: password,
+          password: String(password).trim().slice(0, 10),
         };
         for (const property in details) {
           const encodedKey = encodeURIComponent(property);
@@ -236,18 +252,27 @@ export function AuthScreen({ navigation }: any) {
         }
 
         const rawText = await response.text();
+        console.log("📥 Raw Server Response:", rawText); 
+
         let data;
         try {
           data = JSON.parse(rawText);
         } catch (e) {
-          throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+          throw new Error(`Server returned non-JSON: ${rawText.substring(0, 100)}`);
         }
 
-        if (!response.ok) throw new Error(data.detail || 'Incorrect credentials');
+        if (!response.ok) {
+          // Unpack the error as much as possible
+          const errorDetail = data.detail || data.message || data;
+          const finalMsg = typeof errorDetail === 'object' 
+            ? JSON.stringify(errorDetail) 
+            : String(errorDetail);
+          throw new Error(finalMsg);
+        }
 
         await AsyncStorage.setItem('bodhi_access_token', data.access_token);
         if (data.full_name) await AsyncStorage.setItem('user_full_name', data.full_name);
-        // Fetch and store user ID for community chat bubble identification
+        
         try {
           const profileRes = await fetch(`${BASE_URL}/users/me`, {
             headers: { Authorization: `Bearer ${data.access_token}` }
@@ -261,36 +286,56 @@ export function AuthScreen({ navigation }: any) {
         navigation.replace('Main');
 
       } else if (authMode === 'signup') {
+        const payload = {
+          email: email.trim().toLowerCase(),
+          password: String(mPin).trim().slice(0, 10),
+          full_name: name.trim(),
+          phone_number: phone.trim(),
+          m_pin: String(mPin).trim().slice(0, 10),
+          u_pin: String(uPin).trim().slice(0, 10),
+          age: parseInt(age) || 0,
+          gender: gender
+        };
+
+        console.log("📡 SIGNUP PAYLOAD DEBUG:", {
+          email: `${payload.email.length} chars`,
+          password: `${payload.password.length} chars`,
+          full_name: `${payload.full_name.length} chars`,
+          phone_number: `${payload.phone_number.length} chars`,
+          m_pin: `${payload.m_pin.length} chars`,
+          u_pin: `${payload.u_pin.length} chars`,
+        });
+
         const response = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            password: mPin,
-            full_name: name,
-            phone_number: phone,
-            m_pin: mPin,
-            u_pin: uPin,
-            age: parseInt(age) || 0,
-            gender: gender
-          }),
+          body: JSON.stringify(payload),
         });
 
         const rawText = await response.text();
+        console.log("📥 Signup Raw Response:", rawText);
+        
         let data;
         try {
           data = JSON.parse(rawText);
         } catch (e) {
-          throw new Error(`Server error: ${rawText.substring(0, 100)}`);
+          throw new Error(`Signup Server Error: ${rawText.substring(0, 50)}`);
         }
 
-        if (!response.ok) throw new Error(data.detail || 'Could not create account');
+        if (!response.ok) {
+          const errorDetail = data.detail || data.message || data;
+          const finalMsg = typeof errorDetail === 'object' 
+            ? JSON.stringify(errorDetail) 
+            : String(errorDetail);
+          throw new Error(finalMsg);
+        }
 
         Alert.alert('Success', 'Account created! Welcome to BODHI.');
         switchMode('login');
       }
     } catch (error: any) {
-      Alert.alert('Authentication Failed', error.message);
+      console.error("🏁 Auth Logic Failure:", error);
+      Alert.alert('Authentication Failed', formatError(error));
     } finally {
       setIsLoading(false);
     }
@@ -607,6 +652,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -618,6 +666,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -629,6 +680,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -640,6 +694,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthButton

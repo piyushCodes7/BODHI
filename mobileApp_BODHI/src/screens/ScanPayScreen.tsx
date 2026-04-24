@@ -8,12 +8,8 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
   TextInput, Modal, KeyboardAvoidingView, Platform, Linking, AppState
 } from 'react-native';
-<<<<<<< Updated upstream
-import { useNavigation, useIsFocused } from '@react-navigation/native';
-=======
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
-import { useNavigation } from '@react-navigation/native';
->>>>>>> Stashed changes
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import {
   Camera,
   useCameraDevice,
@@ -52,6 +48,11 @@ export function ScanPayScreen() {
   const [paySuccess, setPaySuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // U-PIN verification
+  const [showUpinModal, setShowUpinModal] = useState(false);
+  const [uPinInput, setUPinInput] = useState('');
+  const [isVerifyingUPin, setIsVerifyingUPin] = useState(false);
 
   // Parse a QR code into a clean display label
   const parseQRDisplay = (raw: string): string => {
@@ -163,10 +164,47 @@ export function ScanPayScreen() {
 
       setSuccessMsg(`₹${parseFloat(amount).toFixed(2)} sent to ${data.recipient_name} successfully!`);
       setPaySuccess(true);
-    } catch (err: any) {
-      setPaymentError(err.message);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  // ── Verify U-PIN then Pay ────────────────────────────────────────────────
+  const initiatePay = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      setPaymentError('Please enter a valid amount.');
+      return;
+    }
+    setUPinInput('');
+    setShowUpinModal(true);
+  };
+
+  const verifyUpinAndPay = async () => {
+    if (uPinInput.length !== 4) return;
+    setIsVerifyingUPin(true);
+    setPaymentError(null);
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      // Use standard verification endpoint
+      const verifyRes = await fetch(`${BASE_URL}/auth/verify-upin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ u_pin: uPinInput }),
+      });
+
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        setPaymentError(err.detail || 'Incorrect U-PIN. Please try again.');
+        setUPinInput('');
+        return;
+      }
+      
+      setShowUpinModal(false);
+      await handlePay();
+    } catch (e: any) {
+      setPaymentError(e.message || 'Verification Error');
+    } finally {
+      setIsVerifyingUPin(false);
     }
   };
 
@@ -393,7 +431,7 @@ export function ScanPayScreen() {
                   )}
 
                   <TouchableOpacity
-                    onPress={handlePay}
+                    onPress={initiatePay}
                     disabled={isProcessing || !amount}
                     style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
                   >
@@ -414,6 +452,42 @@ export function ScanPayScreen() {
                 </View>
               </>
             )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* U-PIN Verification Modal */}
+      <Modal visible={showUpinModal} transparent animationType="fade" onRequestClose={() => setShowUpinModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.upinOverlay}>
+          <View style={styles.upinSheet}>
+            <Text style={styles.upinTitle}>🔐 Confirm U-PIN</Text>
+            <Text style={styles.upinSub}>Enter your 4-digit transaction U-PIN to authorise this QR payment.</Text>
+            <TextInput
+              style={styles.upinInput}
+              value={uPinInput}
+              onChangeText={setUPinInput}
+              keyboardType="numeric"
+              maxLength={4}
+              secureTextEntry
+              placeholder="••••"
+              placeholderTextColor="rgba(255,255,255,0.2)"
+              autoFocus
+              importantForAutofill="no"
+              autoComplete="off"
+              textContentType="oneTimeCode"
+            />
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+              <TouchableOpacity style={styles.upinCancel} onPress={() => setShowUpinModal(false)}>
+                <Text style={styles.upinCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.upinConfirm, { opacity: uPinInput.length === 4 ? 1 : 0.4 }]}
+                onPress={verifyUpinAndPay}
+                disabled={isVerifyingUPin || uPinInput.length < 4}
+              >
+                {isVerifyingUPin ? <ActivityIndicator size="small" color="#000" /> : <Text style={styles.upinConfirmText}>Confirm Pay</Text>}
+              </TouchableOpacity>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -479,5 +553,20 @@ const styles = StyleSheet.create({
   successTitle: { color: '#FFF', fontSize: responsiveFont(28), fontWeight: '900', marginTop: 16, marginBottom: 8 },
   successSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(16), textAlign: 'center', lineHeight: 24, marginBottom: 32 },
   doneBtn: { backgroundColor: Colors.success, paddingHorizontal: 48, paddingVertical: 18, borderRadius: Radius.xl },
-  doneBtnText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '800' },
+  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+
+  // U-PIN Modal Styles (Consistent with SendMoneyScreen)
+  upinOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', padding: 24 },
+  upinSheet: { backgroundColor: '#12142d', borderRadius: 28, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  upinTitle: { color: '#FFF', fontSize: 20, fontWeight: '800', marginBottom: 8 },
+  upinSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 20, marginBottom: 24 },
+  upinInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.15)', height: 60, color: '#FFF',
+    fontSize: 28, fontWeight: '800', textAlign: 'center', letterSpacing: 12, marginBottom: 8,
+  },
+  upinCancel: { flex: 1, height: 50, alignItems: 'center', justifyContent: 'center' },
+  upinCancelText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '600' },
+  upinConfirm: { flex: 2, height: 50, backgroundColor: '#C8FF00', borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  upinConfirmText: { color: '#000', fontSize: 15, fontWeight: '800' },
 });

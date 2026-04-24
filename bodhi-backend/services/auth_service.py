@@ -56,16 +56,25 @@ def verify_password(plain_password: str, hashed_password: str):
     if not hashed_password:
         return False
     try:
-        # 1. Try standard verification
+        # 1. Try standard verification (bcrypt/pbkdf2)
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        # 2. Fallback: if it's a raw 4-digit PIN (legacy support)
+        # 2. Check for SHA256 fallback (used if bcrypt fails)
+        import hashlib
+        fallback_hash = hashlib.sha256(plain_password.encode()).hexdigest()
+        if hashed_password == fallback_hash:
+            return True
+            
+        # 3. Fallback: if it's a raw 4-digit PIN (legacy support)
         if len(hashed_password) == 4 and hashed_password == plain_password:
             return True
         return False
 
 def get_password_hash(password: str):
-    return pwd_context.hash(password)
+    # Bcrypt limit is 72 bytes. Truncating here prevents 500 errors
+    # if the frontend accidentally sends an object or giant string.
+    safe_password = str(password)[:72]
+    return pwd_context.hash(safe_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
