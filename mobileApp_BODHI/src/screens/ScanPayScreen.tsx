@@ -3,12 +3,12 @@
  * QR scanner using react-native-vision-camera v4 (stable, widely used).
  * useCodeScanner detects QR codes natively via the camera.
  */
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  TextInput, Modal, KeyboardAvoidingView, Platform, Linking,
+  TextInput, Modal, KeyboardAvoidingView, Platform, Linking, AppState
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import {
   Camera,
   useCameraDevice,
@@ -25,11 +25,17 @@ const API = `${BASE_URL}/transfers`;
 
 export function ScanPayScreen() {
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const [isActive, setIsActive] = useState(true);
+  const [isScanning, setIsScanning] = useState(true);
+  const [appState, setAppState] = useState(AppState.currentState);
   const hasScanned = useRef(false);
+
+  // Safely determine if camera should be active
+  // using useIsFocused prevents TOO_MANY_OPEN_CAMERAS during navigation
+  const isActive = isFocused && isScanning;
 
   // Post-scan payment state
   const [scannedData, setScannedData] = useState<string | null>(null);  // raw QR
@@ -86,7 +92,7 @@ export function ScanPayScreen() {
       if (!value) return;
 
       hasScanned.current = true;
-      setIsActive(false);
+      setIsScanning(false);
       setScannedData(value);
       setParsedRecipient(parseQRDisplay(value));
       
@@ -223,7 +229,7 @@ export function ScanPayScreen() {
     setAmount('');
     setNote('');
     setPaySuccess(false);
-    setIsActive(true);
+    setIsScanning(true);
   };
 
   // ── No permission ─────────────────────────────────────────────────────────
