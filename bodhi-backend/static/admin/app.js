@@ -40,7 +40,8 @@ loginForm.addEventListener('submit', async (e) => {
         formData.append('username', email); // FastAPI OAuth2 standard
         formData.append('password', password);
         
-        const response = await fetch(`${BASE_URL}/auth/token`, {
+        // Use the dedicated admin login endpoint
+        const response = await fetch(`${BASE_URL}/admin/login`, {
             method: 'POST',
             body: formData
         });
@@ -51,17 +52,6 @@ loginForm.addEventListener('submit', async (e) => {
         }
         
         const data = await response.json();
-        
-        // We need to check if this user is actually an admin
-        // Let's fetch their profile first
-        const profileRes = await fetch(`${BASE_URL}/users/me`, {
-            headers: { 'Authorization': `Bearer ${data.access_token}` }
-        });
-        const profile = await profileRes.json();
-        
-        if (!profile.is_admin) {
-            throw new Error('Access Denied: You do not have administrator privileges.');
-        }
 
         state.token = data.access_token;
         localStorage.setItem('bodhi_admin_token', state.token);
@@ -70,58 +60,6 @@ loginForm.addEventListener('submit', async (e) => {
         loginError.textContent = err.message;
     }
 });
-
-// --- Claim Admin Logic (First Setup) ---
-const claimBtn = document.getElementById('claim-admin-btn');
-if (claimBtn) {
-    claimBtn.addEventListener('click', async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        if(!email || !password) {
-            loginError.textContent = "Please enter your email and password above to claim admin.";
-            return;
-        }
-
-        loginError.textContent = "Processing...";
-        
-        try {
-            // First get a standard token
-            const formData = new FormData();
-            formData.append('username', email);
-            formData.append('password', password);
-            
-            let res = await fetch(`${BASE_URL}/auth/token`, { method: 'POST', body: formData });
-            if (!res.ok) throw new Error("Invalid credentials");
-            
-            const { access_token } = await res.json();
-            
-            // Hit the claim endpoint
-            res = await fetch(`${BASE_URL}/admin/claim-admin`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${access_token}` }
-            });
-            const data = await res.json();
-            
-            if (!res.ok) {
-                throw new Error(data.detail || "Failed to claim admin.");
-            }
-            
-            loginError.style.color = '#34c759'; // Success green
-            loginError.textContent = data.message + " You can now sign in.";
-            
-            setTimeout(() => {
-                loginError.style.color = '';
-                loginError.textContent = '';
-                document.getElementById('login-form').dispatchEvent(new Event('submit'));
-            }, 1500);
-
-        } catch(err) {
-            loginError.style.color = '';
-            loginError.textContent = err.message;
-        }
-    });
-}
 
 logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('bodhi_admin_token');

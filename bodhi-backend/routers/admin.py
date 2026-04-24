@@ -1,4 +1,8 @@
+import os
+import jwt
+from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
@@ -6,41 +10,45 @@ from typing import List, Dict, Any
 
 from database import get_db
 from models.core import User, Ledger, Payment
-from services.auth_service import get_current_user
+from services.auth_service import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-async def get_current_admin(current_user: User = Depends(get_current_user)):
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have administrative privileges."
-        )
-    return current_user
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "bodhi123")
 
-@router.post("/claim-admin")
-async def claim_first_admin(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+async def get_current_admin(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("role") != "superuser":
+            raise HTTPException(status_code=403, detail="Not an administrator")
+        return {"username": payload.get("sub")}
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate admin credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+@router.post("/login")
+async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
-    Securely allows the first logged-in user to claim the admin role.
-    If an admin already exists, this will fail.
+    Dedicated login endpoint for administrators. Uses hardcoded/env credentials
+    completely separate from the mobile app users.
     """
-    result = await db.execute(select(User).where(User.is_admin == True))
-    existing_admin = result.scalar_one_or_none()
+    if form_data.username == ADMIN_USERNAME and form_data.password == ADMIN_PASSWORD:
+        access_token_expires = timedelta(minutes=60 * 24)
+        access_token = create_access_token(
+            data={"sub": form_data.username, "role": "superuser"}, 
+            expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
     
-    if existing_admin:
-        if existing_admin.id != current_user.id:
-            raise HTTPException(
-                status_code=403, 
-                detail="An administrator already exists. Contact them for access."
-            )
-        return {"message": "You are already an admin."}
-        
-    current_user.is_admin = True
-    await db.commit()
-    return {"message": "Success! You are now the Administrator."}
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect admin username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 @router.get("/stats")
 async def get_admin_stats(
