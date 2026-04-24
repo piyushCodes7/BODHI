@@ -86,7 +86,9 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 # Serve static files (avatars, etc.)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # 3. Middleware
 app.add_middleware(
@@ -118,8 +120,14 @@ async def health_check():
 
 @app.get("/admin-panel", response_class=HTMLResponse, include_in_schema=False)
 async def admin_panel():
-    with open("static/admin/index.html", "r") as f:
-        return HTMLResponse(content=f.read())
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "static", "admin", "index.html")
+    try:
+        with open(file_path, "r") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Error: Admin Panel file not found</h1><p>Expected path: " + file_path + "</p>", status_code=404)
 
 # 4. Attach all routers
 app.include_router(auth.router,         prefix="/auth",          tags=["Authentication"])
