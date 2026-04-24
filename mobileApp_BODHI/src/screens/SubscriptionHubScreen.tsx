@@ -232,9 +232,7 @@ export const SubscriptionHubScreen = () => {
         <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <StatusBar barStyle="light-content" />
 
-        {/* Background orbs */}
-        <View style={[styles.orb, { top: -60, left: -60, backgroundColor: `${selectedService.borderColor}18`, width: 220, height: 220 }]} />
-        <View style={[styles.orb, { bottom: 100, right: -80, backgroundColor: '#7C3AED18', width: 180, height: 180 }]} />
+
 
         {/* Header */}
         <View style={styles.planHeader}>
@@ -304,9 +302,6 @@ export const SubscriptionHubScreen = () => {
       <StatusBar barStyle="light-content" />
 
 
-      {/* Background ambient orbs */}
-      <View style={[styles.orb, { top: -100, right: -80, backgroundColor: '#7C3AED22', width: 260, height: 260 }]} />
-      <View style={[styles.orb, { top: 180, left: -100, backgroundColor: '#C6FF0010', width: 200, height: 200 }]} />
 
       <FlatList
         data={filteredCategories}
