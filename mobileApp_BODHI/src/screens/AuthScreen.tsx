@@ -650,6 +650,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -661,6 +664,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -672,6 +678,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthInput
@@ -683,6 +692,9 @@ export function AuthScreen({ navigation }: any) {
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      importantForAutofill="no"
+                      autoComplete="off"
+                      textContentType="oneTimeCode"
                     />
 
                     <AuthButton
