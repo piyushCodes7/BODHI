@@ -158,7 +158,7 @@ async def _find_user_by_identifier(db: AsyncSession, identifier: str) -> Optiona
         result = await db.execute(
             select(User).where(User.email.like(f"{upi_prefix}@%"))
         )
-        user = result.scalar_one_or_none()
+        user = result.scalars().first()
         if user:
             return user
 
@@ -176,7 +176,7 @@ async def _find_user_by_identifier(db: AsyncSession, identifier: str) -> Optiona
                     User.email.like(f"{username_part}@{domain_initial}%")
                 )
             )
-            user = result.scalar_one_or_none()
+            user = result.scalars().first()
             if user:
                 return user
 
