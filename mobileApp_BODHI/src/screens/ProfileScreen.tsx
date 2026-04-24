@@ -194,7 +194,18 @@ export function ProfileScreen() {
       }
     } catch (error: any) {
       console.error("Action Error:", error.response?.data);
-      Alert.alert("Failed", error.response?.data?.detail || "Invalid M-PIN or update failed.");
+      const errorData = error.response?.data?.detail;
+      let displayMsg = "Invalid M-PIN or update failed.";
+      
+      if (typeof errorData === 'string') {
+        displayMsg = errorData;
+      } else if (Array.isArray(errorData)) {
+        displayMsg = errorData.map((e: any) => e.msg || JSON.stringify(e)).join('\n');
+      } else if (errorData && typeof errorData === 'object') {
+        displayMsg = JSON.stringify(errorData);
+      }
+      
+      Alert.alert("Failed", displayMsg);
     } finally {
       setIsActionLoading(false);
     }
@@ -345,13 +356,9 @@ export function ProfileScreen() {
 
             <View style={styles.divider} />
 
-            <View style={styles.divider} />
-
             <View style={styles.fieldRow}>
               <View style={styles.fieldIcon}>
-                <View style={{ transform: [{ scale: 0.9 }] }}>
-                  <User size={20} color={Colors.neonLime} />
-                </View>
+                <User size={20} color={Colors.neonLime} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.fieldLabel}>AGE</Text>
@@ -584,7 +591,7 @@ export function ProfileScreen() {
 
             <View style={styles.qrMainCard}>
               <QRCode
-                value={gapId}
+                value={`bodhi://pay?gap=${gapId}`}
                 size={220}
                 color="#000"
                 backgroundColor="#FFF"
@@ -824,6 +831,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     padding: 0,
+    margin: 0,
+    minHeight: 24,
+    ...Platform.select({
+      android: { paddingVertical: 0, textAlignVertical: 'center' },
+    }),
   },
   readOnlyText: {
     color: 'rgba(255,255,255,0.6)',

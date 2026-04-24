@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import Contacts from 'react-native-contacts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  ArrowLeft, Search, Users, Phone, Zap, ChevronRight, CheckCircle, X, ExternalLink,
+  ArrowLeft, Search, Users, Phone, Zap, ChevronRight, CheckCircle, X, ExternalLink, Landmark,
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors, Radius, Spacing, Gradients } from '../theme/tokens';
@@ -21,7 +21,7 @@ import { BASE_URL } from '../api/client';
 
 const API = `${BASE_URL}/transfers`;
 
-type Tab = 'contacts' | 'phone' | 'upi';
+type Tab = 'contacts' | 'phone' | 'upi' | 'gap';
 
 interface ContactItem {
   id: string;
@@ -46,7 +46,7 @@ function avatarColor(name: string) {
 export function SendMoneyScreen() {
   const navigation = useNavigation<any>();
 
-  const [activeTab, setActiveTab] = useState<Tab>('contacts');
+  const [activeTab, setActiveTab] = useState<Tab>('gap');
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [contactsPermission, setContactsPermission] = useState<'granted' | 'denied' | 'unknown'>('unknown');
   const [isLoadingContacts, setIsLoadingContacts] = useState(false);
@@ -55,6 +55,7 @@ export function SendMoneyScreen() {
   // Manual input tabs
   const [phoneInput, setPhoneInput] = useState('');
   const [upiInput, setUpiInput] = useState('');
+  const [gapInput, setGapInput] = useState('');
 
   // Selected recipient → payment modal
   const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null);
@@ -217,6 +218,7 @@ export function SendMoneyScreen() {
 
   // ── Tabs ─────────────────────────────────────────────────────────────────
   const TABS: { key: Tab; label: string; Icon: any }[] = [
+    { key: 'gap', label: 'GAP ID', Icon: Landmark },
     { key: 'contacts', label: 'Contacts', Icon: Users },
     { key: 'phone', label: 'Phone', Icon: Phone },
     { key: 'upi', label: 'UPI / Email', Icon: Zap },
@@ -343,6 +345,48 @@ export function SendMoneyScreen() {
     </View>
   );
 
+  const renderGapTab = () => {
+    const fullGapId = gapInput.toLowerCase().trim();
+    const isValid = fullGapId.endsWith('.gap') && fullGapId.split('.').length >= 3;
+    return (
+      <View style={styles.manualSection}>
+        <Text style={styles.inputLabel}>BODHI GAP ID</Text>
+        <TextInput
+          style={styles.upiInput}
+          value={gapInput}
+          onChangeText={setGapInput}
+          placeholder="e.g. harshit.g.gap"
+          placeholderTextColor="rgba(255,255,255,0.3)"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: -12, marginBottom: 16 }}>
+          Format: username.domain_letter.gap (e.g. piyush.g.gap for Gmail)
+        </Text>
+        {isValid && (
+          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 16 }}>
+            Sending to: <Text style={{ color: Colors.neonLime, fontWeight: '700' }}>{fullGapId}</Text>
+          </Text>
+        )}
+        <TouchableOpacity
+          style={[styles.continueBtn, !isValid && { opacity: 0.4 }]}
+          disabled={!isValid}
+          onPress={() => openPayFor(fullGapId, fullGapId)}
+        >
+          <LinearGradient
+            colors={Gradients.authCTA.colors}
+            style={styles.continueBtnGrad}
+            start={Gradients.authCTA.start}
+            end={Gradients.authCTA.end}
+          >
+            <Text style={[styles.continueBtnText, { color: '#000' }]}>Continue</Text>
+            <ChevronRight size={18} color="#000" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <LinearGradient
       colors={Gradients.darkVibrant.colors}
@@ -375,6 +419,7 @@ export function SendMoneyScreen() {
 
       {/* Content */}
       <View style={{ flex: 1 }}>
+        {activeTab === 'gap' && renderGapTab()}
         {activeTab === 'contacts' && renderContactsTab()}
         {activeTab === 'phone' && renderPhoneTab()}
         {activeTab === 'upi' && renderUPITab()}

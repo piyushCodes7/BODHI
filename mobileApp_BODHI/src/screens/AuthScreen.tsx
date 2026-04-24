@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -20,6 +21,7 @@ import {
   ShieldCheck,
   User,
   ChevronDown,
+  ChevronRight,
   CheckCircle2,
 } from 'lucide-react-native';
 import { Colors, Radius, Spacing, FontSize, Gradients } from '../theme/tokens';
@@ -59,6 +61,7 @@ export function AuthScreen({ navigation }: any) {
   const [resendTimer, setResendTimer] = useState(0);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(true);
   const [newPassword, setNewPassword] = useState('');
 
@@ -76,6 +79,7 @@ export function AuthScreen({ navigation }: any) {
     setOtp('');
     setCurrentStep(0);
     setIsEmailSent(false);
+    setIsEmailVerified(false);
     setIsEditingEmail(true);
   };
 
@@ -121,7 +125,7 @@ export function AuthScreen({ navigation }: any) {
     try {
       const val = target === 'email' ? email : phone;
       if (!val) {
-        Alert.alert("Error", `Please enter ${target} first`);
+        Alert.alert("Warning", `Please enter ${target} first`);
         return;
       }
 
@@ -158,7 +162,7 @@ export function AuthScreen({ navigation }: any) {
   const handleVerifyOtp = async () => {
     try {
       if (!otp || otp.length !== 6) {
-        Alert.alert("Error", "Please enter a valid 6-digit code");
+        Alert.alert("Warning", "Please enter a valid 6-digit code");
         return;
       }
 
@@ -181,20 +185,20 @@ export function AuthScreen({ navigation }: any) {
   const handleStandardAuth = async () => {
     if (authMode === 'signup') {
       if (!email || !mPin || !uPin) {
-        Alert.alert('Error', 'Please enter your Email, M-PIN and U-PIN.');
+        Alert.alert('Warning', 'Please enter your Email, M-PIN and U-PIN.');
         return;
       }
       if (mPin !== confirmMPin) {
-        Alert.alert('Error', 'M-PINs do not match.');
+        Alert.alert('Warning', 'M-PINs do not match.');
         return;
       }
       if (uPin !== confirmUPin) {
-        Alert.alert('Error', 'U-PINs do not match.');
+        Alert.alert('Warning', 'U-PINs do not match.');
         return;
       }
     } else {
       if (!email || !password) {
-        Alert.alert('Error', 'Please enter your email and password.');
+        Alert.alert('Warning', 'Please enter your email and password.');
         return;
       }
     }
@@ -293,7 +297,7 @@ export function AuthScreen({ navigation }: any) {
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('Email Required', 'Please enter your email address.');
+      Alert.alert('Warning', 'Please enter your email address.');
       return;
     }
 
@@ -316,12 +320,12 @@ export function AuthScreen({ navigation }: any) {
 
   const handleResetPassword = async () => {
     if (otp.length !== 6 || newPassword.length < 4) {
-      Alert.alert('Invalid Input', 'Enter 6-digit code and new 4-digit M-PIN.');
+      Alert.alert('Warning', 'Enter 6-digit code and new 4-digit M-PIN.');
       return;
     }
 
     if (newPassword !== confirmMPin) {
-      Alert.alert('Error', 'PINs do not match.');
+      Alert.alert('Warning', 'PINs do not match.');
       return;
     }
 
@@ -470,13 +474,20 @@ export function AuthScreen({ navigation }: any) {
                           keyboardType="number-pad"
                         />
                       </View>
-                      <View style={{ flex: 1.5, zIndex: 20 }}>
-                        <Text style={styles.inputLabel}>GENDER</Text>
+                      <View style={{ flex: 1.5, zIndex: 20, marginBottom: 24 }}>
+                        <Text style={{
+                          color: 'rgba(255,255,255,0.5)',
+                          fontSize: 11,
+                          fontWeight: '800',
+                          marginBottom: 8,
+                          letterSpacing: 1,
+                          marginLeft: 4,
+                        }}>GENDER</Text>
                         <TouchableOpacity
                           style={[styles.dropdownHeader, isGenderOpen && { borderColor: Colors.neonLime, backgroundColor: 'rgba(200, 255, 0, 0.05)' }]}
                           onPress={() => setIsGenderOpen(!isGenderOpen)}
                         >
-                          <Text style={{ color: gender ? '#FFF' : 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
+                          <Text style={{ color: gender ? '#FFF' : 'rgba(255,255,255,0.3)', fontWeight: '600', fontSize: 16 }}>
                             {gender || "Select"}
                           </Text>
                           <ChevronDown size={18} color={Colors.neonLime} />
@@ -537,6 +548,7 @@ export function AuthScreen({ navigation }: any) {
                       <TouchableOpacity
                         style={styles.verifyInlineBtn}
                         disabled={resendTimer > 0 || isLoading}
+                        onPress={() => handleSendOtp('email')}
                       >
                         <Text style={{ color: '#FF3366', fontWeight: '700', fontSize: 13 }}>
                           {resendTimer > 0 ? `Resend in ${resendTimer}s` : (isEmailSent ? "Resend Code" : "Send Code")}
@@ -812,13 +824,13 @@ const styles = StyleSheet.create({
   dropdownHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: Radius.md,
-    height: 52,
-    paddingHorizontal: 8,
+    height: 56,
+    paddingHorizontal: Spacing.lg,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.2)'
+    borderColor: 'rgba(255,255,255,0.08)'
   },
   dropdownHeaderText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   dropdownList: {
@@ -857,5 +869,52 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.6)',
     fontWeight: '700',
     fontSize: 14
+  },
+
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 14,
+    height: 56,
+    marginBottom: 4,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    padding: 0,
+    margin: 0,
+    height: '100%',
+  },
+  verifyInlineBtn: {
+    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  primaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+    borderRadius: Radius.xl,
+    paddingHorizontal: 24,
+  },
+  primaryBtnText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  dropdownItemText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

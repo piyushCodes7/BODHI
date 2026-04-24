@@ -39,6 +39,13 @@ class UserProfile(BaseModel):
 
 @router.get("/me", response_model=UserProfile)
 async def get_my_profile(current_user: User = Depends(get_current_user)):
+    # GAP ID = username.{first letter of domain}.gap
+    # e.g. harshit@gmail.com → harshit.g.gap, harshit@chitkara.edu.in → harshit.c.gap
+    parts = current_user.email.lower().split('@')
+    username = parts[0]
+    domain_initial = parts[1][0] if len(parts) > 1 and parts[1] else 'x'
+    gap_id = f"{username}.{domain_initial}.gap"
+
     user_profile = UserProfile(
         id=current_user.id,
         email=current_user.email,
@@ -48,7 +55,7 @@ async def get_my_profile(current_user: User = Depends(get_current_user)):
         gender=current_user.gender,
         has_password=current_user.hashed_password is not None,
         avatar_url=current_user.avatar_url,
-        gap_id=f"{current_user.email.split('@')[0]}.g.gap".lower(),
+        gap_id=gap_id,
         balance=current_user.balance
     )
     return user_profile

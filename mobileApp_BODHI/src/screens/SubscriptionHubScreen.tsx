@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   popularBadgeText: { color: '#C6FF00', fontSize: 10, fontWeight: '700' },
   planCardName: { color: '#FFF', fontSize: 20, fontWeight: '800' },
   planCardFeatures: { color: '#555', fontSize: 13, marginTop: 4 },
-  planCardRight: { alignItems: 'flex-end', gap: 4 },
+  planCardRight: { alignItems: 'flex-start', gap: 4, minWidth: 80 },
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
   planPriceSym: { color: '#C6FF00', fontSize: 13, fontWeight: '700' },
   planPriceVal: { color: '#C6FF00', fontSize: 26, fontWeight: '900' },

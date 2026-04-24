@@ -177,8 +177,8 @@ export function VaultScreen() {
         <View style={styles.insightModalContent}>
           <View style={styles.insightModalHeader}>
             <Text style={styles.insightModalTitle}>{title}</Text>
-            <TouchableOpacity onPress={() => setActiveInsight(null)} style={styles.modalCloseBtn}>
-              <Text style={styles.modalCloseText}>Done</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('QuickServices')}>
+              <Text style={styles.viewAll}>View All ›</Text>
             </TouchableOpacity>
           </View>
           <FlatList
@@ -497,33 +497,7 @@ style={styles.heroSection}
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.accountCard} onPress={() => navigation.navigate('PersonalDetails')}>
-            <View style={styles.accountLeft}>
-              <View style={styles.bankLogoWrap}>
-                <Landmark size={20} color="#FF0000" />
-              </View>
-              <View>
-                <Text style={styles.bankName}>HDFC Bank</Text>
-                <View style={styles.rowCenter}>
-                  <Text style={styles.bankDetail}>Savings •••• 4589</Text>
-                  <View style={styles.primaryTag}>
-                    <Text style={styles.primaryTagText}>Primary</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={styles.accountRight}>
-              <Text style={styles.accountBalance}>₹ ••••••</Text>
-              <EyeOff size={16} color="rgba(255,255,255,0.5)" style={{ marginLeft: 8 }} />
-              <ChevronRight size={20} color="rgba(255,255,255,0.5)" style={{ marginLeft: 8 }} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.paginationDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-          </View>
+          {/* Transaction History Banner */}
 
           {/* Transaction History Banner */}
           <TouchableOpacity
@@ -811,13 +785,13 @@ const styles = StyleSheet.create({
 
 
   insightsScroll: { paddingRight: 20, gap: 16 },
-  insightCard: { width: 150, height: 185, borderRadius: 20, padding: 16, justifyContent: 'space-between' },
-  insightIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 12 },
-  insightValue: { color: '#FFF', fontSize: 22, fontWeight: '800', marginVertical: 4 },
-  insightSub: { color: 'rgba(255,255,255,0.8)', fontSize: 11, lineHeight: 15, height: 45, marginBottom: 4 },
-  insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  insightLink: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '600', marginRight: 4 },
+  insightCard: { width: 160, minHeight: 185, borderRadius: 24, padding: 16, justifyContent: 'space-between', marginRight: 12 },
+  insightIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  insightTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 12, fontWeight: '600' },
+  insightValue: { color: '#FFF', fontSize: 24, fontWeight: '800', marginVertical: 6 },
+  insightSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 16, minHeight: 48, marginBottom: 8 },
+  insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 'auto', paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  insightLink: { color: Colors.neonLime, fontSize: 12, fontWeight: '700', marginRight: 4 },
 
   addAccountBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.15)' },
   addAccountText: { color: '#A855F7', fontSize: 12, fontWeight: '700' },

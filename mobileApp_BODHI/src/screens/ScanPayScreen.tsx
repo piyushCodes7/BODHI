@@ -40,9 +40,18 @@ export function ScanPayScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paySuccess, setPaySuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
-  // Parse a UPI QR URL into a clean pa= identifier
+  // Parse a QR code into a clean display label
   const parseQRDisplay = (raw: string): string => {
+    // BODHI payment QR: bodhi://pay?gap=username.g.gap
+    if (raw.toLowerCase().startsWith('bodhi://')) {
+      const match = raw.match(/[?&]gap=([^&]+)/i);
+      if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+      }
+    }
+    // UPI QR
     if (raw.toLowerCase().startsWith('upi://')) {
       const match = raw.match(/[?&]pa=([^&]+)/i);
       if (match && match[1]) {
@@ -50,6 +59,17 @@ export function ScanPayScreen() {
       }
     }
     return raw;
+  };
+
+  // Check if this is a BODHI GAP ID QR
+  const isBodhiQR = (raw: string): boolean => {
+    return raw.toLowerCase().startsWith('bodhi://');
+  };
+
+  // Extract GAP ID from bodhi:// URI
+  const extractGapId = (raw: string): string | null => {
+    const match = raw.match(/[?&]gap=([^&]+)/i);
+    return match ? decodeURIComponent(match[1]) : null;
   };
 
   const parseQRAmount = (raw: string): string => {
@@ -80,25 +100,46 @@ export function ScanPayScreen() {
   // ── Payment handler (BODHI Wallet) ───────────────────────────────────────
   const handlePay = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      setPaymentError('Please enter a valid amount.');
       return;
     }
     if (!scannedData) return;
 
     setIsProcessing(true);
+    setPaymentError(null);
     try {
       const token = await AsyncStorage.getItem('bodhi_access_token');
-      const res = await fetch(`${API}/qr-pay`, {
+
+      // If it's a BODHI GAP ID QR, use /transfers/send with the GAP ID
+      let endpoint = `${API}/qr-pay`;
+      let body: any = {
+        qr_data: scannedData,
+        amount: parseFloat(amount),
+        note: note || undefined,
+      };
+
+      if (isBodhiQR(scannedData)) {
+        const gapId = extractGapId(scannedData);
+        if (!gapId) {
+          setPaymentError('Could not read GAP ID from this QR code.');
+          setIsProcessing(false);
+          return;
+        }
+        endpoint = `${API}/send`;
+        body = {
+          recipient_identifier: gapId,
+          amount: parseFloat(amount),
+          note: note || undefined,
+        };
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          qr_data: scannedData,
-          amount: parseFloat(amount),
-          note: note || undefined,
-        }),
+        body: JSON.stringify(body),
       });
 
       const rawText = await res.text();
@@ -110,7 +151,7 @@ export function ScanPayScreen() {
       setSuccessMsg(`₹${parseFloat(amount).toFixed(2)} sent to ${data.recipient_name} successfully!`);
       setPaySuccess(true);
     } catch (err: any) {
-      Alert.alert('Payment Failed', err.message);
+      setPaymentError(err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -299,12 +340,18 @@ export function ScanPayScreen() {
 
                 <Text style={styles.inputLabel}>NOTE (OPTIONAL)</Text>
                 <TextInput
-                  style={[styles.input, { marginBottom: 24 }]}
+                  style={[styles.input, { marginBottom: paymentError ? 8 : 24 }]}
                   value={note}
                   onChangeText={setNote}
                   placeholder="What's it for?"
                   placeholderTextColor="rgba(255,255,255,0.3)"
                 />
+
+                {paymentError && (
+                  <Text style={{ color: '#FF3366', fontSize: 13, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
+                    {paymentError}
+                  </Text>
+                )}
 
                 <View style={{ gap: 12 }}>
                   {isUpiQr && (

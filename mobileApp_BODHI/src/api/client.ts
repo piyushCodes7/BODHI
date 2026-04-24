@@ -176,6 +176,24 @@ export const TransactionAPI = {
   }
 };
 
+export const TransferAPI = {
+  /** Send money to another user via GAP ID, email, phone, or UPI ID. */
+  send: async (data: { recipient_identifier: string; amount: number; note?: string }) => {
+    const res = await apiClient.post('/transfers/send', data);
+    return res.data;
+  },
+  /** Get wallet balance. */
+  getBalance: async () => {
+    const res = await apiClient.get('/transfers/balance');
+    return res.data;
+  },
+  /** Get full wallet transfer history (ledger). */
+  getHistory: async () => {
+    const res = await apiClient.get('/transfers/history');
+    return res.data;
+  },
+};
+
 export const SubscriptionsAPI = {
   fetchCatalog: async () => {
     const res = await apiClient.get('/subscriptions/catalog');

@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ArrowDownRight, ArrowUpRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { TransactionAPI } from '../api/client';
+import { TransactionAPI, TransferAPI } from '../api/client';
 import { MOCK_TRANSACTIONS } from '../data/mockTransactions';
 
 export interface Transaction {
@@ -47,13 +47,30 @@ export function TransactionHistoryScreen() {
         account_last4: 'Manual'
       }));
 
+      // Fetch real wallet ledger entries (transfers, top-ups, etc.)
+      let ledgerTxs: Transaction[] = [];
+      try {
+        const ledgerData = await TransferAPI.getHistory();
+        ledgerTxs = (ledgerData.transactions || []).map((tx: any) => ({
+          id: tx.id,
+          amount: tx.amount,
+          merchant: tx.description || 'Wallet Transfer',
+          category: 'Transfer',
+          date: tx.created_at,
+          type: tx.type as 'CREDIT' | 'DEBIT',
+          account_last4: 'Wallet'
+        }));
+      } catch (e) {
+        console.warn('Could not fetch ledger history:', e);
+      }
+
       // Include mock transactions for a fuller history
       const mockTxs: Transaction[] = MOCK_TRANSACTIONS.map((tx: any) => ({
         ...tx,
         type: tx.type.toUpperCase() as 'CREDIT' | 'DEBIT'
       }));
 
-      const combined = [...translatedTxs, ...mockTxs].sort((a, b) =>
+      const combined = [...ledgerTxs, ...translatedTxs, ...mockTxs].sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
