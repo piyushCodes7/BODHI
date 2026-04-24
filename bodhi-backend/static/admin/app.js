@@ -119,6 +119,7 @@ async function switchView(targetView) {
     if (targetView === 'overview') await loadOverview();
     if (targetView === 'users') await loadUsers();
     if (targetView === 'transactions') await loadTransactions();
+    if (targetView === 'notifications') await loadNotifications();
 }
 
 // --- Data Loading ---
@@ -181,3 +182,85 @@ window.toggleUser = async (userId) => {
     const res = await apiFetch(`/admin/users/${userId}/toggle-active`, 'POST');
     if (res) loadUsers();
 };
+
+// --- Notifications Logic ---
+async function loadNotifications() {
+    const users = await apiFetch('/admin/users?limit=1000');
+    const container = document.getElementById('notif-users-list');
+    
+    if (!users || users.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">No users found.</p>';
+        return;
+    }
+    
+    container.innerHTML = users.map(u => `
+        <label style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;">
+            <input type="checkbox" name="user-check" value="${u.id}" class="user-checkbox" style="width: 16px; height: 16px; accent-color: var(--accent-purple);">
+            <div>
+                <div style="font-size: 14px; font-weight: 600; color: white;">${u.full_name}</div>
+                <div style="font-size: 11px; color: var(--text-secondary);">${u.email}</div>
+            </div>
+        </label>
+    `).join('');
+    
+    // Bind "Select All" functionality
+    const selectAllBtn = document.getElementById('notif-select-all');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    
+    selectAllBtn.addEventListener('change', (e) => {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+    });
+}
+
+const notifForm = document.getElementById('notification-form');
+if (notifForm) {
+    notifForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('notif-submit-btn');
+        const statusSpan = document.getElementById('notif-status');
+        
+        const title = document.getElementById('notif-title').value;
+        const message = document.getElementById('notif-message').value;
+        const type = document.getElementById('notif-type').value;
+        
+        const isSelectAll = document.getElementById('notif-select-all').checked;
+        const checks = document.querySelectorAll('.user-checkbox:checked');
+        const selectedIds = Array.from(checks).map(cb => cb.value);
+        
+        if (!isSelectAll && selectedIds.length === 0) {
+            statusSpan.textContent = '❌ Please select at least one user.';
+            statusSpan.style.color = 'var(--error)';
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        statusSpan.textContent = 'Sending...';
+        statusSpan.style.color = 'var(--text-secondary)';
+        
+        const payload = {
+            title,
+            message,
+            type,
+            send_to_all: isSelectAll,
+            user_ids: isSelectAll ? [] : selectedIds
+        };
+        
+        try {
+            const res = await apiFetch('/admin/notifications/send', 'POST', payload);
+            if (res) {
+                statusSpan.textContent = '✅ ' + res.message;
+                statusSpan.style.color = 'var(--success)';
+                notifForm.reset();
+                // keep users loaded
+                setTimeout(() => { statusSpan.textContent = ''; }, 4000);
+            }
+        } catch(error) {
+            statusSpan.textContent = '❌ Failed to send.';
+            statusSpan.style.color = 'var(--error)';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+        }
+    });
+}

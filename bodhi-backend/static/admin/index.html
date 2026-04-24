@@ -51,6 +51,10 @@
                     <i data-lucide="arrow-left-right"></i>
                     <span>Transactions</span>
                 </button>
+                <button class="nav-item" data-view="notifications">
+                    <i data-lucide="bell-ring"></i>
+                    <span>Notifications</span>
+                </button>
                 <div class="nav-divider"></div>
                 <button class="nav-item logout-btn" id="logout-btn">
                     <i data-lucide="log-out"></i>
@@ -158,6 +162,60 @@
                             <!-- Transactions go here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div id="view-notifications" class="view" style="display: none;">
+                <div class="table-actions" style="margin-bottom: 24px;">
+                    <h3>Notification Center</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Broadcast alerts, updates, or personal messages directly to users' devices.</p>
+                </div>
+                
+                <div class="stat-card" style="display: block;">
+                    <form id="notification-form">
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 300px;">
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label>Message Title</label>
+                                    <input type="text" id="notif-title" placeholder="e.g., System Maintenance" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 16px;">
+                                    <label>Message Body</label>
+                                    <textarea id="notif-message" placeholder="Type your notification here..." style="width: 100%; height: 120px; background: var(--glass); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; color: white; font-family: 'Outfit'; font-size: 15px; resize: vertical;" required></textarea>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 24px;">
+                                    <label>Notification Type</label>
+                                    <select id="notif-type" style="width: 100%; background: var(--glass); border: 1.5px solid var(--border); border-radius: 14px; padding: 14px 18px; color: white; font-size: 15px; appearance: none;">
+                                        <option value="INFO" style="color: black;">Information (Blue)</option>
+                                        <option value="SUCCESS" style="color: black;">Success (Green)</option>
+                                        <option value="WARNING" style="color: black;">Warning (Yellow)</option>
+                                        <option value="ALERT" style="color: black;">Alert (Red)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <label style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Select Recipients</label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                        <input type="checkbox" id="notif-select-all" style="width: 16px; height: 16px; accent-color: var(--accent-purple);">
+                                        Select All Users
+                                    </label>
+                                </div>
+                                <div id="notif-users-list" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--bg-dark);">
+                                    <!-- User checkboxes populated via JS -->
+                                    <p style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">Loading users...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; text-align: right; border-top: 1px solid var(--border); padding-top: 24px;">
+                            <span id="notif-status" style="margin-right: 16px; font-weight: 600; font-size: 14px;"></span>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 12px 32px;" id="notif-submit-btn">
+                                <i data-lucide="send" style="width: 16px; margin-right: 8px; vertical-align: middle;"></i> Broadcast Array
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>

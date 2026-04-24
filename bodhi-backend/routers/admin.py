@@ -10,9 +10,18 @@ from typing import List, Dict, Any
 
 from database import get_db
 from models.core import User, Ledger, Payment
+from models.notification import Notification, NotificationType
 from services.auth_service import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+class SendNotificationRequest(BaseModel):
+    user_ids: List[str] = []
+    send_to_all: bool = False
+    title: str
+    message: str
+    type: str = "INFO"
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "bodhi123")
@@ -49,6 +58,39 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
         detail="Incorrect admin username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+@router.post("/notifications/send")
+async def send_admin_notification(
+    req: SendNotificationRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(get_current_admin)
+):
+    """
+    Send a notification to specific users or broadcast to all users.
+    """
+    if req.send_to_all:
+        users_result = await db.execute(select(User.id))
+        target_ids = users_result.scalars().all()
+    else:
+        target_ids = req.user_ids
+
+    if not target_ids:
+        raise HTTPException(status_code=400, detail="No users selected.")
+
+    notifications = [
+        Notification(
+            user_id=uid,
+            title=req.title,
+            message=req.message,
+            type=NotificationType(req.type)
+        )
+        for uid in target_ids
+    ]
+    
+    db.add_all(notifications)
+    await db.commit()
+    
+    return {"message": f"Successfully sent notifications to {len(target_ids)} users"}
 
 @router.get("/stats")
 async def get_admin_stats(
