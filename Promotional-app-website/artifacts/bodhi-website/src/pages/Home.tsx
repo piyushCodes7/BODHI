@@ -186,9 +186,9 @@ export default function Home() {
             <Button
               size="lg"
               className="group h-14 px-10 text-base font-black bg-black/30 text-white border border-white/15 hover:bg-white/8 rounded-2xl w-full sm:w-auto backdrop-blur-xl transition-all"
-              onClick={() => window.location.href = 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com/static/downloads/bodhi-app.apk'}
+              onClick={() => window.location.href = '/downloads/bodhi-v1.apk'}
             >
-              <FaGooglePlay className="mr-3 h-5 w-5" /> Google Play
+              <FaGooglePlay className="mr-3 h-5 w-5" /> Download (v1)
             </Button>
           </motion.div>
         </motion.div>
@@ -825,9 +825,9 @@ export default function Home() {
             <Button
               size="lg"
               className="group min-h-16 px-8 sm:px-12 text-base sm:text-xl font-black bg-white/5 text-white border border-white/15 hover:bg-white/10 rounded-[2rem] transition-all w-full sm:w-auto"
-              onClick={() => window.location.href = 'http://bodhi-env.eba-at8qpmww.ap-south-1.elasticbeanstalk.com/static/downloads/bodhi-app.apk'}
+              onClick={() => window.location.href = '/downloads/bodhi-v1.apk'}
             >
-              Download for Android <FaGooglePlay className="ml-3 w-5 h-5" />
+              Download for Android (v1) <FaGooglePlay className="ml-3 w-5 h-5" />
             </Button>
           </motion.div>
         </div>

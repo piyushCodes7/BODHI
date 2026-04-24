@@ -286,8 +286,15 @@ async def bootstrap_admin(db: AsyncSession = Depends(get_db)):
         import time
         
         # Verify columns exist (double check)
-        await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'"))
-        await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_pass VARCHAR"))
+        try:
+            await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'"))
+        except Exception:
+            pass
+            
+        try:
+            await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_pass VARCHAR"))
+        except Exception:
+            pass
         
         # Check if admin exists
         result = await db.execute(select(User).where(User.email == "admin@bodhi.com"))
@@ -303,6 +310,8 @@ async def bootstrap_admin(db: AsyncSession = Depends(get_db)):
         
         new_admin = User(
             email="admin@bodhi.com",
+            phone="+910000000000",
+            full_name="Root Admin",
             hashed_password=get_password_hash("Admin@123"),
             role="admin",
             is_active=True,
