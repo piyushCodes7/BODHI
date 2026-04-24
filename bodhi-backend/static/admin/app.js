@@ -21,7 +21,28 @@ const views = document.querySelectorAll('.view');
 const viewTitle = document.getElementById('view-title');
 
 // --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check Setup Mode First
+    const urlParams = new URLSearchParams(window.location.search);
+    const setupToken = urlParams.get('setup_token');
+    
+    if (setupToken) {
+        document.getElementById('login-wrapper').style.display = 'none';
+        document.getElementById('setup-wrapper').style.display = 'flex';
+        return;
+    }
+    
+    // Check if system is bootstrapped
+    try {
+        const res = await fetch(`${BASE_URL}/admin/status`);
+        const data = await res.json();
+        if (data.bootstrapped === false) {
+            document.getElementById('login-wrapper').style.display = 'none';
+            document.getElementById('bootstrap-wrapper').style.display = 'flex';
+            return;
+        }
+    } catch(e) {}
+
     if (state.token) {
         showDashboard();
     }
@@ -427,6 +448,42 @@ if (showForgotPwdBtn && backToLoginBtn && forgotForm) {
             
         } catch(err) {
             errorDiv.style.color = "var(--error)";
+            errorDiv.textContent = err.message;
+        }
+    });
+}
+
+// --- Bootstrap logic ---
+const bootstrapForm = document.getElementById('bootstrap-form');
+if (bootstrapForm) {
+    bootstrapForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const rawEmails = document.getElementById('bootstrap-emails').value;
+        const secretCode = document.getElementById('bootstrap-secret').value;
+        const errorDiv = document.getElementById('bootstrap-error');
+        const successDiv = document.getElementById('bootstrap-success');
+        
+        const emailsArray = rawEmails.split(',').map(em => em.trim()).filter(em => em);
+        
+        errorDiv.textContent = "Bootstrapping System...";
+        
+        try {
+            const res = await fetch(`${BASE_URL}/admin/bootstrap`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emails: emailsArray, secret_code: secretCode })
+            });
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Bootstrap failed.");
+            
+            errorDiv.textContent = "";
+            successDiv.style.display = "block";
+            successDiv.textContent = data.message;
+            bootstrapForm.reset();
+            
+        } catch(err) {
             errorDiv.textContent = err.message;
         }
     });

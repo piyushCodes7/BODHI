@@ -90,6 +90,12 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Asyn
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+@router.get("/status")
+async def get_system_status(db: AsyncSession = Depends(get_db)):
+    """Public endpoint to check if the administration system is initialized."""
+    result = await db.execute(select(func.count(AdminUser.id)))
+    return {"bootstrapped": result.scalar() > 0}
+
 class BootstrapRequest(BaseModel):
     emails: List[EmailStr]
     secret_code: str
