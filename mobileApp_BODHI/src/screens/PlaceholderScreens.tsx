@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, StatusBar } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors, Spacing, Radius, FontSize } from '../theme/tokens';
 import { useNavigation } from '@react-navigation/native';
@@ -104,11 +105,11 @@ const placeholderStyles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   icon: { 
-    fontSize: 56 
+    fontSize: responsiveFont(56) 
   },
   title: { 
     color: '#FFF',
-    fontSize: 28,
+    fontSize: responsiveFont(28),
     fontWeight: '800',
     textAlign: 'center',
     marginBottom: Spacing.sm,
@@ -116,7 +117,7 @@ const placeholderStyles = StyleSheet.create({
   },
   subtitle: { 
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 20,
@@ -140,7 +141,7 @@ const placeholderStyles = StyleSheet.create({
   ctaText: {
     color: '#000',
     fontWeight: '800',
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     letterSpacing: 0.5,
   },
 });

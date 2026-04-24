@@ -9,6 +9,7 @@ import {
   ActivityIndicator, Alert, ScrollView, Platform, KeyboardAvoidingView,
   Modal, Linking,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import Contacts from 'react-native-contacts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -444,7 +445,7 @@ export function SendMoneyScreen() {
                   <Text style={styles.doneBtnText}>Done</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setShowPayModal(false); setPaySuccess(false); }} style={{ marginTop: 12 }}>
-                  <Text style={{ color: '#A855F7', fontSize: 14 }}>Send to someone else</Text>
+                  <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Send to someone else</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -560,12 +561,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+  headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800', letterSpacing: 0.5 },
 
   tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },
   tabActive: { borderBottomWidth: 2, borderBottomColor: Colors.neonLime },
-  tabLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
+  tabLabel: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(13), fontWeight: '700' },
   tabLabelActive: { color: Colors.neonLime },
 
   searchBar: {
@@ -575,7 +576,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  searchInput: { flex: 1, color: '#FFF', fontSize: 15 },
+  searchInput: { flex: 1, color: '#FFF', fontSize: responsiveFont(15) },
 
   contactRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -583,18 +584,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
   },
   avatar: { width: 44, height: 44, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  avatarText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  avatarText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
   contactInfo: { flex: 1 },
-  contactName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 2 },
-  contactPhone: { color: 'rgba(255,255,255,0.4)', fontSize: 13 },
+  contactName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '600', marginBottom: 2 },
+  contactPhone: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(13) },
 
-  permTitle: { color: '#FFF', fontSize: 20, fontWeight: '700', marginTop: 16, marginBottom: 8 },
-  permSub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  permTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  permSub: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), textAlign: 'center', lineHeight: 22, marginBottom: 24 },
   permBtn: { backgroundColor: Colors.neonLime, paddingHorizontal: 28, paddingVertical: 14, borderRadius: Radius.lg },
-  permBtnText: { color: '#000', fontSize: 15, fontWeight: '800' },
+  permBtnText: { color: '#000', fontSize: responsiveFont(15), fontWeight: '800' },
 
   manualSection: { padding: 20 },
-  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
   phoneRow: {
     flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: 20,
@@ -606,17 +607,17 @@ const styles = StyleSheet.create({
     borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center', height: '100%',
   },
-  countryCodeText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
-  phoneInput: { flex: 1, paddingHorizontal: 14, color: '#FFF', fontSize: 16, fontWeight: '600' },
+  countryCodeText: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '700' },
+  phoneInput: { flex: 1, paddingHorizontal: 14, color: '#FFF', fontSize: responsiveFont(16), fontWeight: '600' },
   upiInput: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
-    padding: 16, color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 20,
+    padding: 16, color: '#FFF', fontSize: responsiveFont(16), fontWeight: '600', marginBottom: 20,
     height: 60,
   },
   continueBtn: { borderRadius: Radius.xl, overflow: 'hidden' },
   continueBtnGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 8 },
-  continueBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
+  continueBtnText: { color: '#000', fontSize: responsiveFont(16), fontWeight: '800' },
 
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
   modalSheet: {
@@ -625,19 +626,19 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
-  modalTitle: { color: '#FFF', fontSize: 22, fontWeight: '800' },
+  modalTitle: { color: '#FFF', fontSize: responsiveFont(22), fontWeight: '800' },
 
   recipientTag: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginBottom: 24,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  recipientLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
-  recipientValue: { color: Colors.neonLime, fontSize: 18, fontWeight: '800' },
+  recipientLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
+  recipientValue: { color: Colors.neonLime, fontSize: responsiveFont(18), fontWeight: '800' },
 
-  amtLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginBottom: 8, textAlign: 'center' },
+  amtLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '800', letterSpacing: 2, marginBottom: 8, textAlign: 'center' },
   amtRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  rupee: { color: '#FFF', fontSize: 40, fontWeight: '300', marginRight: 8 },
-  amtInput: { color: '#FFF', fontSize: 64, fontWeight: '900', minWidth: 100, textAlign: 'center' },
+  rupee: { color: '#FFF', fontSize: responsiveFont(40), fontWeight: '300', marginRight: 8 },
+  amtInput: { color: '#FFF', fontSize: responsiveFont(64), fontWeight: '900', minWidth: 100, textAlign: 'center' },
 
   quickAmounts: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24 },
   quickPill: {
@@ -645,19 +646,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickPillText: { color: Colors.neonLime, fontSize: 14, fontWeight: '700' },
+  quickPillText: { color: Colors.neonLime, fontSize: responsiveFont(14), fontWeight: '700' },
 
   noteInput: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
-    padding: 16, color: '#FFF', fontSize: 15, marginBottom: 24,
+    padding: 16, color: '#FFF', fontSize: responsiveFont(15), marginBottom: 24,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
   payBtn: { borderRadius: Radius.xl, paddingVertical: 18, alignItems: 'center' },
-  payBtnText: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
+  payBtnText: { fontSize: responsiveFont(16), fontWeight: '900', letterSpacing: 0.5 },
 
   successContainer: { alignItems: 'center', paddingVertical: 16 },
-  successTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', marginTop: 16, marginBottom: 8 },
-  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  successTitle: { color: '#FFF', fontSize: responsiveFont(28), fontWeight: '900', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(16), textAlign: 'center', lineHeight: 24, marginBottom: 32 },
   doneBtn: { backgroundColor: Colors.success, paddingHorizontal: 48, paddingVertical: 18, borderRadius: Radius.xl },
-  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  doneBtnText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '800' },
 });

@@ -15,7 +15,11 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+<<<<<<< Updated upstream
 import { SafeAreaView } from 'react-native-safe-area-context';
+=======
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
+>>>>>>> Stashed changes
 import LinearGradient from 'react-native-linear-gradient';
 import {
   Tv, Gamepad2, Briefcase, Music, BookOpen,
@@ -214,7 +218,7 @@ export const SubscriptionHubScreen = () => {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator color="#C6FF00" size="large" />
-        <Text style={{ color: '#555', marginTop: 12, fontSize: 13 }}>Loading marketplace…</Text>
+        <Text style={{ color: '#555', marginTop: 12, fontSize: responsiveFont(13) }}>Loading marketplace…</Text>
       </View>
     );
   }
@@ -438,9 +442,9 @@ const styles = StyleSheet.create({
     borderColor: '#C6FF0033', paddingHorizontal: 10, paddingVertical: 4,
     alignSelf: 'flex-start', marginBottom: 14,
   },
-  heroPillText: { color: '#C6FF00', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  heroTitle: { color: '#FFF', fontSize: 42, fontWeight: '800', lineHeight: 48, letterSpacing: -0.5 },
-  heroSubtitle: { color: '#666', fontSize: 13, marginTop: 8, lineHeight: 19 },
+  heroPillText: { color: '#C6FF00', fontSize: responsiveFont(10), fontWeight: '700', letterSpacing: 1 },
+  heroTitle: { color: '#FFF', fontSize: responsiveFont(42), fontWeight: '800', lineHeight: 48, letterSpacing: -0.5 },
+  heroSubtitle: { color: '#666', fontSize: responsiveFont(13), marginTop: 8, lineHeight: 19 },
   heroGraphic: {
     width: 76, height: 76, marginLeft: 16, position: 'relative',
     justifyContent: 'center', alignItems: 'center',
@@ -454,8 +458,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: '#1A1A2E', paddingTop: 18,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statVal:  { color: '#C6FF00', fontSize: 20, fontWeight: '800' },
-  statLabel:{ color: '#444', fontSize: 11, marginTop: 2 },
+  statVal:  { color: '#C6FF00', fontSize: responsiveFont(20), fontWeight: '800' },
+  statLabel:{ color: '#444', fontSize: responsiveFont(11), marginTop: 2 },
 
   // ── SEARCH ──
   searchWrapper: {
@@ -464,7 +468,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#1E1B2E',
     marginHorizontal: 20, marginTop: 20, paddingHorizontal: 16, paddingVertical: 13,
   },
-  searchInput: { flex: 1, color: '#FFF', fontSize: 14, padding: 0 },
+  searchInput: { flex: 1, color: '#FFF', fontSize: responsiveFont(14), padding: 0 },
 
   // ── FILTER CHIPS ──
   chipsRow: { paddingHorizontal: 20, paddingVertical: 16, gap: 8 },
@@ -474,12 +478,12 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#1E1B2E',
   },
   chipActive: { backgroundColor: '#C6FF0018', borderColor: '#C6FF0055' },
-  chipText:       { color: '#555', fontSize: 13, fontWeight: '600' },
+  chipText:       { color: '#555', fontSize: responsiveFont(13), fontWeight: '600' },
   chipTextActive: { color: '#C6FF00' },
 
   // Section label
   sectionLabel: {
-    color: '#333', fontSize: 11, fontWeight: '700', letterSpacing: 1.5,
+    color: '#333', fontSize: responsiveFont(11), fontWeight: '700', letterSpacing: 1.5,
     textTransform: 'uppercase', paddingHorizontal: 22, marginBottom: 10,
   },
 
@@ -495,9 +499,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#C6FF0012', borderWidth: 1, borderColor: '#C6FF0030',
     justifyContent: 'center', alignItems: 'center',
   },
-  categoryTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  categoryTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
   viewAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  viewAllText:{ color: '#7C3AED', fontSize: 13, fontWeight: '600' },
+  viewAllText:{ color: '#7C3AED', fontSize: responsiveFont(13), fontWeight: '600' },
 
   // ── SUBSCRIPTION CARD ──
   card: {
@@ -517,7 +521,7 @@ const styles = StyleSheet.create({
     borderRadius: 8, borderWidth: 1,
     zIndex: 10,
   },
-  badgeText: { fontSize: 9, fontWeight: '700' },
+  badgeText: { fontSize: responsiveFont(9), fontWeight: '700' },
   logoWrapper: {
     width: 52, height: 52, borderRadius: 16,
     backgroundColor: '#FFFFFF', borderWidth: 1.5,
@@ -525,14 +529,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   brandLogo: { width: 36, height: 36 },
-  appName: { color: '#FFF', fontSize: 15, fontWeight: '700', marginBottom: 3 },
-  planText: { color: '#555', fontSize: 11, marginBottom: 10 },
+  appName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '700', marginBottom: 3 },
+  planText: { color: '#555', fontSize: responsiveFont(11), marginBottom: 10 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 12 },
-  priceFrom: { color: '#444', fontSize: 10 },
-  priceNeon: { color: '#C6FF00', fontSize: 17, fontWeight: '800' },
-  priceMo:   { color: '#444', fontSize: 10 },
+  priceFrom: { color: '#444', fontSize: responsiveFont(10) },
+  priceNeon: { color: '#C6FF00', fontSize: responsiveFont(17), fontWeight: '800' },
+  priceMo:   { color: '#444', fontSize: responsiveFont(10) },
   ctaGradient: { borderRadius: 12, paddingVertical: 10, alignItems: 'center' },
-  ctaText: { color: '#000', fontWeight: '800', fontSize: 13 },
+  ctaText: { color: '#000', fontWeight: '800', fontSize: responsiveFont(13) },
 
   // ── PLAN SELECTION ──
   planHeader: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
@@ -546,8 +550,8 @@ const styles = StyleSheet.create({
     borderWidth: 2, justifyContent: 'center', alignItems: 'center', marginBottom: 12,
   },
   planHeaderLogo: { width: 50, height: 50 },
-  planHeaderTitle: { color: '#FFF', fontSize: 24, fontWeight: '800' },
-  planHeaderSub:   { color: '#555', fontSize: 13, marginTop: 4 },
+  planHeaderTitle: { color: '#FFF', fontSize: responsiveFont(24), fontWeight: '800' },
+  planHeaderSub:   { color: '#555', fontSize: responsiveFont(13), marginTop: 4 },
 
   planCard: {
     borderRadius: 22, borderWidth: 1.5, padding: 20, marginBottom: 14,
@@ -558,19 +562,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#C6FF0015', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
     borderWidth: 1, borderColor: '#C6FF0040',
   },
+<<<<<<< Updated upstream
   popularBadgeText: { color: '#C6FF00', fontSize: 10, fontWeight: '700' },
   planCardName: { color: '#FFF', fontSize: 20, fontWeight: '800' },
   planCardFeatures: { color: '#555', fontSize: 13, marginTop: 4 },
   planCardRight: { alignItems: 'flex-start', gap: 4, minWidth: 80 },
+=======
+  popularBadgeText: { color: '#C6FF00', fontSize: responsiveFont(10), fontWeight: '700' },
+  planCardName: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '800' },
+  planCardFeatures: { color: '#555', fontSize: responsiveFont(13), marginTop: 4 },
+  planCardRight: { alignItems: 'flex-end', gap: 4 },
+>>>>>>> Stashed changes
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
-  planPriceSym: { color: '#C6FF00', fontSize: 13, fontWeight: '700' },
-  planPriceVal: { color: '#C6FF00', fontSize: 26, fontWeight: '900' },
-  planPriceMo:  { color: '#444', fontSize: 11 },
+  planPriceSym: { color: '#C6FF00', fontSize: responsiveFont(13), fontWeight: '700' },
+  planPriceVal: { color: '#C6FF00', fontSize: responsiveFont(26), fontWeight: '900' },
+  planPriceMo:  { color: '#444', fontSize: responsiveFont(11) },
   selectBtn: {
     backgroundColor: '#1A1628', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7,
     borderWidth: 1, borderColor: '#2A2040',
   },
-  selectBtnText: { color: '#C6FF00', fontWeight: '700', fontSize: 12 },
+  selectBtnText: { color: '#C6FF00', fontWeight: '700', fontSize: responsiveFont(12) },
 
   // ── MODAL ──
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'flex-end' },
@@ -583,20 +594,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center', marginBottom: 24,
   },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
-  modalTitle:  { color: '#FFF', fontSize: 22, fontWeight: '800' },
-  modalSub:    { color: '#555', fontSize: 13, marginTop: 3 },
+  modalTitle:  { color: '#FFF', fontSize: responsiveFont(22), fontWeight: '800' },
+  modalSub:    { color: '#555', fontSize: responsiveFont(13), marginTop: 3 },
   modalClose: {
     width: 36, height: 36, borderRadius: 12, backgroundColor: '#1A1628',
     justifyContent: 'center', alignItems: 'center',
   },
-  modalBody: { color: '#888', fontSize: 16, lineHeight: 24, marginBottom: 28 },
+  modalBody: { color: '#888', fontSize: responsiveFont(16), lineHeight: 24, marginBottom: 28 },
   modalActions: { flexDirection: 'row', gap: 12 },
   cancelBtn: {
     flex: 1, paddingVertical: 16, borderRadius: 16,
     backgroundColor: '#1A1628', alignItems: 'center',
     borderWidth: 1, borderColor: '#2A2040',
   },
-  cancelBtnText: { color: '#888', fontWeight: '700', fontSize: 15 },
+  cancelBtnText: { color: '#888', fontWeight: '700', fontSize: responsiveFont(15) },
   confirmBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  confirmBtnText: { color: '#000', fontWeight: '900', fontSize: 15 },
+  confirmBtnText: { color: '#000', fontWeight: '900', fontSize: responsiveFont(15) },
 });

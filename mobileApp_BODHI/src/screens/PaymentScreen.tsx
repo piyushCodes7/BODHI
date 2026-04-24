@@ -12,6 +12,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import {
   Send,
@@ -218,7 +219,7 @@ export const PaymentScreen: React.FC<Props> = ({
           <View style={styles.confirmAvatarWrap}>
             <View style={[styles.contactAvatar, { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: Colors.purple }]}>
               {selectedContact ? (
-                <Text style={{ fontSize: 32, fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
+                <Text style={{ fontSize: responsiveFont(32), fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
               ) : (
                 <Smartphone size={36} color={Colors.textPrimary} />
               )}
@@ -282,7 +283,7 @@ export const PaymentScreen: React.FC<Props> = ({
           <View style={styles.sendHeaderContact}>
             <View style={[styles.contactAvatar, { width: 40, height: 40 }]}>
               {selectedContact ? (
-                <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
+                <Text style={{ fontSize: responsiveFont(16), fontWeight: '700', color: Colors.textPrimary }}>{getInitials(selectedContact.name)}</Text>
               ) : (
                 <Smartphone size={20} color={Colors.textPrimary} />
               )}
@@ -533,7 +534,7 @@ export const PaymentScreen: React.FC<Props> = ({
                 {CONTACTS.filter(c => c.recent).map(c => (
                   <TouchableOpacity key={c.id} style={styles.recentContact} onPress={() => handleSelectContact(c)}>
                     <View style={styles.recentAvatar}>
-                      <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.textPrimary }}>
+                      <Text style={{ fontSize: responsiveFont(20), fontWeight: '700', color: Colors.textPrimary }}>
                         {getInitials(c.name)}
                       </Text>
                     </View>
@@ -546,7 +547,7 @@ export const PaymentScreen: React.FC<Props> = ({
               {filteredContacts.map(c => (
                 <TouchableOpacity key={c.id} style={styles.contactRow} onPress={() => handleSelectContact(c)}>
                   <View style={styles.contactAvatar}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>
+                    <Text style={{ fontSize: responsiveFont(16), fontWeight: '700', color: Colors.textPrimary }}>
                       {getInitials(c.name)}
                     </Text>
                   </View>
@@ -626,7 +627,7 @@ export const PaymentScreen: React.FC<Props> = ({
                 {tx.isService ? (
                   <Tv size={20} color={Colors.textPrimary} />
                 ) : (
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.textPrimary }}>
+                  <Text style={{ fontSize: responsiveFont(16), fontWeight: '700', color: Colors.textPrimary }}>
                     {getInitials(tx.name)}
                   </Text>
                 )}
@@ -666,12 +667,12 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
   pageHeader: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg },
-  pageTitle: { fontSize: 32, fontWeight: '900', color: '#FFF' },
-  pageSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, marginTop: 4, fontWeight: '700' },
+  pageTitle: { fontSize: responsiveFont(32), fontWeight: '900', color: '#FFF' },
+  pageSub: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, marginTop: 4, fontWeight: '700' },
 
   balanceCard: { marginHorizontal: Spacing.lg, marginBottom: Spacing.xl, height: 180 },
-  cardLabel: { fontSize: 11, color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 4, fontWeight: '800' },
-  cardBalance: { fontSize: 36, fontWeight: '900', color: '#FFF', marginBottom: Spacing.lg },
+  cardLabel: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 4, fontWeight: '800' },
+  cardBalance: { fontSize: responsiveFont(36), fontWeight: '900', color: '#FFF', marginBottom: Spacing.lg },
   cardActions: { flexDirection: 'row', justifyContent: 'space-around' },
   cardAction: { alignItems: 'center' },
   cardActionIcon: {
@@ -680,7 +681,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  cardActionLabel: { fontSize: 11, color: '#FFF', fontWeight: '800', letterSpacing: 0.5 },
+  cardActionLabel: { fontSize: responsiveFont(11), color: '#FFF', fontWeight: '800', letterSpacing: 0.5 },
 
   section: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
 
@@ -691,16 +692,16 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, paddingVertical: 10, borderRadius: Radius.md, alignItems: 'center' },
   tabActive: { backgroundColor: 'rgba(255,255,255,0.1)' },
-  tabText: { fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
+  tabText: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
   tabTextActive: { color: Colors.neonLime, fontWeight: '800' },
 
   searchInput: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
-    padding: 16, fontSize: 15, color: '#FFF',
+    padding: 16, fontSize: responsiveFont(15), color: '#FFF',
     marginBottom: Spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   subLabel: {
-    fontSize: 11, color: 'rgba(255,255,255,0.5)',
+    fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.5)',
     letterSpacing: 1.5, fontWeight: '800', marginBottom: Spacing.md,
   },
 
@@ -713,7 +714,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1.5, borderColor: Colors.neonLime,
   },
-  recentName: { fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: '700', textAlign: 'center' },
+  recentName: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.6)', fontWeight: '700', textAlign: 'center' },
 
   contactRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -725,8 +726,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginRight: 16,
   },
   contactInfo: { flex: 1 },
-  contactName: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-  contactPhone: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  contactName: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FFF' },
+  contactPhone: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.4)', marginTop: 2 },
 
   phoneRow: {
     flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)',
@@ -737,11 +738,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.03)', borderRightWidth: 1,
     borderRightColor: 'rgba(255,255,255,0.1)', justifyContent: 'center',
   },
-  countryCodeText: { fontSize: 15, color: '#FFF', fontWeight: '700' },
-  phoneInput: { flex: 1, padding: 16, fontSize: 16, color: '#FFF', fontWeight: '600' },
+  countryCodeText: { fontSize: responsiveFont(15), color: '#FFF', fontWeight: '700' },
+  phoneInput: { flex: 1, padding: 16, fontSize: responsiveFont(16), color: '#FFF', fontWeight: '600' },
   upiInput: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
-    padding: 16, fontSize: 16, color: '#FFF', fontWeight: '600', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
+    padding: 16, fontSize: responsiveFont(16), color: '#FFF', fontWeight: '600', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
 
   txRow: {
@@ -754,11 +755,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16,
   },
   txInfo: { flex: 1 },
-  txName: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-  txTime: { fontSize: 13, color: 'rgba(255,255,255,0.3)', marginTop: 2 },
-  txAmount: { fontSize: 16, fontWeight: '800' },
+  txName: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FFF' },
+  txTime: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.3)', marginTop: 2 },
+  txAmount: { fontSize: responsiveFont(16), fontWeight: '800' },
   txPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
-  txPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  txPillText: { fontSize: responsiveFont(10), fontWeight: '900', letterSpacing: 0.5 },
 
   // ── send ──
   sendHeader: {
@@ -771,14 +772,14 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12 },
   sendHeaderContact: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  sendHeaderName: { fontSize: 18, fontWeight: '800', color: '#FFF' },
-  sendHeaderUpi: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  sendHeaderName: { fontSize: responsiveFont(18), fontWeight: '800', color: '#FFF' },
+  sendHeaderUpi: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.4)', marginTop: 2 },
 
   sendBody: { paddingHorizontal: 24, paddingTop: 40, paddingBottom: 140 },
-  enterAmtLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textAlign: 'center', marginBottom: 16, fontWeight: '800' },
+  enterAmtLabel: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textAlign: 'center', marginBottom: 16, fontWeight: '800' },
   amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  rupeeSymbol: { fontSize: 40, fontWeight: '300', color: '#FFF', marginRight: 8, marginBottom: 4 },
-  amountInput: { fontSize: 64, fontWeight: '900', color: '#FFF', minWidth: 120, textAlign: 'center' },
+  rupeeSymbol: { fontSize: responsiveFont(40), fontWeight: '300', color: '#FFF', marginRight: 8, marginBottom: 4 },
+  amountInput: { fontSize: responsiveFont(64), fontWeight: '900', color: '#FFF', minWidth: 120, textAlign: 'center' },
 
   quickAmtsRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 40 },
   quickAmtPill: {
@@ -786,11 +787,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickAmtText: { fontSize: 14, color: Colors.neonLime, fontWeight: '700' },
+  quickAmtText: { fontSize: responsiveFont(14), color: Colors.neonLime, fontWeight: '700' },
 
   noteInput: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
-    padding: 16, fontSize: 16, color: '#FFF',
+    padding: 16, fontSize: responsiveFont(16), color: '#FFF',
     marginBottom: 24, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
   },
   balanceInfo: {
@@ -798,8 +799,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
-  balanceInfoText: { fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
-  balanceInfoAmt: { fontSize: 13, fontWeight: '800', color: '#FFF' },
+  balanceInfoText: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  balanceInfoAmt: { fontSize: responsiveFont(13), fontWeight: '800', color: '#FFF' },
 
   sendFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -810,7 +811,7 @@ const styles = StyleSheet.create({
     padding: 18, alignItems: 'center',
   },
   proceedBtnDisabled: { opacity: 0.4 },
-  proceedBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
+  proceedBtnText: { fontSize: responsiveFont(16), fontWeight: '900', color: '#000', letterSpacing: 1 },
 
   // ── confirm ──
   darkHeader: {
@@ -819,24 +820,24 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingBottom: 16,
   },
-  darkHeaderTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  darkHeaderTitle: { fontSize: responsiveFont(20), fontWeight: '900', color: '#FFF' },
 
   confirmBody: { alignItems: 'center', padding: 24, paddingBottom: 140 },
   confirmAvatarWrap: { marginBottom: 24 },
-  confirmTo: { fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, marginBottom: 8, fontWeight: '800' },
-  confirmName: { fontSize: 28, fontWeight: '900', color: '#FFF' },
-  confirmUpi: { fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 4, marginBottom: 24 },
+  confirmTo: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.5)', letterSpacing: 2, marginBottom: 8, fontWeight: '800' },
+  confirmName: { fontSize: responsiveFont(28), fontWeight: '900', color: '#FFF' },
+  confirmUpi: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.4)', marginTop: 4, marginBottom: 24 },
   confirmAmountBox: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 32 },
-  confirmCurrency: { fontSize: 28, fontWeight: '400', color: '#FFF', marginBottom: 12, marginRight: 4 },
-  confirmAmount: { fontSize: 64, fontWeight: '900', color: '#FFF' },
-  confirmNote: { fontSize: 16, color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', marginBottom: 40, textAlign: 'center' },
+  confirmCurrency: { fontSize: responsiveFont(28), fontWeight: '400', color: '#FFF', marginBottom: 12, marginRight: 4 },
+  confirmAmount: { fontSize: responsiveFont(64), fontWeight: '900', color: '#FFF' },
+  confirmNote: { fontSize: responsiveFont(16), color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', marginBottom: 40, textAlign: 'center' },
   confirmMeta: {
     width: '100%', backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 24, padding: 20, gap: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   confirmMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  confirmMetaLabel: { fontSize: 15, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
-  confirmMetaValue: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  confirmMetaLabel: { fontSize: responsiveFont(15), color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  confirmMetaValue: { fontSize: responsiveFont(15), fontWeight: '800', color: '#FFF' },
 
   confirmFooter: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -848,9 +849,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  editBtnText: { fontSize: 16, color: '#FFF', fontWeight: '800' },
+  editBtnText: { fontSize: responsiveFont(16), color: '#FFF', fontWeight: '800' },
   payNowBtn: { flex: 2, backgroundColor: Colors.neonLime, borderRadius: Radius.xl, padding: 18, alignItems: 'center' },
-  payNowBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
+  payNowBtnText: { fontSize: responsiveFont(16), fontWeight: '900', color: '#000', letterSpacing: 1 },
 
   // ── success ──
   successContainer: {
@@ -862,9 +863,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 32,
   },
-  successTitle: { fontSize: 32, fontWeight: '900', color: '#FFF', marginBottom: 12 },
-  successSub: { fontSize: 18, color: 'rgba(255,255,255,0.7)', marginBottom: 12, textAlign: 'center' },
-  successNote: { fontSize: 14, color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, fontWeight: '700' },
+  successTitle: { fontSize: responsiveFont(32), fontWeight: '900', color: '#FFF', marginBottom: 12 },
+  successSub: { fontSize: responsiveFont(18), color: 'rgba(255,255,255,0.7)', marginBottom: 12, textAlign: 'center' },
+  successNote: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5, fontWeight: '700' },
 
   // ── QR ──
   qrContainer: { flex: 1 },
@@ -874,7 +875,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingBottom: 24,
   },
-  qrHeaderTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  qrHeaderTitle: { fontSize: responsiveFont(20), fontWeight: '900', color: '#FFF' },
   qrViewfinder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   qrFrame: {
     width: W * 0.75, height: W * 0.75,
@@ -892,20 +893,20 @@ const styles = StyleSheet.create({
   qrScanLine: { position: 'absolute', width: '90%', height: 3, backgroundColor: Colors.neonLime, opacity: 0.8 },
   qrMockGrid: { gap: 10 },
   qrCell: { width: 32, height: 32, backgroundColor: '#FFF', margin: 4, borderRadius: 6 },
-  qrHint: { color: 'rgba(255,255,255,0.5)', marginTop: 40, fontSize: 15, textAlign: 'center', fontWeight: '600' },
+  qrHint: { color: 'rgba(255,255,255,0.5)', marginTop: 40, fontSize: responsiveFont(15), textAlign: 'center', fontWeight: '600' },
 
   qrFooter: { padding: 24, paddingBottom: 60, gap: 16 },
   qrScanBtn: {
     backgroundColor: Colors.neonLime, borderRadius: Radius.xl,
     padding: 20, alignItems: 'center',
   },
-  qrScanBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 1 },
+  qrScanBtnText: { fontSize: responsiveFont(16), fontWeight: '900', color: '#000', letterSpacing: 1 },
   myQrBtn: {
     borderRadius: Radius.xl, padding: 16, alignItems: 'center',
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
     backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  myQrBtnText: { fontSize: 14, color: '#FFF', fontWeight: '800', letterSpacing: 1 },
+  myQrBtnText: { fontSize: responsiveFont(14), color: '#FFF', fontWeight: '800', letterSpacing: 1 },
 
   // ── MY QR MODAL STYLES ──
   modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.85)' },
@@ -940,17 +941,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   myQrAvatarText: {
-    fontSize: 28,
+    fontSize: responsiveFont(28),
     fontWeight: '900',
     color: '#000',
   },
   myQrName: {
-    fontSize: 22,
+    fontSize: responsiveFont(22),
     fontWeight: '900',
     color: '#FFF',
   },
   myQrId: {
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     color: Colors.neonLime,
     marginTop: 6,
     fontWeight: '800',
@@ -981,13 +982,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   upiBadgeText: {
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '900',
     color: '#FFF',
     letterSpacing: 1,
   },
   scanToPayText: {
-    fontSize: 13,
+    fontSize: responsiveFont(13),
     color: 'rgba(255,255,255,0.5)',
     textAlign: 'center',
     lineHeight: 20,

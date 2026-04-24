@@ -17,6 +17,7 @@ import {
   UIManager,
   Dimensions,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import {
   Plane,
   TrendingUp,
@@ -433,6 +434,7 @@ export function SocialScreen({ navigation }: { navigation: any }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         {/* ── HERO HEADER ── */}
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
@@ -558,6 +560,7 @@ export function SocialScreen({ navigation }: { navigation: any }) {
         </View>
 
         <View style={{ height: 40 }} />
+        </View>
       </ScrollView>
     </View>
   );
@@ -585,14 +588,14 @@ const styles = StyleSheet.create({
   },
   headerText: { flex: 1 },
   title: {
-    fontSize: 38,
+    fontSize: responsiveFont(38),
     fontWeight: '900',
     color: C.white,
     letterSpacing: -1.2,
     lineHeight: 42,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: responsiveFont(13),
     color: C.whiteMid,
     marginTop: 6,
     fontWeight: '500',
@@ -654,7 +657,7 @@ const styles = StyleSheet.create({
   wealthInfo: { flex: 1 },
   wealthLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '600',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -662,7 +665,7 @@ const styles = StyleSheet.create({
   },
   wealthValue: {
     color: C.white,
-    fontSize: 26,
+    fontSize: responsiveFont(26),
     fontWeight: '900',
     letterSpacing: -0.5,
   },
@@ -678,13 +681,13 @@ const styles = StyleSheet.create({
   wealthStatItem: { alignItems: 'center' },
   wealthStatLabel: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 9,
+    fontSize: responsiveFont(9),
     fontWeight: '700',
     textTransform: 'uppercase',
   },
   wealthStatValue: {
     color: C.white,
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '800',
   },
   wealthStatDivider: {
@@ -710,7 +713,7 @@ const styles = StyleSheet.create({
   wealthInfo: { flex: 1 },
   wealthLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '600',
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -718,7 +721,7 @@ const styles = StyleSheet.create({
   },
   wealthValue: {
     color: C.white,
-    fontSize: 26,
+    fontSize: responsiveFont(26),
     fontWeight: '900',
     letterSpacing: -0.5,
   },
@@ -734,13 +737,13 @@ const styles = StyleSheet.create({
   wealthStatItem: { alignItems: 'center' },
   wealthStatLabel: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 9,
+    fontSize: responsiveFont(9),
     fontWeight: '700',
     textTransform: 'uppercase',
   },
   wealthStatValue: {
     color: C.white,
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '800',
   },
 
@@ -753,13 +756,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: responsiveFont(18),
     fontWeight: '800',
     color: C.white,
     letterSpacing: -0.5,
   },
   sectionSub: {
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     color: C.whiteDim,
     marginTop: 3,
     fontWeight: '500',
@@ -778,7 +781,7 @@ const styles = StyleSheet.create({
     borderColor: C.limeBorder,
   },
   createBtnText: {
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     fontWeight: '800',
     color: C.neonLime,
     letterSpacing: 0.2,
@@ -797,12 +800,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: C.whiteMid,
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '600',
   },
   emptyHint: {
     color: C.whiteDim,
-    fontSize: 12,
+    fontSize: responsiveFont(12),
   },
 
   // CARD
@@ -846,7 +849,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardName: {
-    fontSize: 16,
+    fontSize: responsiveFont(16),
     fontWeight: '800',
     color: C.white,
     letterSpacing: -0.3,
@@ -859,12 +862,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   cardMeta: {
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     color: C.whiteDim,
     fontWeight: '500',
   },
   metaDot: {
-    fontSize: 12,
+    fontSize: responsiveFont(12),
     color: C.whiteDim,
   },
   cardHeaderRight: {
@@ -893,7 +896,7 @@ const styles = StyleSheet.create({
     backgroundColor: C.neonLime,
   },
   activeBadgeText: {
-    fontSize: 10,
+    fontSize: responsiveFont(10),
     fontWeight: '800',
     color: C.neonLime,
     letterSpacing: 0.5,
@@ -924,20 +927,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: responsiveFont(11),
     color: C.whiteDim,
     fontWeight: '500',
     letterSpacing: 0.1,
     marginBottom: 2,
   },
   statValue: {
-    fontSize: 14,
+    fontSize: responsiveFont(14),
     fontWeight: '800',
     color: C.white,
     letterSpacing: -0.3,
   },
   statSubGreen: {
-    fontSize: 11,
+    fontSize: responsiveFont(11),
     fontWeight: '700',
     color: C.neonLime,
     marginTop: 2,
@@ -956,7 +959,7 @@ const styles = StyleSheet.create({
     borderColor: C.purpleBorder,
   },
   cardActionText: {
-    fontSize: 13,
+    fontSize: responsiveFont(13),
     fontWeight: '800',
     letterSpacing: 0.1,
     color: C.purple,

@@ -8,7 +8,12 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
   TextInput, Modal, KeyboardAvoidingView, Platform, Linking, AppState
 } from 'react-native';
+<<<<<<< Updated upstream
 import { useNavigation, useIsFocused } from '@react-navigation/native';
+=======
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
+import { useNavigation } from '@react-navigation/native';
+>>>>>>> Stashed changes
 import {
   Camera,
   useCameraDevice,
@@ -318,7 +323,7 @@ export function ScanPayScreen() {
                   <Text style={styles.doneBtnText}>Return Home</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={resetAndScanAgain} style={{ marginTop: 12 }}>
-                  <Text style={{ color: '#A855F7', fontSize: 14 }}>Scan Another</Text>
+                  <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Scan Another</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -434,20 +439,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+  headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800', letterSpacing: 0.5 },
   viewfinderContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  scanInstructions: { color: '#FFF', fontSize: 16, textAlign: 'center', marginBottom: 32, lineHeight: 24, fontWeight: '600' },
+  scanInstructions: { color: '#FFF', fontSize: responsiveFont(16), textAlign: 'center', marginBottom: 32, lineHeight: 24, fontWeight: '600' },
   viewfinder: { width: 260, height: 260, position: 'relative' },
   corner: { position: 'absolute', width: CORNER_SIZE, height: CORNER_SIZE, borderColor: Colors.neonLime },
   tl: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderTopLeftRadius: 12 },
   tr: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderTopRightRadius: 12 },
   bl: { bottom: 0, left: 0, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderBottomLeftRadius: 12 },
   br: { bottom: 0, right: 0, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderBottomRightRadius: 12 },
-  scanHint: { color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 32, fontWeight: '500' },
-  permissionTitle: { color: '#FFF', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
-  permissionSub: { color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  scanHint: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(13), marginTop: 32, fontWeight: '500' },
+  permissionTitle: { color: '#FFF', fontSize: responsiveFont(22), fontWeight: '800', textAlign: 'center', marginBottom: 12 },
+  permissionSub: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(14), textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   grantBtn: { backgroundColor: Colors.neonLime, paddingHorizontal: 32, paddingVertical: 14, borderRadius: Radius.lg },
-  grantBtnText: { color: '#000', fontSize: 15, fontWeight: '800' },
+  grantBtnText: { color: '#000', fontSize: responsiveFont(15), fontWeight: '800' },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
   modalSheet: {
     backgroundColor: '#12142d', borderTopLeftRadius: 32, borderTopRightRadius: 32,
@@ -455,24 +460,24 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { color: '#FFF', fontSize: 22, fontWeight: '800' },
+  modalTitle: { color: '#FFF', fontSize: responsiveFont(22), fontWeight: '800' },
   scannedTag: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginBottom: 24,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  scannedLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
-  scannedValue: { color: Colors.neonLime, fontSize: 16, fontWeight: '800' },
-  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
+  scannedLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
+  scannedValue: { color: Colors.neonLime, fontSize: responsiveFont(16), fontWeight: '800' },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16,
-    color: '#FFF', fontSize: 18, fontWeight: '700', marginBottom: 16,
+    color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700', marginBottom: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
   },
   payBtn: { borderRadius: Radius.xl, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  payBtnText: { fontSize: 16, fontWeight: '900', color: '#000', letterSpacing: 0.5 },
+  payBtnText: { fontSize: responsiveFont(16), fontWeight: '900', color: '#000', letterSpacing: 0.5 },
   successContainer: { alignItems: 'center', paddingVertical: 20 },
-  successTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', marginTop: 16, marginBottom: 8 },
-  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  successTitle: { color: '#FFF', fontSize: responsiveFont(28), fontWeight: '900', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(16), textAlign: 'center', lineHeight: 24, marginBottom: 32 },
   doneBtn: { backgroundColor: Colors.success, paddingHorizontal: 48, paddingVertical: 18, borderRadius: Radius.xl },
-  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  doneBtnText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '800' },
 });

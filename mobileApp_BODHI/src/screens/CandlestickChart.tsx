@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { WebView } from 'react-native-webview';
 
 export interface CandlestickData {
@@ -43,7 +44,7 @@ export default function CandlestickChart({ data, height = 250 }: Props) {
               layout: { 
                 backgroundColor: '#0E0C24', 
                 textColor: 'rgba(255, 255, 255, 0.5)',
-                fontSize: 10,
+                fontSize: responsiveFont(10),
               },
               grid: { 
                 vertLines: { color: 'rgba(255, 255, 255, 0.05)' }, 

@@ -9,7 +9,11 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+<<<<<<< Updated upstream
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+=======
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
+>>>>>>> Stashed changes
 import { ChevronLeft, Bell, CheckCheck, Info, AlertTriangle, Briefcase, CheckCircle2 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NotificationAPI } from '../api/client';
@@ -156,7 +160,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   backBtn: { padding: 4 },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
   headerAction: { padding: 4 },
   listContent: { paddingBottom: 20 },
   notificationItem: {
@@ -169,12 +173,12 @@ const styles = StyleSheet.create({
   iconContainer: { marginRight: 16, paddingTop: 2 },
   contentContainer: { flex: 1 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  title: { color: 'rgba(255,255,255,0.6)', fontSize: 16, fontWeight: '600' },
+  title: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(16), fontWeight: '600' },
   unreadText: { color: '#FFF' },
   unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime },
-  message: { color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 20 },
-  time: { color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 8 },
+  message: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), lineHeight: 20 },
+  time: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFont(12), marginTop: 8 },
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 100 },
-  emptyText: { color: '#FFF', fontSize: 18, fontWeight: '700', marginTop: 20 },
-  emptySub: { color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 8 },
+  emptyText: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700', marginTop: 20 },
+  emptySub: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), marginTop: 8 },
 });

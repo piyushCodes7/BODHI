@@ -7,6 +7,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList,
   ActivityIndicator, Alert, Platform, KeyboardAvoidingView, Modal, RefreshControl,
 } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ArrowLeft, ArrowDownToLine, Clock, CheckCircle, X, ChevronRight } from 'lucide-react-native';
@@ -173,7 +174,7 @@ export function RequestMoneyScreen() {
             <Text style={styles.doneBtnText}>Done</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={resetForm} style={{ marginTop: 14 }}>
-            <Text style={{ color: '#A855F7', fontSize: 14 }}>Request from someone else</Text>
+            <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Request from someone else</Text>
           </TouchableOpacity>
         </View>
       );
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     width: 38, height: 38, borderRadius: 19,
     backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center',
   },
-  headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
 
   tabToggle: {
     flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)',
@@ -433,35 +434,35 @@ const styles = StyleSheet.create({
   },
   toggleBtn: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 10, flexDirection: 'row', justifyContent: 'center' },
   toggleBtnActive: { backgroundColor: 'rgba(168,85,247,0.25)' },
-  toggleBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '600' },
+  toggleBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(14), fontWeight: '600' },
   toggleBtnTextActive: { color: '#A855F7' },
   badge: { backgroundColor: '#A855F7', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 },
-  badgeText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+  badgeText: { color: '#FFF', fontSize: responsiveFont(11), fontWeight: '700' },
 
   formContainer: { padding: 20, flex: 1 },
-  sectionTitle: { color: '#FFF', fontSize: 18, fontWeight: '700', marginBottom: 24 },
-  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
+  sectionTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700', marginBottom: 24 },
+  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(11), fontWeight: '700', letterSpacing: 1.5, marginBottom: 8 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-    padding: 16, color: '#FFF', fontSize: 15, marginBottom: 20,
+    padding: 16, color: '#FFF', fontSize: responsiveFont(15), marginBottom: 20,
   },
   amtRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  rupee: { color: 'rgba(255,255,255,0.4)', fontSize: 40, fontWeight: '300', marginRight: 8 },
-  amtInput: { color: '#FFF', fontSize: 56, fontWeight: '800', flex: 1 },
+  rupee: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(40), fontWeight: '300', marginRight: 8 },
+  amtInput: { color: '#FFF', fontSize: responsiveFont(56), fontWeight: '800', flex: 1 },
   quickAmounts: { flexDirection: 'row', gap: 10, marginBottom: 20, flexWrap: 'wrap' },
   quickPill: {
     backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 20,
     paddingHorizontal: 16, paddingVertical: 9,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickPillText: { color: '#A855F7', fontSize: 13, fontWeight: '600' },
+  quickPillText: { color: '#A855F7', fontSize: responsiveFont(13), fontWeight: '600' },
   requestBtn: {
     borderRadius: 30, paddingVertical: 18,
     alignItems: 'center', justifyContent: 'center',
     flexDirection: 'row', gap: 10,
   },
-  requestBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  requestBtnText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
 
   // pending
   requestCard: {
@@ -475,17 +476,17 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: '#7B2FBE', alignItems: 'center', justifyContent: 'center',
   },
-  reqAvatarText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  reqName: { color: '#FFF', fontSize: 15, fontWeight: '600', marginBottom: 2 },
-  reqNote: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontStyle: 'italic', marginBottom: 2 },
-  reqTime: { color: 'rgba(255,255,255,0.3)', fontSize: 11 },
+  reqAvatarText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
+  reqName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '600', marginBottom: 2 },
+  reqNote: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(12), fontStyle: 'italic', marginBottom: 2 },
+  reqTime: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFont(11) },
   requestCardRight: { alignItems: 'flex-end', gap: 8 },
-  reqAmount: { color: '#FFE259', fontSize: 17, fontWeight: '800' },
+  reqAmount: { color: '#FFE259', fontSize: responsiveFont(17), fontWeight: '800' },
   payReqBtn: { backgroundColor: '#A855F7', paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20 },
-  payReqBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  payReqBtnText: { color: '#FFF', fontSize: responsiveFont(13), fontWeight: '700' },
 
-  emptyTitle: { color: '#FFF', fontSize: 20, fontWeight: '700', marginTop: 16, marginBottom: 8 },
-  emptySub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center' },
+  emptyTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  emptySub: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(14), textAlign: 'center' },
 
   // modal
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
@@ -495,19 +496,19 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
   },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
-  modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
+  modalTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700' },
   fulfillSummary: { alignItems: 'center', paddingVertical: 20, marginBottom: 24 },
-  fulfillFrom: { color: 'rgba(255,255,255,0.6)', fontSize: 15, marginBottom: 8 },
-  fulfillAmt: { color: '#FFE259', fontSize: 48, fontWeight: '800', marginBottom: 8 },
-  fulfillNote: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontStyle: 'italic' },
+  fulfillFrom: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(15), marginBottom: 8 },
+  fulfillAmt: { color: '#FFE259', fontSize: responsiveFont(48), fontWeight: '800', marginBottom: 8 },
+  fulfillNote: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), fontStyle: 'italic' },
   declineBtn: { marginTop: 14, alignItems: 'center' },
-  declineBtnText: { color: '#FF3B30', fontSize: 15, fontWeight: '600' },
+  declineBtnText: { color: '#FF3B30', fontSize: responsiveFont(15), fontWeight: '600' },
 
   // success
   successContainer: { alignItems: 'center', paddingVertical: 16 },
-  successTitle: { color: '#FFF', fontSize: 26, fontWeight: '800', marginTop: 16, marginBottom: 8 },
-  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 8 },
-  successHint: { color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', marginBottom: 32 },
+  successTitle: { color: '#FFF', fontSize: responsiveFont(26), fontWeight: '800', marginTop: 16, marginBottom: 8 },
+  successSub: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(15), textAlign: 'center', lineHeight: 22, marginBottom: 8 },
+  successHint: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(13), textAlign: 'center', marginBottom: 32 },
   doneBtn: { backgroundColor: '#34c759', paddingHorizontal: 48, paddingVertical: 16, borderRadius: 30 },
-  doneBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  doneBtnText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
 });

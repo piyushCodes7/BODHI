@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
+<<<<<<< Updated upstream
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
+=======
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
+>>>>>>> Stashed changes
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
@@ -147,32 +152,32 @@ const styles = StyleSheet.create({
   sideColumn: { width: 60, justifyContent: 'center', zIndex: 20 }, 
   
   centerLogo: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
-  logoText: { fontSize: 28, fontWeight: '900', letterSpacing: -0.5, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
+  logoText: { fontSize: responsiveFont(28), fontWeight: '900', letterSpacing: -0.5, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
   
   avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: Colors.neonLime, padding: 2 },
   avatar: { width: '100%', height: '100%', borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarInitials: { fontSize: 15, fontWeight: '700', color: Colors.neonLime },
+  avatarInitials: { fontSize: responsiveFont(15), fontWeight: '700', color: Colors.neonLime },
   onlineDot: { position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#0A0A14' },
   iconBtn: { padding: 8 },
 
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: Spacing.xl, paddingTop: Spacing.xl, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xl },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
+  modalTitle: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFFFFF' },
   closeBtn: { padding: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20 },
   
   userInfoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A24', padding: Spacing.lg, borderRadius: 20, marginBottom: Spacing.xl },
   largeAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md, borderWidth: 2, borderColor: Colors.electricViolet },
-  largeAvatarText: { fontSize: 20, fontWeight: '800', color: '#FFFFFF' },
+  largeAvatarText: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFFFFF' },
   userInfoText: { flex: 1 },
-  userName: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
-  userUpi: { fontSize: 14, color: '#A0A0B0', marginTop: 2 },
+  userName: { fontSize: responsiveFont(18), fontWeight: '700', color: '#FFFFFF' },
+  userUpi: { fontSize: responsiveFont(14), color: '#A0A0B0', marginTop: 2 },
 
   menuGroup: { backgroundColor: '#1A1A24', borderRadius: 20, overflow: 'hidden', marginBottom: Spacing.xl },
   menuOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   menuOptionLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-  menuOptionText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  menuOptionText: { fontSize: responsiveFont(16), fontWeight: '600', color: '#FFFFFF' },
 
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, backgroundColor: 'rgba(255, 42, 95, 0.1)', paddingVertical: Spacing.lg, borderRadius: 20, marginBottom: Spacing.lg },
-  logoutText: { fontSize: 16, fontWeight: '700', color: '#FF2A5F' },
+  logoutText: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FF2A5F' },
 });
