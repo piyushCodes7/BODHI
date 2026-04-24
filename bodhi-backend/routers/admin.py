@@ -23,8 +23,16 @@ class SendNotificationRequest(BaseModel):
     message: str
     type: str = "INFO"
 
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "bodhi123")
+ADMIN_ACCOUNTS_STR = os.getenv("ADMIN_ACCOUNTS", "admin:bodhi123")
+
+def get_admin_credentials() -> Dict[str, str]:
+    """Parses ADMIN_ACCOUNTS env var into a dict of {username: password}"""
+    creds = {}
+    for pair in ADMIN_ACCOUNTS_STR.split(","):
+        parts = pair.split(":")
+        if len(parts) >= 2:
+            creds[parts[0].strip()] = parts[1].strip()
+    return creds
 
 async def get_current_admin(token: str = Depends(oauth2_scheme)):
     try:
@@ -42,11 +50,14 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
 @router.post("/login")
 async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
-    Dedicated login endpoint for administrators. Uses hardcoded/env credentials
-    completely separate from the mobile app users.
+    Dedicated login endpoint for administrators. Uses a configurable list 
+    of credentials completely separate from the mobile app users.
     """
-    if form_data.username == ADMIN_USERNAME and form_data.password == ADMIN_PASSWORD:
+    admin_creds = get_admin_credentials()
+    
+    if form_data.username in admin_creds and form_data.password == admin_creds[form_data.username]:
         access_token_expires = timedelta(minutes=60 * 24)
+
         access_token = create_access_token(
             data={"sub": form_data.username, "role": "superuser"}, 
             expires_delta=access_token_expires
