@@ -126,9 +126,19 @@
         <main class="main-content">
             <header class="content-header">
                 <h2 id="view-title">Dashboard Overview</h2>
-                <div class="user-pill">
-                    <span id="admin-name">Admin</span>
+                <div class="user-pill" style="position: relative; cursor: pointer;" onclick="const drop = document.getElementById('profile-dropdown'); drop.style.display = drop.style.display === 'none' ? 'block' : 'none';">
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 12px;">
+                        <span id="admin-name" style="font-weight: 600; font-size: 14px;">Admin</span>
+                        <span id="admin-role" style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Master Account</span>
+                    </div>
                     <div class="avatar">A</div>
+                    
+                    <!-- Dropdown -->
+                    <div id="profile-dropdown" style="display: none; position: absolute; top: calc(100% + 12px); right: 0; background: var(--bg-dark); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 8px; min-width: 180px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(20px);">
+                        <button class="nav-item logout-btn" id="logout-btn-header" style="width: 100%; text-align: left; background: transparent; border: none; color: #ff3b30; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;">
+                            <i data-lucide="log-out" style="width: 16px;"></i> <span style="font-weight: 600;">Sign Out</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 

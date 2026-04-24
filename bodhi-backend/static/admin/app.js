@@ -61,16 +61,32 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('bodhi_admin_token');
-    window.location.reload();
-});
-
 // --- Dashboard Functions ---
 function showDashboard() {
     loginContainer.style.display = 'none';
     dashboardContainer.style.display = 'flex';
+    
+    // Decode JWT to show Admin info
+    if (state.token) {
+        try {
+            const payload = JSON.parse(atob(state.token.split('.')[1]));
+            document.getElementById('admin-name').textContent = payload.sub || "Administrator";
+        } catch(e) {}
+    }
+    
     loadOverview();
+}
+
+const handleLogout = () => {
+    localStorage.removeItem('bodhi_admin_token');
+    window.location.reload();
+};
+
+logoutBtn.addEventListener('click', handleLogout);
+
+const headerLogoutBtn = document.getElementById('logout-btn-header');
+if (headerLogoutBtn) {
+    headerLogoutBtn.addEventListener('click', handleLogout);
 }
 
 async function apiFetch(endpoint, method = 'GET', body = null) {
