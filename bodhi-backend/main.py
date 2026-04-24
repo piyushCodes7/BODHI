@@ -24,7 +24,7 @@ from routers import auth, trade, search, prices, simulate, social, ai, notificat
 from routers.social import router as social_router
 from routers.collaboration import router as collaboration_router
 from routers import payments, insurance, wallets, expenses, users, subscriptions
-from routers import transfers
+from routers import transfers, admin
 
 import models.wallets
 import models.expenses
@@ -135,3 +135,4 @@ app.include_router(users.router,        prefix="/users",         tags=["Users"])
 app.include_router(travel.router,       prefix="/travel",        tags=["Travel"])
 app.include_router(transfers.router)
 app.include_router(collaboration_router, prefix="/collaboration", tags=["Collaboration"])
+app.include_router(admin.router)
