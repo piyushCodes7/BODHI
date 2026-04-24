@@ -18,6 +18,30 @@ async def get_current_admin(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
+@router.post("/claim-admin")
+async def claim_first_admin(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Securely allows the first logged-in user to claim the admin role.
+    If an admin already exists, this will fail.
+    """
+    result = await db.execute(select(User).where(User.is_admin == True))
+    existing_admin = result.scalar_one_or_none()
+    
+    if existing_admin:
+        if existing_admin.id != current_user.id:
+            raise HTTPException(
+                status_code=403, 
+                detail="An administrator already exists. Contact them for access."
+            )
+        return {"message": "You are already an admin."}
+        
+    current_user.is_admin = True
+    await db.commit()
+    return {"message": "Success! You are now the Administrator."}
+
 @router.get("/stats")
 async def get_admin_stats(
     db: AsyncSession = Depends(get_db),

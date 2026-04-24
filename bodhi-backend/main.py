@@ -116,6 +116,11 @@ async def custom_swagger_ui_html():
 async def health_check():
     return {"status": "alive", "message": "BODHI API is running"}
 
+@app.get("/admin-panel", response_class=HTMLResponse, include_in_schema=False)
+async def admin_panel():
+    with open("static/admin/index.html", "r") as f:
+        return HTMLResponse(content=f.read())
+
 # 4. Attach all routers
 app.include_router(auth.router,         prefix="/auth",          tags=["Authentication"])
 app.include_router(trade.router,        prefix="/trade",         tags=["Trade"])
