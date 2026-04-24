@@ -78,7 +78,7 @@ function RootNavigator() {
       <RootStack.Screen name="BankAccounts" component={BankAccountsScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="SecuritySettings" component={SecuritySettingsScreen} options={{ animation: 'slide_from_right' }} />
       <RootStack.Screen name="TravelBooking" component={TravelBookingScreen} options={{ animation: 'slide_from_right' }} />
-      <RootStack.Screen name="SubscriptionHub" component={SubscriptionHubScreen} options={{ animation: 'slide_from_right' }} />
+      <RootStack.Screen name="SubscriptionHub" component={SubscriptionHubScreen} options={{ animation: 'slide_from_right', gestureEnabled: true }} />
       <RootStack.Screen name="ImmuneAlert" component={ImmuneSystemAlertScreen} options={{ presentation: 'modal', animation: 'fade_from_bottom' }} />
 
       {/* ── Payment Features ── */}

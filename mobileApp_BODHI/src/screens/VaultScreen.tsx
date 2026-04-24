@@ -398,9 +398,9 @@ export function VaultScreen() {
           {/* Right: Pill Container */}
           <View style={styles.actionPillContainer}>
             {Platform.OS === 'ios' ? (
-              <BlurView blurType="dark" blurAmount={32} style={StyleSheet.absoluteFill} />
+              <BlurView blurType="dark" blurAmount={32} style={StyleSheet.absoluteFill} pointerEvents="none" />
             ) : (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} pointerEvents="none" />
             )}
             <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
               <View style={styles.pillIconGlass}>
@@ -693,27 +693,14 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: 'rgba(255,255,255,0.15)',
   },
-  scanBtnContainer: { alignItems: 'center', justifyContent: 'center' },
-  scanGlassRing: { padding: 0, borderRadius: 40 },
-  scanBtn: { width: 72, height: 72, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: '#FF5A00', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
   scanBtnLabel: { color: '#FF5A00', fontSize: responsiveFont(12), fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
-  actionPill: {
-    flexDirection: 'row',
+  pillIconGlass: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
-    height: 72,
-    width: 256,
-    borderRadius: 36,
-    marginLeft: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
-    overflow: 'hidden'
+    justifyContent: 'center',
   },
   pillItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   actionBtnCircle: {

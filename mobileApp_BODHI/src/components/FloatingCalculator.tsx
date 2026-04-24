@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,32 +19,32 @@ const { width: W, height: H } = Dimensions.get('window');
 
 const CALC_WIDTH = 280;
 const CALC_HEIGHT = 400;
+const MIN_WIDTH = 220;
+const MIN_HEIGHT = 300;
+const MAX_WIDTH = W - 40;
+const MAX_HEIGHT = H - 100;
 
 export const FloatingCalculator = () => {
   const { isCalculatorVisible, hideCalculator } = useCalculator();
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
 
-  // Dimensions
-  const [size, setSize] = useState({ width: CALC_WIDTH, height: CALC_HEIGHT });
+  // Use refs for size so PanResponders always have current values
+  const sizeRef = useRef({ width: CALC_WIDTH, height: CALC_HEIGHT });
   const widthAnim = useRef(new Animated.Value(CALC_WIDTH)).current;
   const heightAnim = useRef(new Animated.Value(CALC_HEIGHT)).current;
 
-  // Floating Position Logic
+  // Force re-render when size changes (for button layout)
+  const [, forceUpdate] = useState(0);
+
+  // ── Drag (move) PanResponder ──────────────────────────────────────────
   const pan = useRef(new Animated.ValueXY({ x: W - CALC_WIDTH - 20, y: H - CALC_HEIGHT - 100 })).current;
-  const panResponder = useRef(
+
+  const dragPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only drag if we're not near the bottom-right corner
-        const { locationX, locationY } = evt.nativeEvent;
-        // Check if we are in the bottom-right 40x40 area
-        if (locationX > size.width - 40 && locationY > size.height - 40) {
-          return false;
-        }
-        return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
-      },
-      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+      onMoveShouldSetPanResponder: (_evt, gs) =>
+        Math.abs(gs.dx) > 2 || Math.abs(gs.dy) > 2,
       onPanResponderGrant: () => {
         pan.setOffset({
           // @ts-ignore
@@ -54,30 +54,38 @@ export const FloatingCalculator = () => {
         });
         pan.setValue({ x: 0, y: 0 });
       },
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false },
+      ),
       onPanResponderRelease: () => {
         pan.flattenOffset();
       },
-    })
+    }),
   ).current;
 
-  // Resize Logic
+  // ── Resize PanResponder ───────────────────────────────────────────────
   const resizePanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        const newWidth = Math.max(220, size.width + gestureState.dx);
-        const newHeight = Math.max(300, size.height + gestureState.dy);
-        widthAnim.setValue(newWidth);
-        heightAnim.setValue(newHeight);
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_evt, gs) => {
+        const s = sizeRef.current;
+        const newW = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, s.width + gs.dx));
+        const newH = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, s.height + gs.dy));
+        widthAnim.setValue(newW);
+        heightAnim.setValue(newH);
       },
-      onPanResponderRelease: (evt, gestureState) => {
-        const newWidth = Math.max(220, size.width + gestureState.dx);
-        const newHeight = Math.max(300, size.height + gestureState.dy);
-        setSize({ width: newWidth, height: newHeight });
-        widthAnim.setValue(newWidth);
-        heightAnim.setValue(newHeight);
+      onPanResponderRelease: (_evt, gs) => {
+        const s = sizeRef.current;
+        const newW = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, s.width + gs.dx));
+        const newH = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, s.height + gs.dy));
+        sizeRef.current = { width: newW, height: newH };
+        widthAnim.setValue(newW);
+        heightAnim.setValue(newH);
+        forceUpdate(n => n + 1);
       },
-    })
+    }),
   ).current;
 
   if (!isCalculatorVisible) return null;
@@ -152,11 +160,18 @@ export const FloatingCalculator = () => {
           transform: [{ translateX: pan.x }, { translateY: pan.y }],
         },
       ]}
-      {...panResponder.panHandlers}
     >
-      <BlurView style={StyleSheet.absoluteFill} blurType="dark" blurAmount={20} overlayColor="transparent" />
-      
-      <View style={styles.header}>
+      {/* Blur background – non-interactive */}
+      <BlurView
+        style={StyleSheet.absoluteFill}
+        blurType="dark"
+        blurAmount={20}
+        overlayColor="transparent"
+        pointerEvents="none"
+      />
+
+      {/* Drag handle header */}
+      <View style={styles.header} {...dragPanResponder.panHandlers}>
         <View style={styles.dragIndicator} />
         <TouchableOpacity onPress={hideCalculator} style={styles.closeBtn}>
           <X size={20} color="rgba(255,255,255,0.5)" />
@@ -165,7 +180,7 @@ export const FloatingCalculator = () => {
 
       <View style={styles.displayArea}>
         <Text style={styles.expressionText} numberOfLines={1}>{expression}</Text>
-        <Text style={styles.displayText} numberOfLines={1}>{display}</Text>
+        <Text style={styles.displayText} numberOfLines={1} adjustsFontSizeToFit>{display}</Text>
       </View>
 
       <View style={styles.grid}>
@@ -200,12 +215,16 @@ export const FloatingCalculator = () => {
         </View>
       </View>
 
-      {/* Resize Handle */}
-      <View 
-        style={styles.resizeHandle} 
+      {/* ── Resize Grip (bottom-right corner) ── */}
+      <View
+        style={styles.resizeHandle}
         {...resizePanResponder.panHandlers}
       >
-        <View style={styles.resizeIcon} />
+        <View style={styles.resizeGrip}>
+          <View style={[styles.gripLine, { width: 16, marginBottom: 3 }]} />
+          <View style={[styles.gripLine, { width: 10, marginBottom: 3 }]} />
+          <View style={[styles.gripLine, { width: 5 }]} />
+        </View>
       </View>
     </Animated.View>
   );
@@ -230,7 +249,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.sm,
-    height: 20,
+    height: 28,
   },
   dragIndicator: {
     width: 40,
@@ -241,7 +260,8 @@ const styles = StyleSheet.create({
   closeBtn: {
     position: 'absolute',
     right: 0,
-    top: -5,
+    top: 0,
+    padding: 4,
   },
   displayArea: {
     height: 80,
@@ -291,22 +311,24 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
   },
+  // ── Resize Handle ──
   resizeHandle: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 40,
+    height: 40,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    paddingRight: 6,
+    paddingBottom: 6,
   },
-  resizeIcon: {
-    width: 10,
-    height: 10,
-    borderRightWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
-    marginRight: 4,
-    marginBottom: 4,
+  resizeGrip: {
+    alignItems: 'flex-end',
+  },
+  gripLine: {
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.35)',
   },
 });
