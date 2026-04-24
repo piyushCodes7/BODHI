@@ -146,6 +146,26 @@ class User(Base):
         return f"<User id={self.id} email={self.email} provider={self.auth_provider}>"
 
 # ---------------------------------------------------------------------------
+# Administrator Users
+# ---------------------------------------------------------------------------
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+    
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<AdminUser id={self.id} email={self.email}>"
+
+# ---------------------------------------------------------------------------
 # Ledger  (immutable source-of-truth for all money movement)
 # ---------------------------------------------------------------------------
 class Ledger(Base):

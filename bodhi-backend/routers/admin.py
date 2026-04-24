@@ -9,10 +9,10 @@ from sqlalchemy import func
 from typing import List, Dict, Any
 
 from database import get_db
-from models.core import User, Ledger, Payment
+from models.core import User, Ledger, Payment, AdminUser
 from models.notification import Notification, NotificationType
-from services.auth_service import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
-from pydantic import BaseModel
+from services.auth_service import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM, pwd_context, get_password_hash
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -48,27 +48,100 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
         )
 
 @router.post("/login")
-async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     """
-    Dedicated login endpoint for administrators. Uses a configurable list 
-    of credentials completely separate from the mobile app users.
+    Login endpoint for administrators. Uses env credentials as Root, 
+    and checks AdminUser table for invited team members.
     """
     admin_creds = get_admin_credentials()
     
+    # 1. Check Root Master Credentials configured via env variables
     if form_data.username in admin_creds and form_data.password == admin_creds[form_data.username]:
         access_token_expires = timedelta(minutes=60 * 24)
-
         access_token = create_access_token(
             data={"sub": form_data.username, "role": "superuser"}, 
             expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
     
+    # 2. Check Database for invited admins
+    result = await db.execute(select(AdminUser).where(AdminUser.email == form_data.username))
+    db_admin = result.scalar_one_or_none()
+    
+    if db_admin and pwd_context.verify(form_data.password, db_admin.hashed_password):
+        access_token_expires = timedelta(minutes=60 * 24)
+        access_token = create_access_token(
+            data={"sub": db_admin.email, "role": "superuser"}, 
+            expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Incorrect admin username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+class InviteAdminRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+
+@router.post("/invite")
+async def invite_admin(
+    req: InviteAdminRequest,
+    admin: dict = Depends(get_current_admin)
+):
+    """
+    Generates a secure registration link for a new admin.
+    """
+    invite_token = create_access_token(
+        data={"sub": req.email, "name": req.full_name, "intent": "admin_setup"}, 
+        expires_delta=timedelta(days=3)
+    )
+    
+    # In a real production system with configured SMTP, we would call send_email here.
+    # For now, we return the secure setup link so the Master Admin can share it privately.
+    setup_url = f"/admin-panel?setup_token={invite_token}"
+    return {"message": "Invite generated successfully.", "setup_url": setup_url}
+
+class SetupAdminRequest(BaseModel):
+    token: str
+    password: str
+
+@router.post("/setup")
+async def setup_admin(
+    req: SetupAdminRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Consumes an invite token and creates the admin user account.
+    """
+    try:
+        payload = jwt.decode(req.token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("intent") != "admin_setup":
+            raise HTTPException(status_code=400, detail="Invalid token intent")
+            
+        email = payload.get("sub")
+        full_name = payload.get("name")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired setup token")
+        
+    # Ensure they aren't already registered
+    result = await db.execute(select(AdminUser).where(AdminUser.email == email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="This admin account is already set up.")
+        
+    hashed_pwd = get_password_hash(req.password)
+    
+    new_admin = AdminUser(
+        email=email,
+        full_name=full_name,
+        hashed_password=hashed_pwd
+    )
+    db.add(new_admin)
+    await db.commit()
+    
+    return {"message": "Admin account created successfully. You can now log in."}
 
 @router.post("/notifications/send")
 async def send_admin_notification(

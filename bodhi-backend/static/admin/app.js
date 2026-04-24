@@ -111,8 +111,10 @@ async function switchView(targetView) {
     // Update Title
     viewTitle.textContent = targetView.charAt(0).toUpperCase() + targetView.slice(1);
     
-    // Show/Hide sections
-    views.forEach(v => v.style.display = 'none');
+    // Hide all views
+    document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+    
+    // Show target view
     document.getElementById(`view-${targetView}`).style.display = 'block';
     
     // Load data
@@ -261,6 +263,98 @@ if (notifForm) {
         } finally {
             submitBtn.disabled = false;
             submitBtn.style.opacity = '1';
+        }
+    });
+}
+
+// --- Setup Admin Password Logic ---
+const setupForm = document.getElementById('setup-form');
+if (setupForm) {
+    setupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const pwd = document.getElementById('setup-password').value;
+        const confirmPwd = document.getElementById('setup-confirm-password').value;
+        const errorDiv = document.getElementById('setup-error');
+        const successDiv = document.getElementById('setup-success');
+        
+        if (pwd !== confirmPwd) {
+            errorDiv.textContent = "Passwords do not match!";
+            return;
+        }
+        if (pwd.length < 8) {
+            errorDiv.textContent = "Password must be at least 8 characters.";
+            return;
+        }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const setupToken = urlParams.get('setup_token');
+        
+        errorDiv.textContent = "";
+        
+        try {
+            const res = await fetch(`${BASE_URL}/admin/setup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: setupToken, password: pwd })
+            });
+            
+            const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.detail || "Setup failed.");
+            }
+            
+            successDiv.style.display = 'block';
+            successDiv.textContent = data.message;
+            setupForm.style.display = 'none';
+            
+            setTimeout(() => {
+                window.location.href = window.location.pathname; // strip setup token to show login
+            }, 3000);
+            
+        } catch(err) {
+            errorDiv.textContent = err.message;
+        }
+    });
+}
+
+// --- Invite Logic ---
+const inviteForm = document.getElementById('invite-form');
+if (inviteForm) {
+    inviteForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('invite-submit-btn');
+        const statusSpan = document.getElementById('invite-status');
+        
+        const name = document.getElementById('invite-name').value;
+        const email = document.getElementById('invite-email').value;
+        
+        submitBtn.disabled = true;
+        statusSpan.textContent = "Generating...";
+        
+        try {
+            const res = await apiFetch('/admin/invite', 'POST', { full_name: name, email: email });
+            if (res && res.setup_url) {
+                statusSpan.textContent = "✅ Success";
+                statusSpan.style.color = "var(--success)";
+                
+                const linkContainer = document.getElementById('invite-link-container');
+                const linkDisplay = document.getElementById('invite-link-display');
+                
+                // Form a full absolute URL for them to copy
+                const fullUrl = window.location.origin + res.setup_url;
+                
+                linkDisplay.value = fullUrl;
+                linkContainer.style.display = 'block';
+                
+                inviteForm.reset();
+            }
+        } catch(err) {
+            statusSpan.textContent = "❌ Failed to generate";
+            statusSpan.style.color = "var(--error)";
+        } finally {
+            submitBtn.disabled = false;
         }
     });
 }

@@ -29,6 +29,29 @@
             </form>
             <div id="login-error" class="error-msg"></div>
         </div>
+
+        <!-- Setup Screen for newly invited admins -->
+        <div class="login-wrapper" id="setup-wrapper" style="display: none;">
+            <div class="brand">
+                <div class="logo">B</div>
+                <h2>Set Up Admin Account</h2>
+                <p>Welcome to the BODHI Team</p>
+            </div>
+            
+            <form id="setup-form">
+                <div class="input-group">
+                    <label>Create a Password</label>
+                    <input type="password" id="setup-password" placeholder="••••••••" required>
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="setup-confirm-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+            <div id="setup-error" class="error-msg"></div>
+            <div id="setup-success" class="error-msg" style="color: var(--success); display: none;"></div>
+        </div>
     </div>
 
     <!-- Dashboard Container -->
@@ -54,6 +77,10 @@
                 <button class="nav-item" data-view="notifications">
                     <i data-lucide="bell-ring"></i>
                     <span>Notifications</span>
+                </button>
+                <button class="nav-item" data-view="team">
+                    <i data-lucide="users-round"></i>
+                    <span>Admin Team</span>
                 </button>
                 <div class="nav-divider"></div>
                 <button class="nav-item logout-btn" id="logout-btn">
@@ -216,6 +243,38 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Team Invite View -->
+            <div id="view-team" class="view" style="display: none;">
+                <div class="table-actions" style="margin-bottom: 24px;">
+                    <h3>Admin Team Management</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Securely invite new administrators to the dashboard.</p>
+                </div>
+                
+                <div class="stat-card" style="display: block; max-width: 600px;">
+                    <form id="invite-form">
+                        <div class="input-group" style="margin-bottom: 16px;">
+                            <label>Full Name</label>
+                            <input type="text" id="invite-name" placeholder="e.g. Rahul Kumar" required>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 24px;">
+                            <label>Email Address (used for their username)</label>
+                            <input type="email" id="invite-email" placeholder="rahul@bodhi.com" required>
+                        </div>
+                        
+                        <div style="margin-top: 24px; text-align: right;">
+                            <span id="invite-status" style="margin-right: 16px; font-weight: 600; font-size: 14px;"></span>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 12px 32px;" id="invite-submit-btn">
+                                <i data-lucide="mail-plus" style="width: 16px; margin-right: 8px; vertical-align: middle;"></i> Generate Invite
+                            </button>
+                        </div>
+                    </form>
+                    <div id="invite-link-container" style="display: none; margin-top: 24px; padding: 16px; background: rgba(52, 199, 89, 0.1); border: 1px solid rgba(52, 199, 89, 0.3); border-radius: 12px;">
+                        <p style="color: var(--success); font-size: 13px; font-weight: 600; margin-bottom: 8px;">✅ Invite generated! Share this exact link with them securely:</p>
+                        <input type="text" id="invite-link-display" style="width: 100%; font-family: monospace; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; border-radius: 6px;" readonly>
+                    </div>
                 </div>
             </div>
         </main>
