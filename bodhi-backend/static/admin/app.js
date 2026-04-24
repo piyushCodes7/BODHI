@@ -358,3 +358,59 @@ if (inviteForm) {
         }
     });
 }
+// --- Forgot Password Logic ---
+const showForgotPwdBtn = document.getElementById('show-forgot-password');
+const backToLoginBtn = document.getElementById('back-to-login');
+const forgotForm = document.getElementById('forgot-form');
+
+if (showForgotPwdBtn && backToLoginBtn && forgotForm) {
+    showForgotPwdBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('login-wrapper').style.display = 'none';
+        document.getElementById('forgot-wrapper').style.display = 'flex';
+    });
+    
+    backToLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('forgot-wrapper').style.display = 'none';
+        document.getElementById('login-wrapper').style.display = 'flex';
+    });
+    
+    forgotForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value;
+        const errorDiv = document.getElementById('forgot-error');
+        errorDiv.textContent = 'Generating...';
+        
+        try {
+            const res = await fetch(`${BASE_URL}/admin/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            
+            const data = await res.json();
+            
+            if (!res.ok) {
+                throw new Error(data.detail || "Request failed.");
+            }
+            
+            errorDiv.textContent = '';
+            
+            if (data.reset_link) {
+                const linkContainer = document.getElementById('forgot-success-container');
+                const linkDisplay = document.getElementById('forgot-link-display');
+                linkDisplay.value = window.location.origin + data.reset_link;
+                linkContainer.style.display = 'block';
+                forgotForm.reset();
+            } else {
+                errorDiv.style.color = "var(--success)";
+                errorDiv.textContent = data.message;
+            }
+            
+        } catch(err) {
+            errorDiv.style.color = "var(--error)";
+            errorDiv.textContent = err.message;
+        }
+    });
+}

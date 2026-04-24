@@ -23,17 +23,6 @@ class SendNotificationRequest(BaseModel):
     message: str
     type: str = "INFO"
 
-ADMIN_ACCOUNTS_STR = os.getenv("ADMIN_ACCOUNTS", "admin:bodhi123")
-
-def get_admin_credentials() -> Dict[str, str]:
-    """Parses ADMIN_ACCOUNTS env var into a dict of {username: password}"""
-    creds = {}
-    for pair in ADMIN_ACCOUNTS_STR.split(","):
-        parts = pair.split(":")
-        if len(parts) >= 2:
-            creds[parts[0].strip()] = parts[1].strip()
-    return creds
-
 async def get_current_admin(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -50,21 +39,85 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
 @router.post("/login")
 async def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     """
-    Login endpoint for administrators. Uses env credentials as Root, 
-    and checks AdminUser table for invited team members.
+    Login endpoint for administrators. Strictly verifies against the AdminUser
+    database table (all hardcoded passwords have been removed).
     """
-    admin_creds = get_admin_credentials()
+    result = await db.execute(select(AdminUser).where(AdminUser.email == form_data.username))
+    db_admin = result.scalar_one_or_none()
     
-    # 1. Check Root Master Credentials configured via env variables
-    if form_data.username in admin_creds and form_data.password == admin_creds[form_data.username]:
+    # Do not allow login for 'pending' un-setup accounts
+    if db_admin and db_admin.hashed_password != "pending" and pwd_context.verify(form_data.password, db_admin.hashed_password):
         access_token_expires = timedelta(minutes=60 * 24)
         access_token = create_access_token(
-            data={"sub": form_data.username, "role": "superuser"}, 
+            data={"sub": db_admin.email, "role": "superuser"}, 
             expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect admin username or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+class BootstrapRequest(BaseModel):
+    emails: List[EmailStr]
+
+@router.post("/bootstrap")
+async def bootstrap_admins(req: BootstrapRequest, db: AsyncSession = Depends(get_db)):
+    """
+    One-time system initialization. Creates the initial admin accounts without 
+    passwords and returns setup links.
+    """
+    result = await db.execute(select(func.count(AdminUser.id)))
+    count = result.scalar()
     
-    # 2. Check Database for invited admins
+    if count > 0:
+        raise HTTPException(status_code=403, detail="System already bootstrapped. Use standard invite or forgot-password flows.")
+    
+    links = []
+    for email in req.emails:
+        new_admin = AdminUser(
+            email=email,
+            full_name=email.split("@")[0],
+            hashed_password="pending",
+            is_superadmin=True
+        )
+        db.add(new_admin)
+        
+        invite_token = create_access_token(
+            data={"sub": email, "name": new_admin.full_name, "intent": "admin_setup"}, 
+            expires_delta=timedelta(days=7)
+        )
+        links.append({"email": email, "setup_link": f"/admin-panel?setup_token={invite_token}"})
+    
+    await db.commit()
+    return {
+        "message": "Bootstrap successful. Discard all git/env credentials. Use these links to set passwords privately.",
+        "links": links
+    }
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+@router.post("/forgot-password")
+async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(AdminUser).where(AdminUser.email == req.email))
+    admin = result.scalar_one_or_none()
+    
+    if not admin:
+        return {"message": "If that email is registered, a reset link will be available soon.", "reset_link": None}
+        
+    reset_token = create_access_token(
+        data={"sub": admin.email, "name": admin.full_name, "intent": "admin_reset"}, 
+        expires_delta=timedelta(hours=2)
+    )
+    
+    return {
+        "message": "Reset request accepted.", 
+        "reset_link": f"/admin-panel?setup_token={reset_token}"
+    }
+
     result = await db.execute(select(AdminUser).where(AdminUser.email == form_data.username))
     db_admin = result.scalar_one_or_none()
     
@@ -118,30 +171,35 @@ async def setup_admin(
     """
     try:
         payload = jwt.decode(req.token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload.get("intent") != "admin_setup":
+        intent = payload.get("intent")
+        if intent not in ["admin_setup", "admin_reset"]:
             raise HTTPException(status_code=400, detail="Invalid token intent")
             
         email = payload.get("sub")
         full_name = payload.get("name")
     except jwt.PyJWTError:
-        raise HTTPException(status_code=400, detail="Invalid or expired setup token")
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
         
-    # Ensure they aren't already registered
     result = await db.execute(select(AdminUser).where(AdminUser.email == email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="This admin account is already set up.")
-        
+    db_admin = result.scalar_one_or_none()
+    
     hashed_pwd = get_password_hash(req.password)
     
-    new_admin = AdminUser(
-        email=email,
-        full_name=full_name,
-        hashed_password=hashed_pwd
-    )
-    db.add(new_admin)
+    if db_admin:
+        if intent == "admin_setup" and db_admin.hashed_password != "pending":
+            raise HTTPException(status_code=400, detail="This admin account is already set up.")
+        db_admin.hashed_password = hashed_pwd
+    else:
+        new_admin = AdminUser(
+            email=email,
+            full_name=full_name,
+            hashed_password=hashed_pwd
+        )
+        db.add(new_admin)
+        
     await db.commit()
     
-    return {"message": "Admin account created successfully. You can now log in."}
+    return {"message": "Admin account credentials successfully updated. You can now log in."}
 
 @router.post("/notifications/send")
 async def send_admin_notification(
