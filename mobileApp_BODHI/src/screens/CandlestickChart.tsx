@@ -17,6 +17,7 @@ interface Props {
 }
 
 export default function CandlestickChart({ data, height = 250 }: Props) {
+  const fontSize = responsiveFont(10);
   const htmlContent = useMemo(() => `
     <!DOCTYPE html>
     <html>
@@ -24,7 +25,7 @@ export default function CandlestickChart({ data, height = 250 }: Props) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
       <style>
-        body { margin: 0; padding: 0; background-color: #0E0C24; overflow: hidden; }
+        body { margin: 0; padding: 0; background-color: #0A0A0A; overflow: hidden; }
         #chart { width: 100vw; height: 100vh; }
       </style>
     </head>
@@ -42,9 +43,9 @@ export default function CandlestickChart({ data, height = 250 }: Props) {
               width: window.innerWidth,
               height: window.innerHeight,
               layout: { 
-                backgroundColor: '#0E0C24', 
+                backgroundColor: '#0A0A0A', 
                 textColor: 'rgba(255, 255, 255, 0.5)',
-                fontSize: responsiveFont(10),
+                fontSize: ${fontSize},
               },
               grid: { 
                 vertLines: { color: 'rgba(255, 255, 255, 0.05)' }, 
@@ -57,11 +58,11 @@ export default function CandlestickChart({ data, height = 250 }: Props) {
 
             // 🟢 Support for v3 syntax
             const candleSeries = chart.addCandlestickSeries({
-              upColor: '#C8FF00', 
-              downColor: '#F43F5E',
+              upColor: '#FFE600', 
+              downColor: '#FF2D2D',
               borderVisible: false, 
-              wickUpColor: '#C8FF00', 
-              wickDownColor: '#F43F5E',
+              wickUpColor: '#FFE600', 
+              wickDownColor: '#FF2D2D',
             });
 
             const chartData = ${JSON.stringify(data)};
@@ -103,7 +104,7 @@ export default function CandlestickChart({ data, height = 250 }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#0E0C24',
+    backgroundColor: '#0A0A0A',
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,

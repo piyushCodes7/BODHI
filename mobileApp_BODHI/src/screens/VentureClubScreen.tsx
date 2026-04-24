@@ -29,11 +29,11 @@ import LinearGradient from 'react-native-linear-gradient';
 const { width: W } = Dimensions.get('window');
 
 const C = {
-  bg: '#07051A',
-  cardBg: '#0E0C24',
-  neonLime: '#C8FF00',
-  purple: '#A855F7',
-  red: '#F43F5E',
+  bg: '#000000',
+  cardBg: '#0A0A0A',
+  neonLime: '#FFE600',
+  purple: '#FF5A00',
+  red: '#FF2D2D',
   white: '#FFFFFF',
   whiteMid: 'rgba(255,255,255,0.7)',
   whiteDim: 'rgba(255,255,255,0.3)',
@@ -198,7 +198,7 @@ export function VentureClubScreen({ route, navigation }: any) {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
           <LinearGradient
-            colors={['#4F46E5', '#0E0C24']}
+            colors={['#4F46E5', '#0A0A0A']}
             style={styles.summaryCard}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}

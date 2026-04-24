@@ -9,10 +9,6 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - AsyncStorage (3.0.2):
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
-    - React-Core
   - boost (1.83.0)
   - BVLinearGradient (2.8.3):
     - React-Core
@@ -947,14 +943,10 @@ PODS:
     - React-Core
   - react-native-sqlite-storage (6.0.1):
     - React-Core
-  - react-native-video (6.19.1):
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
+  - react-native-video (5.2.1):
     - React-Core
-    - react-native-video/Video (= 6.19.1)
-  - react-native-video/Video (6.19.1):
-    - glog
-    - RCT-Folly (= 2022.05.16.00)
+    - react-native-video/Video (= 5.2.1)
+  - react-native-video/Video (5.2.1):
     - React-Core
   - react-native-webview (13.16.1):
     - glog
@@ -1131,11 +1123,13 @@ PODS:
     - React-Core
   - RNAudioRecorderPlayer (3.6.14):
     - React-Core
+  - RNCAsyncStorage (1.21.0):
+    - React-Core
   - RNCClipboard (1.16.3):
     - React-Core
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.31.1):
+  - RNGestureHandler (2.14.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1151,24 +1145,20 @@ PODS:
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
     - ReactCommon/turbomodule/core
-  - RNScreens (3.37.0):
+  - RNScreens (3.29.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-    - React-RCTImage
-  - RNSVG (15.15.4):
+  - RNSVG (13.14.0):
     - React-Core
   - SocketRocket (0.6.1)
-  - VisionCamera (4.7.3):
-    - VisionCamera/Core (= 4.7.3)
-    - VisionCamera/React (= 4.7.3)
-  - VisionCamera/Core (4.7.3)
-  - VisionCamera/React (4.7.3):
+  - VisionCamera (3.9.2):
+    - React
+    - React-callinvoker
     - React-Core
   - Yoga (1.14.0)
 
 DEPENDENCIES:
-  - "AsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -1232,6 +1222,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -1259,8 +1250,6 @@ SPEC REPOS:
     - SocketRocket
 
 EXTERNAL SOURCES:
-  AsyncStorage:
-    :path: "../node_modules/@react-native-async-storage/async-storage"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
@@ -1382,6 +1371,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNAudioRecorderPlayer:
     :path: "../node_modules/react-native-audio-recorder-player"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNFS:
@@ -1406,7 +1397,6 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
-  AsyncStorage: 8072a34eae611375c2908de5fd5fdcbc393ebca8
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
@@ -1452,7 +1442,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 758e894ca5a9bd1868d2a9cfbca7326a2b6bf9dc
   react-native-splash-screen: 95994222cc95c236bd3cdc59fe45ed5f27969594
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
-  react-native-video: 21e85fdee63439413ff090706e82ccbd954778eb
+  react-native-video: 2aad0d963bf3952bd9ebb2f53fab799338e8e202
   react-native-webview: 3b2d6324fccdb07c62d0cf367c40a1e5c336c66b
   React-nativeconfig: d7af5bae6da70fa15ce44f045621cf99ed24087c
   React-NativeModulesApple: 7a561c2792b0a2b74aff6c58d2554dcf824372aa
@@ -1476,18 +1466,19 @@ SPEC CHECKSUMS:
   ReactCommon: cc18bd33c0fab03c67620da6a602dcc1704e66b4
   RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
   RNAudioRecorderPlayer: b5ed41ccfe72a211a870bfe09ab36c046eb27d2a
+  RNCAsyncStorage: a03b770a50541a761447cea9c24536047832124d
   RNCClipboard: f6679d470d0da2bce2a37b0af7b9e0bf369ecda5
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
-  RNGestureHandler: ee39f3faf060a0a157312bd5e1bfe26ce46232da
+  RNGestureHandler: 55447e4051459b0b7f5f5173567f92286d01cf88
   RNGoogleSignin: b11289afb825c32c250272e4d92446f71091814e
   RNReactNativeHapticFeedback: ca37b9e053a3557c6149b815a46057eaa4935358
   RNReanimated: eed931cb70dd5aac069558bd9ba893e00f692ddb
-  RNScreens: b12996ef8ef492d56d126400e8aef6e613c13ef6
-  RNSVG: 2ab771ec16936005bd57d18e930cbfe80ed5167e
+  RNScreens: 8d1521c6e375a79dbd4525efaf21704cc64ac0cf
+  RNSVG: 4cab00c621b328a4a2fedaaedc15d8822216723e
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
-  VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
+  VisionCamera: 6a90992822a293947af96e77618933405a417871
   Yoga: 1b901a6d6eeba4e8a2e8f308f708691cdb5db312
 
-PODFILE CHECKSUM: 88088eec66caa6a9af32cae7fb02073edac9fa6a
+PODFILE CHECKSUM: cbb601b06d2040594dd7a871e957a30a340f4e81
 
 COCOAPODS: 1.14.3

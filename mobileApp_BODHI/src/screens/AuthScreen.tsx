@@ -184,7 +184,7 @@ export function AuthScreen({ navigation }: any) {
       }
 
       setIsLoading(true);
-      await AuthAPI.verifyRegisterOtp({ email, otp });
+      await AuthAPI.verifyRegisterOtp({ email: email.trim().toLowerCase(), otp });
       setOtp('');
       setResendTimer(0);
       setCurrentStep(2);
@@ -355,10 +355,15 @@ export function AuthScreen({ navigation }: any) {
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Failed to send reset code.');
+      if (!response.ok) {
+        const detail = data.detail;
+        const msg = typeof detail === 'string' ? detail : (detail ? JSON.stringify(detail) : 'Failed to send reset code.');
+        throw new Error(msg);
+      }
       setAuthMode('reset');
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      const msg = typeof error.message === 'string' ? error.message : JSON.stringify(error.message) || 'An unexpected error occurred';
+      Alert.alert('Error', msg);
     } finally {
       setIsLoading(false);
     }
@@ -387,14 +392,25 @@ export function AuthScreen({ navigation }: any) {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Invalid code.');
+      if (!response.ok) {
+        const detail = data.detail;
+        const msg = typeof detail === 'string' ? detail : (detail ? JSON.stringify(detail) : 'Invalid code.');
+        throw new Error(msg);
+      }
       Alert.alert('Success 🎉', 'Your password has been reset!');
       switchMode('login');
     } catch (error: any) {
-      Alert.alert('Reset Failed', error.message);
+      const msg = typeof error.message === 'string' ? error.message : JSON.stringify(error.message) || 'Failed to reset password';
+      Alert.alert('Reset Failed', msg);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getButtonGradient = (disabled?: boolean, variant?: string) => {
+    if (disabled) return ['#333', '#222'];
+    if (variant === 'signup') return ['#FF5A00', '#FFE600']; // Premium Warm Fire
+    return Gradients.authCTA.colors;
   };
 
   return (
@@ -436,30 +452,33 @@ export function AuthScreen({ navigation }: any) {
                 <AuthInput
                   label="Email"
                   placeholder="e.g., name@example.com"
-                  icon={<Mail size={20} color="#A855F7" />}
+                  icon={<Mail size={20} color="#FF5A00" />}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                 />
 
                 <AuthInput
                   label="Login PIN (M-PIN)"
                   placeholder="••••"
-                  icon={<Lock size={20} color="#A855F7" />}
+                  icon={<Lock size={20} color="#FF5A00" />}
                   value={password}
                   onChangeText={setPassword}
                   keyboardType="number-pad"
                   maxLength={4}
                   secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
 
                 <View style={styles.linksRow}>
                   <TouchableOpacity onPress={() => switchMode('signup')}>
-                    <Text style={[styles.linkText, { color: '#FF3366' }]}>Sign Up</Text>
+                    <Text style={[styles.linkText, { color: '#FF2D2D' }]}>Sign Up</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => switchMode('forgot')}>
-                    <Text style={[styles.linkText, { color: '#FF3366' }]}>Forgot password?</Text>
+                    <Text style={[styles.linkText, { color: '#FF2D2D' }]}>Forgot password?</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -563,7 +582,7 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="Phone Number"
                       placeholder="+91 9876543210"
-                      icon={<Smartphone size={20} color="#A855F7" />}
+                      icon={<Smartphone size={20} color="#FF5A00" />}
                       value={phone}
                       onChangeText={setPhone}
                       keyboardType="phone-pad"
@@ -571,7 +590,17 @@ export function AuthScreen({ navigation }: any) {
 
                     <AuthButton
                       title="Continue"
-                      onPress={() => setCurrentStep(1)}
+                      onPress={() => {
+                        if (!name.trim() || !age.trim() || !gender || !phone.trim()) {
+                          Alert.alert('Warning', 'Please fill in all personal details.');
+                          return;
+                        }
+                        if (phone.trim().length < 10) {
+                          Alert.alert('Warning', 'Please enter a valid 10-digit phone number.');
+                          return;
+                        }
+                        setCurrentStep(1);
+                      }}
                       style={{ marginTop: Spacing.md }}
                     />
                   </>
@@ -581,7 +610,7 @@ export function AuthScreen({ navigation }: any) {
                   <>
                     <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
                     <View style={styles.inputWrapper}>
-                      <Mail size={18} color="#A855F7" style={styles.inputIcon} />
+                      <Mail size={18} color="#FF5A00" style={styles.inputIcon} />
                       <TextInput
                         style={[styles.input, isEmailVerified && { color: 'rgba(255,255,255,0.4)' }]}
                         placeholder="name@example.com"
@@ -597,7 +626,7 @@ export function AuthScreen({ navigation }: any) {
                         disabled={resendTimer > 0 || isLoading}
                         onPress={() => handleSendOtp('email')}
                       >
-                        <Text style={{ color: '#FF3366', fontWeight: '700', fontSize: responsiveFont(13) }}>
+                        <Text style={{ color: '#FF2D2D', fontWeight: '700', fontSize: responsiveFont(13) }}>
                           {resendTimer > 0 ? `Resend in ${resendTimer}s` : (isEmailSent ? "Resend Code" : "Send Code")}
                         </Text>
                       </TouchableOpacity>
@@ -627,7 +656,7 @@ export function AuthScreen({ navigation }: any) {
                       disabled={!isEmailVerified || isLoading}
                     >
                       <LinearGradient
-                        colors={isEmailVerified ? ['#FFE259', '#C8FF00'] : ['#333', '#222']}
+                        colors={isEmailVerified ? ['#FFE600', '#FFE600'] : ['#333', '#222']}
                         style={styles.primaryBtn}
                       >
                         {isLoading ? <ActivityIndicator color="#000" /> : (
@@ -646,7 +675,7 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="Login Pin (M-PIN)"
                       placeholder="••••"
-                      icon={<Lock size={20} color="#A855F7" />}
+                      icon={<Lock size={20} color="#FF5A00" />}
                       value={mPin}
                       onChangeText={setMPin}
                       keyboardType="number-pad"
@@ -660,7 +689,7 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="Confirm M-PIN"
                       placeholder="••••"
-                      icon={<Lock size={20} color="#A855F7" />}
+                      icon={<Lock size={20} color="#FF5A00" />}
                       value={confirmMPin}
                       onChangeText={setConfirmMPin}
                       keyboardType="number-pad"
@@ -674,7 +703,7 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="Transaction Pin (U-PIN)"
                       placeholder="••••"
-                      icon={<ShieldCheck size={20} color="#A855F7" />}
+                      icon={<ShieldCheck size={20} color="#FF5A00" />}
                       value={uPin}
                       onChangeText={setUPin}
                       keyboardType="number-pad"
@@ -688,7 +717,7 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="Confirm U-PIN"
                       placeholder="••••"
-                      icon={<ShieldCheck size={20} color="#A855F7" />}
+                      icon={<ShieldCheck size={20} color="#FF5A00" />}
                       value={confirmUPin}
                       onChangeText={setConfirmUPin}
                       keyboardType="number-pad"
@@ -739,9 +768,11 @@ export function AuthScreen({ navigation }: any) {
                   <AuthInput
                     label="Email"
                     placeholder="e.g., name@example.com"
-                    icon={<Mail size={20} color="#A855F7" />}
+                    icon={<Mail size={20} color="#FF5A00" />}
                     value={email}
                     onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                   />
                 )}
 
@@ -751,22 +782,26 @@ export function AuthScreen({ navigation }: any) {
                     <AuthInput
                       label="New Login PIN (M-PIN)"
                       placeholder="••••"
-                      icon={<Lock size={20} color="#A855F7" />}
+                      icon={<Lock size={20} color="#FF5A00" />}
                       value={newPassword}
                       onChangeText={setNewPassword}
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      autoCapitalize="none"
+                      autoCorrect={false}
                     />
                     <AuthInput
                       label="Confirm New M-PIN"
                       placeholder="••••"
-                      icon={<Lock size={20} color="#A855F7" />}
+                      icon={<Lock size={20} color="#FF5A00" />}
                       value={confirmMPin}
                       onChangeText={setConfirmMPin}
                       keyboardType="number-pad"
                       maxLength={4}
                       secureTextEntry
+                      autoCapitalize="none"
+                      autoCorrect={false}
                     />
                   </>
                 )}
@@ -810,7 +845,7 @@ const styles = StyleSheet.create({
   // ── TOGGLE ──
   toggleContainer: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.full, padding: 4, marginBottom: Spacing.xl },
   toggleBtn: { flex: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', height: 44 },
-  activeToggleBg: { width: '100%', height: '100%', borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8 },
+  activeToggleBg: { width: '100%', height: '100%', borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', shadowColor: '#FF5A00', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8 },
   toggleText: { fontSize: responsiveFont(14), fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
   toggleTextActive: { color: '#FFF', fontWeight: '800', fontSize: responsiveFont(14) },
 

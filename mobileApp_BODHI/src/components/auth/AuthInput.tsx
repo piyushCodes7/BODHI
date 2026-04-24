@@ -26,7 +26,7 @@ export const AuthInput: React.FC<AuthInputProps> = ({
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
     borderColor: withTiming(
-      error ? Colors.errorRed : isFocused ? '#A855F7' : 'rgba(255,255,255,0.08)'
+      error ? Colors.errorRed : isFocused ? '#FF5A00' : 'rgba(255,255,255,0.08)'
     ),
     backgroundColor: withTiming(
       isFocused ? 'rgba(168, 85, 247, 0.05)' : 'rgba(255,255,255,0.03)'
@@ -66,9 +66,9 @@ export const AuthInput: React.FC<AuthInputProps> = ({
             style={styles.eyeIcon}
           >
             {showPassword ? (
-              <EyeOff size={18} color={isFocused ? '#A855F7' : "rgba(255,255,255,0.4)"} />
+              <EyeOff size={18} color={isFocused ? '#FF5A00' : "rgba(255,255,255,0.4)"} />
             ) : (
-              <Eye size={18} color={isFocused ? '#A855F7' : "rgba(255,255,255,0.4)"} />
+              <Eye size={18} color={isFocused ? '#FF5A00' : "rgba(255,255,255,0.4)"} />
             )}
           </TouchableOpacity>
         )}

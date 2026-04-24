@@ -38,14 +38,14 @@ interface ChatMessage {
 }
 
 const STORY_QUESTIONS = [
-  { q: 'What does this policy cover?', icon: '◈', bgColor: '#1A1033' },
-  { q: 'What are the exclusions and things not covered?', icon: '✕', bgColor: '#0D2233' },
-  { q: 'What is the claim process and timeline?', icon: '≡', bgColor: '#1A0D33' },
-  { q: 'What are the premium and payment details?', icon: '₹', bgColor: '#0D1A33' },
-  { q: 'Are there any hidden clauses or loopholes I should know about?', icon: '?', bgColor: '#330D1A' },
+  { q: 'What does this policy cover?', icon: '◈', bgColor: '#1A0800' },
+  { q: 'What are the exclusions and things not covered?', icon: '✕', bgColor: '#0D1A0A' },
+  { q: 'What is the claim process and timeline?', icon: '≡', bgColor: '#1A0A00' },
+  { q: 'What are the premium and payment details?', icon: '₹', bgColor: '#0A0F1A' },
+  { q: 'Are there any hidden clauses or loopholes I should know about?', icon: '?', bgColor: '#1A0000' },
 ];
 
-const CONFIDENCE_COLORS = { High: Colors.neonLime, Medium: '#FF9900', Low: Colors.hotPink };
+const CONFIDENCE_COLORS = { High: Colors.neonLime, Medium: '#FFB000', Low: Colors.hotPink };
 const PRESET_QUESTIONS = ['Is maternity covered?', 'Pre-existing conditions?', 'Network hospitals?', 'What is my claim limit?', 'Is dental included?', 'How to file a claim?'];
 const genId = () => Math.random().toString(36).slice(2);
 
@@ -169,7 +169,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
         
         {/* ── GLOBAL DEEP SPACE BACKGROUND ── */}
         <LinearGradient
-          colors={['#05001F', '#1A0033', '#4A0033']}
+          colors={['#000000', '#0A0000', '#2B0000']}
           style={StyleSheet.absoluteFill}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -185,13 +185,14 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
             </TouchableOpacity>
 
             <ScrollView contentContainerStyle={styles.uploadContent} showsVerticalScrollIndicator={false}>
+              <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%', alignItems: 'center' }}>
               
               {/* Glowing Orb Logo */}
               <View style={styles.orbContainer}>
                 <View style={styles.orbRing1} />
                 <View style={styles.orbRing2} />
                 <View style={styles.orbShadowLayer} />
-                <LinearGradient colors={['#4A00E0', '#FF007F']} style={styles.orbCore} start={{x:0, y:0}} end={{x:1, y:1}}>
+                <LinearGradient colors={['#8B0000', '#FF007F']} style={styles.orbCore} start={{x:0, y:0}} end={{x:1, y:1}}>
                    <View style={styles.orbInnerCutout}>
                      <Diamond size={28} color={Colors.neonLime} />
                    </View>
@@ -241,15 +242,15 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
                 {/* AI Chatbot */}
                 <View style={styles.featureCard}>
                   <View style={styles.featureIconWrap}>
-                    <MessageCircle size={20} color="#A855F7" />
+                    <MessageCircle size={20} color="#FF5A00" />
                   </View>
                   <View style={styles.featureTextWrap}>
-                    <Text style={[styles.featureTitle, { color: '#A855F7' }]}>AI CHATBOT</Text>
+                    <Text style={[styles.featureTitle, { color: '#FF5A00' }]}>AI CHATBOT</Text>
                     <Text style={styles.featureDesc}>Ask follow-up questions instantly.</Text>
                   </View>
-                  <View style={[styles.featureBadge, { borderColor: '#A855F7', backgroundColor: 'rgba(168,85,247,0.05)' }]}>
-                    <Sparkles size={12} color="#A855F7" style={{ marginRight: 4 }} />
-                    <Text style={[styles.featureBadgeText, { color: '#A855F7' }]}>24/7 AI</Text>
+                  <View style={[styles.featureBadge, { borderColor: '#FF5A00', backgroundColor: 'rgba(255,90,0,0.05)' }]}>
+                    <Sparkles size={12} color="#FF5A00" style={{ marginRight: 4 }} />
+                    <Text style={[styles.featureBadgeText, { color: '#FF5A00' }]}>24/7 AI</Text>
                   </View>
                 </View>
               </View>
@@ -279,16 +280,17 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
 
               {/* Demo Action */}
               <TouchableOpacity style={styles.demoMainBtn} onPress={handleUseDemoDoc} disabled={uploading}>
-                 <View style={[styles.uploadIconCircle, { backgroundColor: 'rgba(168,85,247,0.15)' }]}>
-                    <FileText size={22} color="#A855F7" />
+                 <View style={[styles.uploadIconCircle, { backgroundColor: 'rgba(255,90,0,0.15)' }]}>
+                    <FileText size={22} color="#FF5A00" />
                  </View>
                  <View style={styles.uploadBtnTextWrap}>
                     <Text style={[styles.uploadBtnTitle, { color: '#FFF' }]}>Try with demo document</Text>
                     <Text style={[styles.uploadBtnSub, { color: 'rgba(255,255,255,0.5)' }]}>See how BODHI AI works</Text>
                  </View>
-                 <ChevronRight size={24} color="#A855F7" />
+                 <ChevronRight size={24} color="#FF5A00" />
               </TouchableOpacity>
 
+              </View>
             </ScrollView>
           </View>
         )}
@@ -360,6 +362,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
             </View>
 
           <ScrollView ref={chatScrollRef} style={styles.chatMessages} contentContainerStyle={styles.chatMessagesContent} showsVerticalScrollIndicator={false}>
+            <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
               {chatMessages.map(msg => (
                 <View key={msg.id} style={[styles.msgBubble, msg.role === 'user' ? styles.msgBubbleUser : styles.msgBubbleAI]}>
                   {msg.loading ? <ActivityIndicator size="small" color={Colors.neonLime} /> : <Text style={[styles.msgText, msg.role === 'user' && styles.msgTextUser]}>{msg.text}</Text>}
@@ -371,24 +374,29 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
                   )}
                 </View>
               ))}
+            </View>
             </ScrollView>
 
             {/* Preset question chips */}
             {chatMessages.length <= 1 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsScroll} contentContainerStyle={styles.presetsContainer}>
+                <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%', flexDirection: 'row' }}>
                 {PRESET_QUESTIONS.map(q => (
                   <TouchableOpacity key={q} style={styles.presetChip} onPress={() => sendMessage(q)} disabled={chatLoading}>
                     <Text style={styles.presetChipText}>{q}</Text>
                   </TouchableOpacity>
                 ))}
+                </View>
               </ScrollView>
             )}
 
             <View style={styles.chatInputBar}>
-              <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} multiline />
-              <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]} onPress={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
-                <Text style={{ fontSize: responsiveFont(18), color: '#000', fontWeight: '700' }}>→</Text>
-              </TouchableOpacity>
+              <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%', flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+                <TextInput style={styles.chatInput} placeholder="Ask about your policy…" placeholderTextColor="rgba(255,255,255,0.35)" value={chatInput} onChangeText={setChatInput} onSubmitEditing={() => sendMessage(chatInput)} multiline />
+                <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || chatLoading) && { opacity: 0.4 }]} onPress={() => sendMessage(chatInput)} disabled={!chatInput.trim() || chatLoading}>
+                  <Text style={{ fontSize: responsiveFont(18), color: '#000', fontWeight: '700' }}>→</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </KeyboardAvoidingView>
         )}
@@ -398,7 +406,7 @@ export const InsuranceScreen: React.FC<Props> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#05001F' },
+  container: { flex: 1, backgroundColor: '#000000' },
   
   // ── UPLOAD PHASE CYBERPUNK UI ──
   uploadPhase: { flex: 1, paddingTop: Platform.OS === 'ios' ? 60 : 40, position: 'relative' },
@@ -408,20 +416,20 @@ const styles = StyleSheet.create({
   uploadContent: { paddingHorizontal: 20, paddingBottom: 60, alignItems: 'center' },
   
   orbContainer: { alignItems: 'center', justifyContent: 'center', height: 160, marginTop: 20, marginBottom: 20 },
-  orbRing1: { position: 'absolute', width: 140, height: 140, borderRadius: 70, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', opacity: 0.5 },
-  orbRing2: { position: 'absolute', width: 190, height: 190, borderRadius: 95, borderWidth: 1, borderColor: 'rgba(168,85,247,0.1)', opacity: 0.3 },
+  orbRing1: { position: 'absolute', width: 140, height: 140, borderRadius: 70, borderWidth: 1, borderColor: 'rgba(255,90,0,0.3)', opacity: 0.5 },
+  orbRing2: { position: 'absolute', width: 190, height: 190, borderRadius: 95, borderWidth: 1, borderColor: 'rgba(255,90,0,0.1)', opacity: 0.3 },
   orbShadowLayer: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 50,
-    backgroundColor: '#1A0033',
-    shadowColor: '#A855F7',
+    backgroundColor: '#0A0000',
+    shadowColor: '#FF5A00',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 20,
     elevation: 10,
   },
   orbCore: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
-  orbInnerCutout: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#1A0033', alignItems: 'center', justifyContent: 'center' },
+  orbInnerCutout: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#0A0000', alignItems: 'center', justifyContent: 'center' },
 
   mainTitle: { fontSize: responsiveFont(32), fontWeight: '800', color: '#FFF', textAlign: 'center', lineHeight: 38, marginBottom: 16, letterSpacing: -0.5 },
   mainSubtitle: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 10 },
@@ -455,7 +463,7 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
   dividerText: { marginHorizontal: 16, fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.4)', fontWeight: '500' },
 
-  demoMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 12, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
+  demoMainBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 12, borderWidth: 1, borderColor: 'rgba(255,90,0,0.3)' },
 
   // ── PROCESSING, STORIES, CHAT STYLES ──
   processingCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 24, alignItems: 'center', width: W - 40, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
@@ -495,29 +503,29 @@ const styles = StyleSheet.create({
   queryBtn: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 30, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   queryBtnText: { fontSize: responsiveFont(15), color: '#FFF', fontWeight: '600' },
 
-  chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 16, backgroundColor: '#05001F', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 16, backgroundColor: '#000000', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   chatBackBtn: { padding: 8 },
   chatHeaderInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginLeft: 8 },
   chatHeaderTitle: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FFF' },
-  chatMessages: { flex: 1, backgroundColor: '#05001F' },
+  chatMessages: { flex: 1, backgroundColor: '#000000' },
   chatMessagesContent: { padding: 20, gap: 16, paddingBottom: 24 },
   msgBubble: { maxWidth: '85%', borderRadius: 20, padding: 16 },
-  msgBubbleUser: { alignSelf: 'flex-end', backgroundColor: '#A855F7', borderBottomRightRadius: 4 },
+  msgBubbleUser: { alignSelf: 'flex-end', backgroundColor: '#FF5A00', borderBottomRightRadius: 4 },
   msgBubbleAI: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.08)', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   msgText: { fontSize: responsiveFont(15), color: 'rgba(255,255,255,0.9)', lineHeight: 22 },
   msgTextUser: { color: '#FFF' },
   typingText: { fontSize: responsiveFont(14), color: 'rgba(255,255,255,0.5)' },
-  chatInputBar: { flexDirection: 'row', alignItems: 'flex-end', backgroundColor: '#05001F', padding: 12, paddingHorizontal: 20, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingBottom: Platform.OS === 'ios' ? 28 : 16 },
+  chatInputBar: { flexDirection: 'row', alignItems: 'flex-end', backgroundColor: '#000000', padding: 12, paddingHorizontal: 20, gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingBottom: Platform.OS === 'ios' ? 28 : 16 },
   chatInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 24, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 14, fontSize: responsiveFont(15), color: '#FFF', maxHeight: 120, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   sendBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.neonLime, alignItems: 'center', justifyContent: 'center' },
 
-  presetsScroll: { maxHeight: 52, backgroundColor: '#05001F', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
+  presetsScroll: { maxHeight: 52, backgroundColor: '#000000', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' },
   presetsContainer: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, flexDirection: 'row', alignItems: 'center' },
   presetChip: {
-    backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.35)',
+    backgroundColor: 'rgba(255,90,0,0.15)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: 'rgba(255,90,0,0.35)',
   },
-  presetChipText: { fontSize: responsiveFont(12), color: '#C084FC', fontWeight: '600' },
+  presetChipText: { fontSize: responsiveFont(12), color: '#FF6A00', fontWeight: '600' },
 
   msgConfidenceBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 8, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3, gap: 4 },
   msgConfidenceDot: { width: 6, height: 6, borderRadius: 3 },

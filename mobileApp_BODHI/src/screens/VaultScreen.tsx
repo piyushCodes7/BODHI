@@ -55,14 +55,14 @@ import { useCalculator } from '../context/CalculatorContext';
 const { width: W } = Dimensions.get('window');
 
 const QUICK_SERVICES = [
-  { id: '1', label: 'Split Money', icon: Users, color: '#8A5CFF', route: 'TripWallet' },
-  { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF3366', route: 'InsuranceStories' },
-  { id: '3', label: 'Calculator', icon: Calculator, color: '#FF9900' },
-  { id: '4', label: 'History', icon: FileText, color: '#00E676', route: 'TransactionHistory' },
-  { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3399FF' },
-  { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFD700' },
-  { id: '7', label: 'Travel Booking', icon: Plane, color: '#B366FF', route: 'TravelBooking' },
-  { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF66B2', route: 'SubscriptionHub' },
+  { id: '1', label: 'Split Money', icon: Users, color: '#FF6A00', route: 'TripWallet' },
+  { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF2D2D', route: 'InsuranceStories' },
+  { id: '3', label: 'Calculator', icon: Calculator, color: '#FFB000' },
+  { id: '4', label: 'History', icon: FileText, color: '#34c759', route: 'TransactionHistory' },
+  { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3D4DFF' },
+  { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFE600' },
+  { id: '7', label: 'Travel Booking', icon: Plane, color: '#FF5A00', route: 'TravelBooking' },
+  { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF6A00', route: 'SubscriptionHub' },
 ];
 
 export function VaultScreen() {
@@ -153,8 +153,8 @@ export function VaultScreen() {
   const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : '0';
 
   const dynamicInsights = [
-    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely over 90 days', icon: TrendingUp, bg: ['#4A00E0', '#8E2DE2'] },
-    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'annually cutting subscriptions', icon: PiggyBank, bg: ['#8E2DE2', '#FF007F'] },
+    { id: '1', type: 'FOOD', title: 'Food & Groceries', value: `₹${foodSpending.toLocaleString('en-IN')}`, sub: 'spent closely over 90 days', icon: TrendingUp, bg: ['#8B0000', '#FF5A00'] },
+    { id: '2', type: 'SUBS', title: 'You can save', value: `₹${entertainmentSpending.toLocaleString('en-IN')}`, sub: 'annually cutting subscriptions', icon: PiggyBank, bg: ['#FF5A00', '#FF007F'] },
     { id: '3', type: 'SAVE', title: 'Savings Rate', value: `${savingsRate}%`, sub: 'of income kept over 90 days', icon: TrendingUp, bg: ['#0052D4', '#4364F7'] },
   ];
 
@@ -193,7 +193,7 @@ export function VaultScreen() {
                   <View style={styles.insightRowLeft}>
                     <View style={[styles.insightIconCircle, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
                       {isCredit ? (
-                        <ArrowDownRight size={18} color="#C8FF00" />
+                        <ArrowDownRight size={18} color="#FFE600" />
                       ) : (
                         <ArrowUpRight size={18} color="#FFF" />
                       )}
@@ -206,7 +206,7 @@ export function VaultScreen() {
                     </View>
                   </View>
                   <View style={styles.insightRowRight}>
-                    <Text style={[styles.insightRowAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
+                    <Text style={[styles.insightRowAmount, { color: isCredit ? '#FFE600' : '#FFF' }]} numberOfLines={1}>
                       {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </Text>
                   </View>
@@ -269,7 +269,7 @@ export function VaultScreen() {
         amount: orderData.amount,
         name: 'BODHI',
         order_id: orderData.order_id,
-        theme: { color: '#8A5CFF' }
+        theme: { color: '#FF5A00' }
       };
 
       RazorpayCheckout.open(options).then(async (data: any) => {
@@ -317,10 +317,10 @@ export function VaultScreen() {
         <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         {/* ── HERO SECTION ── */}
         <LinearGradient
-          colors={['#A84DFF', '#FF2D95']}
-start={{ x: 0, y: 0 }}
-end={{ x: 1, y: 1 }}
-style={styles.heroSection}
+          colors={['#1A0000', '#8B0000', '#FF4D00']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroSection}
         >
           {/* Header */}
           <View style={styles.header}>
@@ -388,7 +388,7 @@ style={styles.heroSection}
             activeOpacity={0.9}
           >
             <View style={styles.scanGlassRing}>
-              <LinearGradient colors={[Colors.neonLime, '#A3D900']} style={styles.scanBtn}>
+              <LinearGradient colors={['#FF5A00', '#FFB000']} style={styles.scanBtn}>
                 <ScanLine size={24} color="#000" strokeWidth={2.5} />
               </LinearGradient>
             </View>
@@ -503,15 +503,15 @@ style={styles.heroSection}
 
           {/* Transaction History Banner */}
           <TouchableOpacity
-            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(200, 255, 0, 0.05)', borderColor: 'rgba(200, 255, 0, 0.2)' }]}
+            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(255,90,0,0.05)', borderColor: 'rgba(255,90,0,0.2)' }]}
             onPress={() => navigation.navigate('TransactionHistory')}
             activeOpacity={0.8}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <FileText size={20} color="#C8FF00" />
-              <Text style={{ color: '#C8FF00', fontSize: responsiveFont(16), fontWeight: '700' }}>View Transaction History</Text>
+              <FileText size={20} color="#FF5A00" />
+              <Text style={{ color: '#FF5A00', fontSize: responsiveFont(16), fontWeight: '700' }}>View Transaction History</Text>
             </View>
-            <ChevronRight size={20} color="#C8FF00" style={{ position: 'absolute', right: 20 }} />
+            <ChevronRight size={20} color="#FF5A00" style={{ position: 'absolute', right: 20 }} />
           </TouchableOpacity>
 
           <View style={{ height: 150 }} />
@@ -554,8 +554,8 @@ style={styles.heroSection}
               autoFocus
             />
             <TouchableOpacity onPress={handleAddMoney} disabled={isProcessing || !amountToAdd} style={{ opacity: isProcessing || !amountToAdd ? 0.6 : 1, marginTop: 16 }}>
-              <LinearGradient colors={['#8E2DE2', '#4A00E0']} style={styles.payBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                {isProcessing ? <ActivityIndicator color="#FFF" /> : <Text style={[styles.payBtnText, { color: '#FFF' }]}>PROCEED TO PAY</Text>}
+              <LinearGradient colors={['#FF5A00', '#FFB000']} style={styles.payBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                {isProcessing ? <ActivityIndicator color="#000" /> : <Text style={[styles.payBtnText, { color: '#000' }]}>PROCEED TO PAY</Text>}
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -629,6 +629,7 @@ const styles = StyleSheet.create({
   modalHeaderCommon: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
   modalTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700' },
 
+
   // U-PIN Modal
   modalContentUPin: { borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', width: '100%', maxWidth: isTablet ? (isLandscape() ? 500 : 400) : '100%', alignSelf: 'center' },
   modalHeaderUPin: { alignItems: 'center', marginBottom: 24 },
@@ -654,12 +655,12 @@ const styles = StyleSheet.create({
   avatarContainer: { position: 'relative' },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   avatarText: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFF' },
-  onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#A855F7' },
+  onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: '#34c759', borderWidth: 2, borderColor: '#000000' },
   logo: { height: 30, width: 120, tintColor: '#FFF' },
   iconBtn: { overflow: 'hidden', borderRadius: 22 },
   glassCircleContainer: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   notifBadge: {
-    position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.neonLime,
+    position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF5A00',
   },
 
   balanceArea: { marginBottom: 0 },
@@ -672,7 +673,7 @@ const styles = StyleSheet.create({
   balanceMain: { color: '#FFF', fontSize: responsiveFont(48), fontWeight: '900', letterSpacing: -1 },
   balanceDecimals: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(22), fontWeight: '700' },
   growthRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  growthTxt: { color: Colors.neonLime, fontSize: responsiveFont(12), fontWeight: '800' },
+  growthTxt: { color: '#FFE600', fontSize: responsiveFont(12), fontWeight: '800' },
 
   parallelActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: -42, paddingHorizontal: 20, zIndex: 20 },
   scanBtnContainer: { alignItems: 'center', gap: 6 },
@@ -694,8 +695,8 @@ const styles = StyleSheet.create({
   },
   scanBtnContainer: { alignItems: 'center', justifyContent: 'center' },
   scanGlassRing: { padding: 0, borderRadius: 40 },
-  scanBtn: { width: 72, height: 72, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
-  scanBtnLabel: { color: Colors.neonLime, fontSize: responsiveFont(12), fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
+  scanBtn: { width: 72, height: 72, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: '#FF5A00', shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
+  scanBtnLabel: { color: '#FF5A00', fontSize: responsiveFont(12), fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -729,11 +730,11 @@ const styles = StyleSheet.create({
   contentSection: { paddingHorizontal: 20, paddingTop: 10 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 24 },
   sectionTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
-  viewAll: { color: '#A855F7', fontSize: responsiveFont(13), fontWeight: '600' },
+  viewAll: { color: '#FF5A00', fontSize: responsiveFont(13), fontWeight: '600' },
 
   servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 8, paddingHorizontal: isTablet ? 20 : 0 },
   serviceItem: { width: isTablet ? '18%' : '23%', alignItems: 'center', gap: 8, marginBottom: 16 },
-  serviceIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: '#111827', alignItems: 'center', justifyContent: 'center' },
+  serviceIconWrap: { width: 56, height: 56, borderRadius: 18, backgroundColor: '#0F0F0F', alignItems: 'center', justifyContent: 'center' },
   serviceLabel: { color: '#FFF', fontSize: responsiveFont(11), textAlign: 'center', fontWeight: '600' },
 
 
@@ -746,9 +747,9 @@ const styles = StyleSheet.create({
   insightLinkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   insightLink: { color: 'rgba(255,255,255,0.7)', fontSize: responsiveFont(11), fontWeight: '600', marginRight: 4 },
 
-  addAccountBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.15)' },
-  addAccountText: { color: '#A855F7', fontSize: responsiveFont(12), fontWeight: '700' },
-  accountCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#12121A', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  addAccountBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(255,90,0,0.12)' },
+  addAccountText: { color: '#FF5A00', fontSize: responsiveFont(12), fontWeight: '700' },
+  accountCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0F0F0F', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   accountLeft: { flexDirection: 'row', alignItems: 'center' },
   bankLogoWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   bankName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '600', marginBottom: 4 },
@@ -760,7 +761,7 @@ const styles = StyleSheet.create({
   accountBalance: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '700' },
   paginationDots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
-  dotActive: { width: 16, backgroundColor: '#A855F7' },
+  dotActive: { width: 16, backgroundColor: '#FF5A00' },
 
   sheetModalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   sheetModalSheet: { backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', width: '100%', maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center' },

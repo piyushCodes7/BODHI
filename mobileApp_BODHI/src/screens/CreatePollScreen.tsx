@@ -13,9 +13,9 @@ import { ArrowLeft, Plus, Trash2 } from 'lucide-react-native';
 import { CollaborationAPI } from '../api/client';
 
 const C = {
-  bg: '#05001F', card: '#0F0A2E', border: 'rgba(255,255,255,0.06)',
-  purple: '#8A5CFF', lime: '#C8FF00', white: '#FFFFFF',
-  dim: 'rgba(255,255,255,0.5)', muted: 'rgba(255,255,255,0.25)', red: '#FF3366',
+  bg: '#000000', card: '#0A0A0A', border: 'rgba(255,255,255,0.06)',
+  purple: '#FF5A00', lime: '#FFE600', white: '#FFFFFF',
+  dim: 'rgba(255,255,255,0.5)', muted: 'rgba(255,255,255,0.25)', red: '#FF2D2D',
 };
 
 export function CreatePollScreen({ route }: any) {
@@ -70,6 +70,7 @@ export function CreatePollScreen({ route }: any) {
       </View>
 
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
         <Text style={s.label}>QUESTION *</Text>
         <TextInput
           style={[s.input, { height: 90, textAlignVertical: 'top', paddingTop: 14 }]}
@@ -125,6 +126,7 @@ export function CreatePollScreen({ route }: any) {
         >
           {loading ? <ActivityIndicator color={C.bg} /> : <Text style={s.createBtnText}>Launch Poll 🗳️</Text>}
         </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

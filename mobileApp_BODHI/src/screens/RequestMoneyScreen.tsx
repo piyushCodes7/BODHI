@@ -174,7 +174,7 @@ export function RequestMoneyScreen() {
             <Text style={styles.doneBtnText}>Done</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={resetForm} style={{ marginTop: 14 }}>
-            <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Request from someone else</Text>
+            <Text style={{ color: '#FF5A00', fontSize: responsiveFont(14) }}>Request from someone else</Text>
           </TouchableOpacity>
         </View>
       );
@@ -182,7 +182,7 @@ export function RequestMoneyScreen() {
 
     return (
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <View style={styles.formContainer}>
+        <View style={[styles.formContainer, { maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }]}>
           <Text style={styles.sectionTitle}>Who do you want to request from?</Text>
 
           <Text style={styles.inputLabel}>EMAIL OR PHONE NUMBER</Text>
@@ -234,7 +234,7 @@ export function RequestMoneyScreen() {
             style={{ opacity: isSending || !recipientId || !amount ? 0.5 : 1 }}
           >
             <LinearGradient
-              colors={['#7B2FBE', '#4A00E0']}
+              colors={['#9B111E', '#8B0000']}
               style={styles.requestBtn}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             >
@@ -256,7 +256,7 @@ export function RequestMoneyScreen() {
 
   const renderPendingTab = () => {
     if (isLoadingPending) {
-      return <View style={styles.centered}><ActivityIndicator color="#A855F7" size="large" /></View>;
+      return <View style={styles.centered}><ActivityIndicator color="#FF5A00" size="large" /></View>;
     }
 
     if (pendingRequests.length === 0) {
@@ -270,10 +270,11 @@ export function RequestMoneyScreen() {
     }
 
     return (
+    <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
       <FlatList
         data={pendingRequests}
         keyExtractor={item => item.request_id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchPending(); }} tintColor="#A855F7" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchPending(); }} tintColor="#FF5A00" />}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         renderItem={({ item }) => (
           <View style={styles.requestCard}>
@@ -305,13 +306,14 @@ export function RequestMoneyScreen() {
           </View>
         )}
       />
+    </View>
     );
   };
 
   return (
     <View style={styles.root}>
       {/* Header */}
-      <LinearGradient colors={['#2A0066', '#660099']} style={styles.header}>
+      <LinearGradient colors={['#1A0000', '#8B0000']} style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={22} color="#FFF" />
         </TouchableOpacity>
@@ -352,7 +354,7 @@ export function RequestMoneyScreen() {
       {/* Fulfill Modal */}
       <Modal visible={showFulfillModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', borderTopLeftRadius: 28, borderTopRightRadius: 28 }]}>
             {fulfillSuccess ? (
               <View style={styles.successContainer}>
                 <CheckCircle size={64} color="#34c759" />
@@ -387,7 +389,7 @@ export function RequestMoneyScreen() {
                   style={{ opacity: isFulfilling ? 0.6 : 1 }}
                 >
                   <LinearGradient
-                    colors={['#FFE259', '#C8FF00']}
+                    colors={['#FFE600', '#FFE600']}
                     style={styles.requestBtn}
                     start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                   >
@@ -433,10 +435,10 @@ const styles = StyleSheet.create({
     margin: 16, borderRadius: 14, padding: 4,
   },
   toggleBtn: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 10, flexDirection: 'row', justifyContent: 'center' },
-  toggleBtnActive: { backgroundColor: 'rgba(168,85,247,0.25)' },
+  toggleBtnActive: { backgroundColor: 'rgba(255,90,0,0.25)' },
   toggleBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: responsiveFont(14), fontWeight: '600' },
-  toggleBtnTextActive: { color: '#A855F7' },
-  badge: { backgroundColor: '#A855F7', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 },
+  toggleBtnTextActive: { color: '#FF5A00' },
+  badge: { backgroundColor: '#FF5A00', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 },
   badgeText: { color: '#FFF', fontSize: responsiveFont(11), fontWeight: '700' },
 
   formContainer: { padding: 20, flex: 1 },
@@ -456,7 +458,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 9,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
-  quickPillText: { color: '#A855F7', fontSize: responsiveFont(13), fontWeight: '600' },
+  quickPillText: { color: '#FF5A00', fontSize: responsiveFont(13), fontWeight: '600' },
   requestBtn: {
     borderRadius: 30, paddingVertical: 18,
     alignItems: 'center', justifyContent: 'center',
@@ -466,7 +468,7 @@ const styles = StyleSheet.create({
 
   // pending
   requestCard: {
-    backgroundColor: '#12121A', borderRadius: 16,
+    backgroundColor: '#0F0F0F', borderRadius: 16,
     padding: 16, marginBottom: 12,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
@@ -474,15 +476,15 @@ const styles = StyleSheet.create({
   requestCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
   reqAvatar: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#7B2FBE', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#9B111E', alignItems: 'center', justifyContent: 'center',
   },
   reqAvatarText: { color: '#FFF', fontSize: responsiveFont(16), fontWeight: '700' },
   reqName: { color: '#FFF', fontSize: responsiveFont(15), fontWeight: '600', marginBottom: 2 },
   reqNote: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(12), fontStyle: 'italic', marginBottom: 2 },
   reqTime: { color: 'rgba(255,255,255,0.3)', fontSize: responsiveFont(11) },
   requestCardRight: { alignItems: 'flex-end', gap: 8 },
-  reqAmount: { color: '#FFE259', fontSize: responsiveFont(17), fontWeight: '800' },
-  payReqBtn: { backgroundColor: '#A855F7', paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20 },
+  reqAmount: { color: '#FFE600', fontSize: responsiveFont(17), fontWeight: '800' },
+  payReqBtn: { backgroundColor: '#FF5A00', paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20 },
   payReqBtnText: { color: '#FFF', fontSize: responsiveFont(13), fontWeight: '700' },
 
   emptyTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700', marginTop: 16, marginBottom: 8 },
@@ -491,15 +493,15 @@ const styles = StyleSheet.create({
   // modal
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
   modalSheet: {
-    backgroundColor: '#0F0A20', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    backgroundColor: '#0A0A0A', borderTopLeftRadius: 28, borderTopRightRadius: 28,
     padding: 24, paddingBottom: 44,
-    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+    borderWidth: 1, borderColor: 'rgba(255,90,0,0.3)',
   },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
   modalTitle: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '700' },
   fulfillSummary: { alignItems: 'center', paddingVertical: 20, marginBottom: 24 },
   fulfillFrom: { color: 'rgba(255,255,255,0.6)', fontSize: responsiveFont(15), marginBottom: 8 },
-  fulfillAmt: { color: '#FFE259', fontSize: responsiveFont(48), fontWeight: '800', marginBottom: 8 },
+  fulfillAmt: { color: '#FFE600', fontSize: responsiveFont(48), fontWeight: '800', marginBottom: 8 },
   fulfillNote: { color: 'rgba(255,255,255,0.5)', fontSize: responsiveFont(14), fontStyle: 'italic' },
   declineBtn: { marginTop: 14, alignItems: 'center' },
   declineBtnText: { color: '#FF3B30', fontSize: responsiveFont(15), fontWeight: '600' },

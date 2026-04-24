@@ -105,7 +105,7 @@ export function TransactionHistoryScreen() {
         <View style={styles.txLeft}>
           <View style={[styles.iconWrap, { backgroundColor: isCredit ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
             {isCredit ? (
-              <ArrowDownRight size={20} color="#C8FF00" />
+              <ArrowDownRight size={20} color="#FFE600" />
             ) : (
               <ArrowUpRight size={20} color="#FFF" />
             )}
@@ -119,7 +119,7 @@ export function TransactionHistoryScreen() {
         </View>
 
         <View style={styles.txRight}>
-          <Text style={[styles.txAmount, { color: isCredit ? '#C8FF00' : '#FFF' }]} numberOfLines={1}>
+          <Text style={[styles.txAmount, { color: isCredit ? '#FFE600' : '#FFF' }]} numberOfLines={1}>
             {isCredit ? '+' : '-'}₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </Text>
         </View>
@@ -141,9 +141,10 @@ export function TransactionHistoryScreen() {
       {/* List */}
       {isLoading && !isRefreshing ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator color="#C8FF00" size="large" />
+          <ActivityIndicator color="#FFE600" size="large" />
         </View>
       ) : (
+      <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <FlatList
           data={transactions}
           keyExtractor={(item) => item.id}
@@ -154,17 +155,18 @@ export function TransactionHistoryScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={onRefresh}
-              tintColor="#C8FF00"
-              colors={["#C8FF00"]}
+              tintColor="#FFE600"
+              colors={["#FFE600"]}
             />
           }
         />
+      </View>
       )}
 
       {/* Transaction Details Modal */}
       <Modal visible={!!selectedTx} animationType="slide" transparent onRequestClose={() => setSelectedTx(null)}>
         <View style={styles.modalBg}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', borderTopLeftRadius: 30, borderTopRightRadius: 30 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Receipt Detail</Text>
               <TouchableOpacity onPress={() => setSelectedTx(null)} style={styles.modalCloseBtn}>
@@ -175,10 +177,10 @@ export function TransactionHistoryScreen() {
             {selectedTx && (
               <View style={styles.receiptMain}>
                 <View style={[styles.receiptIcon, { backgroundColor: selectedTx.type.toUpperCase() === 'CREDIT' ? 'rgba(200,255,0,0.1)' : 'rgba(255,255,255,0.05)' }]}>
-                  {selectedTx.type.toUpperCase() === 'CREDIT' ? <ArrowDownRight size={32} color="#C8FF00" /> : <ArrowUpRight size={32} color="#FFF" />}
+                  {selectedTx.type.toUpperCase() === 'CREDIT' ? <ArrowDownRight size={32} color="#FFE600" /> : <ArrowUpRight size={32} color="#FFF" />}
                 </View>
                 <Text style={styles.receiptMerchant}>{selectedTx.merchant}</Text>
-                <Text style={[styles.receiptAmount, { color: selectedTx.type.toUpperCase() === 'CREDIT' ? '#C8FF00' : '#FFF' }]}>
+                <Text style={[styles.receiptAmount, { color: selectedTx.type.toUpperCase() === 'CREDIT' ? '#FFE600' : '#FFF' }]}>
                   {selectedTx.type.toUpperCase() === 'CREDIT' ? '+' : '-'}₹{selectedTx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </Text>
 
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#12121A',
+    backgroundColor: '#0F0F0F',
     padding: 16,
     borderRadius: 20,
     marginBottom: 12,
@@ -259,7 +261,7 @@ const styles = StyleSheet.create({
   txAmount: { fontSize: responsiveFont(16), fontWeight: '800' },
 
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40 },
+  modalContent: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
   modalCloseBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },

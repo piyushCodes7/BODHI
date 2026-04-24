@@ -37,7 +37,7 @@ function getInitials(name: string): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-const AVATAR_COLORS = ['#7B2FBE', '#FF3366', '#FF9900', '#00BCD4', '#4CAF50', '#E91E63'];
+const AVATAR_COLORS = ['#9B111E', '#FF2D2D', '#FFB000', '#00BCD4', '#4CAF50', '#E91E63'];
 function avatarColor(name: string) {
   let sum = 0;
   for (const c of name) sum += c.charCodeAt(0);
@@ -244,7 +244,7 @@ export function SendMoneyScreen() {
       );
     }
     if (isLoadingContacts) {
-      return <View style={styles.centered}><ActivityIndicator color="#A855F7" size="large" /></View>;
+      return <View style={styles.centered}><ActivityIndicator color="#FF5A00" size="large" /></View>;
     }
     return (
       <>
@@ -424,7 +424,7 @@ export function SendMoneyScreen() {
       </View>
 
       {/* Content */}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         {activeTab === 'gap' && renderGapTab()}
         {activeTab === 'contacts' && renderContactsTab()}
         {activeTab === 'phone' && renderPhoneTab()}
@@ -437,7 +437,7 @@ export function SendMoneyScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', borderTopLeftRadius: 32, borderTopRightRadius: 32 }]}>
             {paySuccess ? (
               <View style={styles.successContainer}>
                 <CheckCircle size={64} color="#34c759" />
@@ -450,7 +450,7 @@ export function SendMoneyScreen() {
                   <Text style={styles.doneBtnText}>Done</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setShowPayModal(false); setPaySuccess(false); }} style={{ marginTop: 12 }}>
-                  <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Send to someone else</Text>
+                  <Text style={{ color: '#FF5A00', fontSize: responsiveFont(14) }}>Send to someone else</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -505,7 +505,7 @@ export function SendMoneyScreen() {
                     style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
                   >
                     <LinearGradient
-                      colors={['#4A00E0', '#8E2DE2']}
+                      colors={['#8B0000', '#FF5A00']}
                       style={styles.payBtn}
                       start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                     >

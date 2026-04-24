@@ -42,10 +42,10 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
   const dark   = isDarkScreen ?? false;
   const insets = useSafeAreaInsets();
 
-  const barBg    = dark ? 'rgba(12,14,18,0.75)'  : 'rgba(255,255,255,0.72)';
-  const iconCol  = dark ? '#9ca3af'               : Colors.tabInactive;
-  const activeCol= dark ? '#c084fc'               : Colors.electricViolet; // Purple active state
-  const labelCol = dark ? '#6b7280'               : Colors.tabInactive;
+  const barBg    = dark ? 'rgba(5,5,5,0.85)'      : 'rgba(255,255,255,0.72)';
+  const iconCol  = dark ? 'rgba(255,255,255,0.35)' : Colors.tabInactive;
+  const activeCol= dark ? '#FF5A00'               : Colors.electricViolet;
+  const labelCol = dark ? 'rgba(255,255,255,0.35)' : Colors.tabInactive;
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom || (Platform.OS === 'android' ? 24 : 16) }]}>
@@ -56,7 +56,7 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
           blurAmount={24}
         />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(12,14,18,0.9)' : 'rgba(255,255,255,0.9)' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(5,5,5,0.92)' : 'rgba(255,255,255,0.9)' }]} />
       )}
 
       <View style={[StyleSheet.absoluteFill, { backgroundColor: barBg }]} />
@@ -86,14 +86,14 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
                   style={[
                     styles.aiButton,
                     { 
-                      backgroundColor: dark ? '#1A1A24' : '#FFFFFF',
-                      shadowColor: isFocused ? Colors.electricViolet : '#c084fc',
+                      backgroundColor: dark ? '#0F0F0F' : '#FFFFFF',
+                      shadowColor: isFocused ? '#FF5A00' : '#FF6A00',
                     }
                   ]}
                 >
                   <IconComponent 
                     size={28} 
-                    color={dark ? Colors.textPrimary : '#12102A'} 
+                    color={dark ? '#FF5A00' : '#12102A'} 
                     strokeWidth={2}
                   />
                 </TouchableOpacity>
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems:      'center',
     justifyContent:  'center',
     borderWidth:     1,
-    borderColor:     'rgba(192, 132, 252, 0.15)', // Soft purple border ring
+    borderColor:     'rgba(255, 90, 0, 0.2)', // Warm orange border ring
     // The soft glowing shadow from your image
     shadowOffset:   { width: 0, height: 8 },
     shadowOpacity:  0.4,

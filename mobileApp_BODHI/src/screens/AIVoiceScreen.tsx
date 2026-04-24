@@ -377,7 +377,7 @@ export function AIVoiceScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <LinearGradient
-        colors={['#05001F', '#1A0033', '#4A0033']}
+        colors={['#000000', '#0A0000', '#2B0000']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -475,8 +475,8 @@ export function AIVoiceScreen() {
             <LinearGradient
               colors={
                 isRecording
-                  ? [Colors.neonLime, '#1A0033']
-                  : ['#4A0033', '#1A0033']
+                  ? [Colors.neonLime, '#0A0000']
+                  : ['#2B0000', '#0A0000']
               }
               style={styles.orb}
               start={{ x: 0, y: 0 }}
@@ -538,7 +538,7 @@ export function AIVoiceScreen() {
         {/* ─── Try Saying Chips ─── */}
         <View style={styles.trySayingSection}>
           <View style={styles.trySayingHeader}>
-            <Sparkles size={16} color="#A855F7" />
+            <Sparkles size={16} color="#FF5A00" />
             <Text style={styles.trySayingText}>Try saying</Text>
           </View>
 
@@ -561,7 +561,7 @@ export function AIVoiceScreen() {
                 handleChipPress('How much can I save this month?')
               }
             >
-              <PiggyBank size={16} color="#FF3366" />
+              <PiggyBank size={16} color="#FF2D2D" />
               <Text style={styles.chipText}>
                 How much can{'\n'}I save this month?
               </Text>
@@ -571,7 +571,7 @@ export function AIVoiceScreen() {
               style={styles.chip}
               onPress={() => handleChipPress('Upcoming payments?')}
             >
-              <Calendar size={16} color="#A855F7" />
+              <Calendar size={16} color="#FF5A00" />
               <Text style={styles.chipText}>Upcoming{'\n'}payments?</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -603,7 +603,7 @@ export function AIVoiceScreen() {
                   inputText.length > 0
                     ? Colors.neonLime
                     : isRecording
-                      ? '#FF3366'
+                      ? '#FF2D2D'
                       : 'rgba(255,255,255,0.1)',
               },
             ]}
@@ -624,7 +624,7 @@ export function AIVoiceScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05001F' },
+  root: { flex: 1, backgroundColor: '#000000' },
   scrollContent: { paddingBottom: 40 },
   header: {
     flexDirection: 'row',
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: Colors.neonLime,
     borderWidth: 2,
-    borderColor: '#05001F',
+    borderColor: '#000000',
   },
   logo: { height: 35, width: 150, tintColor: '#FFF' },
   headerIcons: { flexDirection: 'row', gap: 10 },
@@ -666,9 +666,9 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FF3366',
+    backgroundColor: '#FF2D2D',
     borderWidth: 1.5,
-    borderColor: '#05001F',
+    borderColor: '#000000',
   },
   orbContainer: {
     alignItems: 'center',
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(168,85,247,0.3)',
+    borderColor: 'rgba(255,90,0,0.3)',
   },
   ring1: { width: 180, height: 180, opacity: 0.5 },
   ring2: { width: 260, height: 260, opacity: 0.2 },
@@ -695,8 +695,8 @@ const styles = StyleSheet.create({
   orbShadowLayer: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 70,
-    backgroundColor: '#1A0033', // Solid background for shadow anchor
-    shadowColor: '#A855F7',
+    backgroundColor: '#0A0000', // Solid background for shadow anchor
+    shadowColor: '#FF5A00',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 30,
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
     width: 124,
     height: 124,
     borderRadius: 62,
-    backgroundColor: '#1A0033',
+    backgroundColor: '#0A0000',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     width: '100%',
-    backgroundColor: '#05001F',
+    backgroundColor: '#000000',
     paddingHorizontal: 20,
     paddingTop: 12,
     borderTopWidth: 1,

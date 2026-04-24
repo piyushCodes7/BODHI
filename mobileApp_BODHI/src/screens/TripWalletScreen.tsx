@@ -29,11 +29,11 @@ import LinearGradient from 'react-native-linear-gradient';
 const { width: W } = Dimensions.get('window');
 
 const C = {
-  bg: '#07051A',
-  cardBg: '#0E0C24',
-  neonLime: '#C8FF00',
-  purple: '#A855F7',
-  red: '#F43F5E',
+  bg: '#000000',
+  cardBg: '#0A0A0A',
+  neonLime: '#FFE600',
+  purple: '#FF5A00',
+  red: '#FF2D2D',
   white: '#FFFFFF',
   whiteMid: 'rgba(255,255,255,0.7)',
   whiteDim: 'rgba(255,255,255,0.3)',
@@ -195,7 +195,7 @@ export function TripWalletScreen({ route, navigation }: any) {
         >
           <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
           <LinearGradient
-            colors={['#1E293B', '#0E0C24']}
+            colors={['#1E293B', '#0A0A0A']}
             style={styles.summaryCard}
           >
             <View>
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: C.border 
   },
-  expenseIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
+  expenseIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,90,0,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   expDesc: { color: C.white, fontSize: responsiveFont(15), fontWeight: '700', marginBottom: 2 },
   expPaidBy: { color: C.whiteDim, fontSize: responsiveFont(11), fontWeight: '600' },
   expAmount: { color: C.white, fontSize: responsiveFont(16), fontWeight: '800' },

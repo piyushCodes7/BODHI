@@ -226,6 +226,7 @@ export const SubscriptionHubScreen = () => {
   if (selectedService) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <StatusBar barStyle="light-content" />
 
         {/* Background orbs */}
@@ -286,6 +287,7 @@ export const SubscriptionHubScreen = () => {
             </TouchableOpacity>
           )}
         />
+        </View>
       </SafeAreaView>
     );
   }
@@ -295,6 +297,7 @@ export const SubscriptionHubScreen = () => {
   // ─────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container}>
+      <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 1000 : 800) : '100%', alignSelf: 'center', width: '100%' }}>
       <StatusBar barStyle="light-content" />
 
       {/* Background ambient orbs */}
@@ -384,6 +387,7 @@ export const SubscriptionHubScreen = () => {
           </View>
         }
       />
+      </View>
 
       {/* ── VAULT CONFIRMATION MODAL ── */}
       <Modal visible={showConfirmModal} transparent animationType="slide">

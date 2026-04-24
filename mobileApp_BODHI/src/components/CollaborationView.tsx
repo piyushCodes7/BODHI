@@ -23,15 +23,15 @@ import LinearGradient from 'react-native-linear-gradient';
 const { width: W } = Dimensions.get('window');
 
 const C = {
-  bg: '#07051A', 
-  card: '#0E0C24', 
+  bg: '#000000', 
+  card: '#0A0A0A', 
   border: 'rgba(255,255,255,0.08)',
-  purple: '#A855F7', 
-  neonLime: '#C8FF00', 
+  purple: '#FF5A00', 
+  neonLime: '#FFE600', 
   white: '#FFFFFF',
   dim: 'rgba(255,255,255,0.5)', 
   muted: 'rgba(255,255,255,0.1)',
-  red: '#F43F5E',
+  red: '#FF2D2D',
 };
 
 type CollabTab = 'CHAT' | 'POLLS' | 'FEED';

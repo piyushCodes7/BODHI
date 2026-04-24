@@ -44,7 +44,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
 
   const getColors = () => {
     if (disabled) return ['#333', '#222'];
-    if (variant === 'signup') return [Colors.neonGreen, '#2ECC71'];
+    if (variant === 'signup') return ['#FF5A00', '#FFE600']; // Premium Warm Fire
     return Gradients.authCTA.colors;
   };
 
@@ -59,7 +59,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         styles.container, 
         style, 
         disabled && styles.disabled, 
-        variant === 'signup' && { shadowColor: Colors.neonGreen },
+        variant === 'signup' && { shadowColor: '#FF5A00' },
         animatedStyle
       ]}
     >
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: Radius.md,
     overflow: 'hidden',
-    shadowColor: '#C8FF00',
+    shadowColor: '#FFE600',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
