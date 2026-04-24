@@ -146,7 +146,9 @@ export function ScanPayScreen() {
       let data: any;
       try { data = JSON.parse(rawText); } catch { data = {}; }
 
-      if (!res.ok) throw new Error(data.detail || 'Payment failed. Please try again.');
+      if (!res.ok) {
+        throw new Error(data.detail || `Server Error ${res.status}: ${rawText.substring(0, 50)}`);
+      }
 
       setSuccessMsg(`₹${parseFloat(amount).toFixed(2)} sent to ${data.recipient_name} successfully!`);
       setPaySuccess(true);

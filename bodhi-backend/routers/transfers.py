@@ -256,7 +256,7 @@ async def send_money(
                       amount_paise=amount_paise, ref_id=txn_id,
                       description=f"Sent ₹{body.amount:.2f} to {recip.full_name}{f' — {body.note}' if body.note else ''}")
         _write_ledger(db, user_id=recip.id, entry_type=LedgerEntryType.CREDIT,
-                      amount_paise=amount_paise, ref_id=f"{txn_id}_rcv",
+                      amount_paise=amount_paise, ref_id=txn_id,
                       description=f"Received ₹{body.amount:.2f} from {sender.full_name}{f' — {body.note}' if body.note else ''}")
         recipient_name = recip.full_name
     else:
