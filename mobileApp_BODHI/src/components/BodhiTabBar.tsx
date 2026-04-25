@@ -27,11 +27,11 @@ type TabConfig = {
 
 // Map routes to official Lucide icons. "Me" tab has been removed.
 const TAB_CONFIG: Record<string, TabConfig> = {
-  Vault:     { label: 'VAULT',     Icon: Lock },
-  Social:    { label: 'SOCIAL',    Icon: Users },
-  AI:        { label: 'AI',        Icon: Cpu },
-  Trade:     { label: 'TRADE',     Icon: BarChart2 },
-  Market:    { label: 'MARKET',    Icon: Shuffle },
+  Vault: { label: 'VAULT', Icon: Lock },
+  Social: { label: 'SOCIAL', Icon: Users },
+  AI: { label: 'AI', Icon: Cpu },
+  Trade: { label: 'TRADE', Icon: BarChart2 },
+  Market: { label: 'MARKET', Icon: Shuffle },
 };
 
 interface BodhiTabBarProps extends BottomTabBarProps {
@@ -39,12 +39,12 @@ interface BodhiTabBarProps extends BottomTabBarProps {
 }
 
 export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: BodhiTabBarProps) {
-  const dark   = isDarkScreen ?? false;
+  const dark = isDarkScreen ?? false;
   const insets = useSafeAreaInsets();
 
-  const barBg    = dark ? 'rgba(5,5,5,0.85)'      : 'rgba(255,255,255,0.72)';
-  const iconCol  = dark ? 'rgba(255,255,255,0.35)' : Colors.tabInactive;
-  const activeCol= dark ? '#FF5A00'               : Colors.electricViolet;
+  const barBg = dark ? 'rgba(5,5,5,0.85)' : 'rgba(255,255,255,0.72)';
+  const iconCol = dark ? 'rgba(255,255,255,0.35)' : Colors.tabInactive;
+  const activeCol = dark ? '#FF5A00' : Colors.electricViolet;
   const labelCol = dark ? 'rgba(255,255,255,0.35)' : Colors.tabInactive;
 
   return (
@@ -67,7 +67,7 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          
+
           const tab = TAB_CONFIG[route.name] || { label: route.name, Icon: Lock };
           const isAI = route.name === 'AI';
           const IconComponent = tab.Icon;
@@ -85,15 +85,15 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
                   activeOpacity={0.85}
                   style={[
                     styles.aiButton,
-                    { 
+                    {
                       backgroundColor: dark ? '#0F0F0F' : '#FFFFFF',
                       shadowColor: isFocused ? '#FF5A00' : '#FF6A00',
                     }
                   ]}
                 >
-                  <IconComponent 
-                    size={28} 
-                    color={dark ? '#FF5A00' : '#12102A'} 
+                  <IconComponent
+                    size={28}
+                    color={dark ? '#FF5A00' : '#12102A'}
                     strokeWidth={2}
                   />
                 </TouchableOpacity>
@@ -111,9 +111,9 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
               activeOpacity={0.7}
               style={styles.tab}
             >
-              <IconComponent 
-                size={22} 
-                color={isFocused ? activeCol : iconCol} 
+              <IconComponent
+                size={22}
+                color={isFocused ? activeCol : iconCol}
                 strokeWidth={isFocused ? 2.5 : 2}
                 style={styles.tabIcon}
               />
@@ -134,27 +134,27 @@ export function BodhiTabBar({ state, descriptors, navigation, isDarkScreen }: Bo
 
 const styles = StyleSheet.create({
   wrapper: {
-    position:       'absolute',
-    bottom:         0,
-    left:           0,
-    right:          0,
-    paddingTop:     4,
-    overflow:       'visible',
-    zIndex:         100,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 4,
+    overflow: 'visible',
+    zIndex: 100,
   },
   hairline: {
     height: 0.5,
   },
   row: {
-    flexDirection:  'row',
-    alignItems:     'flex-end',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     justifyContent: 'space-around',
     paddingHorizontal: 12, // Adjusted for 5 tabs
-    paddingTop:     8,
+    paddingTop: 8,
   },
   tab: {
-    flex:           1,
-    alignItems:     'center',
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 4,
   },
@@ -162,38 +162,38 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   tabLabel: {
-    fontFamily:    Fonts.label,
+    fontFamily: Fonts.label,
     fontSize: responsiveFont(10), // Sized up slightly since we have more room with 5 tabs
-    fontWeight:    '600',
+    fontWeight: '600',
     letterSpacing: 0.5,
   },
   tabLabelActive: {
     fontWeight: '800',
   },
   aiWrapper: {
-    flex:       1.2, 
+    flex: 1.2,
     alignItems: 'center',
-    marginTop:  -36, // Pulled up higher to match your image
+    marginTop: -36, // Pulled up higher to match your image
   },
   aiButton: {
-    width:           60,
-    height:          60,
-    borderRadius:    30,
-    alignItems:      'center',
-    justifyContent:  'center',
-    borderWidth:     1,
-    borderColor:     'rgba(255, 90, 0, 0.2)', // Warm orange border ring
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 90, 0, 0.2)', // Warm orange border ring
     // The soft glowing shadow from your image
-    shadowOffset:   { width: 0, height: 8 },
-    shadowOpacity:  0.4,
-    shadowRadius:   16,
-    elevation:      10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
   aiLabel: {
-    fontFamily:    Fonts.label,
+    fontFamily: Fonts.label,
     fontSize: responsiveFont(10),
-    fontWeight:    '700',
+    fontWeight: '700',
     letterSpacing: 1.2,
-    marginTop:     8,
+    marginTop: 8,
   },
 });

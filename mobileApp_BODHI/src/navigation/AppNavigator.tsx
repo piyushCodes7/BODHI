@@ -10,27 +10,27 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Users } from 'lucide-react-native';
 
 // ─── SCREEN IMPORTS ───
-import { AuthScreen }                    from '../screens/AuthScreen';
-import { VaultScreen }                   from '../screens/VaultScreen';
-import { SocialScreen }                  from '../screens/SocialScreen';
-import { AIVoiceScreen }                 from '../screens/AIVoiceScreen';
-import { MarketScreen }                  from '../screens/MarketScreen';
-import { PaperTradingScreen }            from '../screens/PaperTradingScreen';
-import { PaymentScreen }                 from '../screens/PaymentScreen';
-import { VentureClubScreen }             from '../screens/VentureClubScreen';
-import { TripWalletScreen }              from '../screens/TripWalletScreen'; 
-import { CreatePollScreen }              from '../screens/CreatePollScreen';
-import { ImmuneSystemAlertScreen }       from '../screens/TripAndAlertScreens';
-import { TransactionHistoryScreen }      from '../screens/TransactionHistoryScreen';
-import { ScanPayScreen }                 from '../screens/ScanPayScreen';
-import { SendMoneyScreen }               from '../screens/SendMoneyScreen';
-import { RequestMoneyScreen }            from '../screens/RequestMoneyScreen';
-import { NotificationScreen }            from '../screens/NotificationScreen';
-import { ProfileScreen }                 from '../screens/ProfileScreen';
-import { SubscriptionHubScreen }         from '../screens/SubscriptionHubScreen';
-import { 
-  BankAccountsScreen, 
-  SecuritySettingsScreen, 
+import { AuthScreen } from '../screens/AuthScreen';
+import { VaultScreen } from '../screens/VaultScreen';
+import { SocialScreen } from '../screens/SocialScreen';
+import { AIVoiceScreen } from '../screens/AIVoiceScreen';
+import { MarketScreen } from '../screens/MarketScreen';
+import { PaperTradingScreen } from '../screens/PaperTradingScreen';
+import { PaymentScreen } from '../screens/PaymentScreen';
+import { VentureClubScreen } from '../screens/VentureClubScreen';
+import { TripWalletScreen } from '../screens/TripWalletScreen';
+import { CreatePollScreen } from '../screens/CreatePollScreen';
+import { ImmuneSystemAlertScreen } from '../screens/TripAndAlertScreens';
+import { TransactionHistoryScreen } from '../screens/TransactionHistoryScreen';
+import { ScanPayScreen } from '../screens/ScanPayScreen';
+import { SendMoneyScreen } from '../screens/SendMoneyScreen';
+import { RequestMoneyScreen } from '../screens/RequestMoneyScreen';
+import { NotificationScreen } from '../screens/NotificationScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
+import { SubscriptionHubScreen } from '../screens/SubscriptionHubScreen';
+import {
+  BankAccountsScreen,
+  SecuritySettingsScreen,
 } from '../screens/PlaceholderScreens';
 import { TravelBookingScreen } from '../screens/TravelBookingScreen';
 

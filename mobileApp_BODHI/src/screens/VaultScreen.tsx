@@ -40,7 +40,6 @@ import {
   PiggyBank,
   Landmark,
   ChevronRight,
-  Users,
   Calculator,
   ArrowDownRight,
   ArrowUpRight
@@ -55,14 +54,14 @@ import { useCalculator } from '../context/CalculatorContext';
 const { width: W } = Dimensions.get('window');
 
 const QUICK_SERVICES = [
-  { id: '1', label: 'Split Money', icon: Users, color: '#FF6A00', route: 'TripWallet' },
-  { id: '2', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF2D2D', route: 'InsuranceStories' },
+  { id: '1', label: 'Insurance Stories', icon: ShieldCheck, color: '#FF2D2D', route: 'InsuranceStories' },
+  { id: '2', label: 'Subscriptions', icon: CreditCard, color: '#FF6A00', route: 'SubscriptionHub' },
   { id: '3', label: 'Calculator', icon: Calculator, color: '#FFB000' },
   { id: '4', label: 'History', icon: FileText, color: '#34c759', route: 'TransactionHistory' },
   { id: '5', label: 'Mobile Recharge', icon: Smartphone, color: '#3D4DFF' },
   { id: '6', label: 'Utility Bills', icon: FileText, color: '#FFE600' },
   { id: '7', label: 'Travel Booking', icon: Plane, color: '#FF5A00', route: 'TravelBooking' },
-  { id: '8', label: 'Subscriptions', icon: CreditCard, color: '#FF6A00', route: 'SubscriptionHub' },
+
 ];
 
 export function VaultScreen() {
@@ -315,207 +314,207 @@ export function VaultScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         <View style={{ maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
-        {/* ── HERO SECTION ── */}
-        <LinearGradient
-          colors={['#1A0000', '#8B0000', '#FF4D00']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.heroSection}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('Profile')}
-              style={styles.avatarContainer}
-            >
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>{userInitial}</Text>
-              </View>
-              <View style={styles.onlineDot} />
-            </TouchableOpacity>
-
-            <Image
-              source={require('../../assets/images/bodhi-logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-
-            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
-              <View style={styles.glassCircleContainer}>
-                {Platform.OS === 'ios' ? (
-                  <BlurView blurType="light" blurAmount={10} style={StyleSheet.absoluteFill} />
-                ) : (
-                  <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
-                )}
-                <Bell size={20} color="#FFF" />
-                {unreadCount > 0 && <View style={styles.notifBadge} />}
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* Compact Balance Card */}
-          <View style={styles.balanceArea}>
-            <Text style={styles.greeting}>{getGreeting()}, {userName} 👋</Text>
-
-            <View style={styles.netWorthHeader}>
-              <Text style={styles.netWorthLabel}>TOTAL NET WORTH</Text>
-              <TouchableOpacity onPress={handleToggleBalance} style={styles.revealBtn}>
-                {balanceVisible ? <Eye size={14} color="#FFF" /> : <EyeOff size={14} color="#FFF" />}
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.balanceRow}>
-              <Text style={styles.currencySymbol}>₹</Text>
-              <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '••••••'}</Text>
-              <Text style={styles.balanceDecimals}>{balanceVisible ? `.${balance.split('.')[1] || '00'}` : ''}</Text>
-            </View>
-
-            <View style={styles.growthRow}>
-              <TrendingUp size={14} color={todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B'} />
-              <Text style={[styles.growthTxt, { color: todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B' }]}>
-                {todayGrowth >= 0 ? '+' : ''}₹{todayGrowth.toLocaleString('en-IN')} today
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* ── PRIMARY ACTIONS ── */}
-        <View style={styles.parallelActions}>
-          <TouchableOpacity
-            style={styles.scanBtnContainer}
-            onPress={() => navigation.navigate('ScanPay')}
-            activeOpacity={0.9}
+          {/* ── HERO SECTION ── */}
+          <LinearGradient
+            colors={['#1A0000', '#8B0000', '#FF4D00']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroSection}
           >
-            <View style={styles.scanGlassRing}>
-              <LinearGradient colors={['#FF5A00', '#FFB000']} style={styles.scanBtn}>
-                <ScanLine size={24} color="#000" strokeWidth={2.5} />
-              </LinearGradient>
-            </View>
-            <Text style={styles.scanBtnLabel}>Scan & Pay</Text>
-          </TouchableOpacity>
-
-          {/* Right: Pill Container */}
-          <View style={styles.actionPillContainer}>
-            {Platform.OS === 'ios' ? (
-              <BlurView blurType="dark" blurAmount={32} style={StyleSheet.absoluteFill} pointerEvents="none" />
-            ) : (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} pointerEvents="none" />
-            )}
-            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
-              <View style={styles.pillIconGlass}>
-                <Send size={18} color="#FFF" />
-              </View>
-              <Text style={styles.actionBtnLabel}>Send</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.pillItem} onPress={() => setShowAddMoney(true)} activeOpacity={0.7}>
-              <View style={styles.actionBtnCircle}>
-                <Plus size={20} color="#FFF" strokeWidth={3} />
-              </View>
-              <Text style={styles.actionBtnLabel}>Add</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('RequestMoney')} activeOpacity={0.7}>
-              <View style={styles.actionBtnCircle}>
-                <ArrowDownToLine size={18} color="#FFF" strokeWidth={2.5} />
-              </View>
-              <Text style={styles.actionBtnLabel}>Request</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* ── MAIN CONTENT ── */}
-        <View style={styles.contentSection}>
-          {/* Quick Services */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Quick Services</Text>
-            <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
-          </View>
-
-          <View style={styles.servicesGrid}>
-            {QUICK_SERVICES.map((item) => (
+            {/* Header */}
+            <View style={styles.header}>
               <TouchableOpacity
-                key={item.id}
-                style={styles.serviceItem}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (item.label === 'Calculator' || item.id === '3') {
-                    toggleCalculator();
-                    return;
-                  }
-                  if (item.route === 'InsuranceStories') {
-                    setShowInsurance(true);
-                  } else if (item.route) {
-                    navigation.navigate(item.route);
-                  } else {
-                    Alert.alert('Coming Soon', `${item.label} feature is under development.`);
-                  }
-                }}
+                activeOpacity={0.85}
+                onPress={() => navigation.navigate('Profile')}
+                style={styles.avatarContainer}
               >
-                <View style={styles.serviceIconWrap}>
-                  <item.icon size={22} color={item.color} strokeWidth={2.5} />
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarText}>{userInitial}</Text>
                 </View>
-                <Text style={styles.serviceLabel}>{item.label}</Text>
+                <View style={styles.onlineDot} />
               </TouchableOpacity>
-            ))}
-          </View>
 
+              <Image
+                source={require('../../assets/images/bodhi-logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
 
-          {/* AI Insights */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>AI Insights</Text>
-            <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
-          </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
-            {dynamicInsights.map((insight) => (
-              <LinearGradient
-                key={insight.id}
-                colors={insight.bg}
-                style={styles.insightCard}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={styles.insightIconWrap}>
-                  <insight.icon size={18} color="#FFF" />
+              <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
+                <View style={styles.glassCircleContainer}>
+                  {Platform.OS === 'ios' ? (
+                    <BlurView blurType="light" blurAmount={10} style={StyleSheet.absoluteFill} />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+                  )}
+                  <Bell size={20} color="#FFF" />
+                  {unreadCount > 0 && <View style={styles.notifBadge} />}
                 </View>
-                <Text style={styles.insightTitle}>{insight.title}</Text>
-                <Text style={styles.insightValue}>{insight.value}</Text>
-                <Text style={styles.insightSub}>{insight.sub}</Text>
-                <TouchableOpacity style={styles.insightLinkRow} onPress={() => setActiveInsight(insight.type)}>
-                  <Text style={styles.insightLink}>View Details</Text>
-                  <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
-                </TouchableOpacity>
-              </LinearGradient>
-            ))}
-          </ScrollView>
+              </TouchableOpacity>
+            </View>
 
-          {/* Accounts */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Accounts</Text>
-            <TouchableOpacity style={styles.addAccountBtn} onPress={() => navigation.navigate('BankAccounts')}>
-              <Text style={styles.addAccountText}>+ Add Account</Text>
+            {/* Compact Balance Card */}
+            <View style={styles.balanceArea}>
+              <Text style={styles.greeting}>{getGreeting()}, {userName} 👋</Text>
+
+              <View style={styles.netWorthHeader}>
+                <Text style={styles.netWorthLabel}>TOTAL NET WORTH</Text>
+                <TouchableOpacity onPress={handleToggleBalance} style={styles.revealBtn}>
+                  {balanceVisible ? <Eye size={14} color="#FFF" /> : <EyeOff size={14} color="#FFF" />}
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.balanceRow}>
+                <Text style={styles.currencySymbol}>₹</Text>
+                <Text style={styles.balanceMain}>{balanceVisible ? balance.split('.')[0] : '••••••'}</Text>
+                <Text style={styles.balanceDecimals}>{balanceVisible ? `.${balance.split('.')[1] || '00'}` : ''}</Text>
+              </View>
+
+              <View style={styles.growthRow}>
+                <TrendingUp size={14} color={todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B'} />
+                <Text style={[styles.growthTxt, { color: todayGrowth >= 0 ? Colors.neonLime : '#FF4B4B' }]}>
+                  {todayGrowth >= 0 ? '+' : ''}₹{todayGrowth.toLocaleString('en-IN')} today
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+
+          {/* ── PRIMARY ACTIONS ── */}
+          <View style={styles.parallelActions}>
+            <TouchableOpacity
+              style={styles.scanBtnContainer}
+              onPress={() => navigation.navigate('ScanPay')}
+              activeOpacity={0.9}
+            >
+              <View style={styles.scanGlassRing}>
+                <LinearGradient colors={['#FF5A00', '#FFB000']} style={styles.scanBtn}>
+                  <ScanLine size={24} color="#000" strokeWidth={2.5} />
+                </LinearGradient>
+              </View>
+              <Text style={styles.scanBtnLabel}>Scan & Pay</Text>
             </TouchableOpacity>
+
+            {/* Right: Pill Container */}
+            <View style={styles.actionPillContainer}>
+              {Platform.OS === 'ios' ? (
+                <BlurView blurType="dark" blurAmount={32} style={StyleSheet.absoluteFill} pointerEvents="none" />
+              ) : (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} pointerEvents="none" />
+              )}
+              <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('SendMoney')}>
+                <View style={styles.pillIconGlass}>
+                  <Send size={18} color="#FFF" />
+                </View>
+                <Text style={styles.actionBtnLabel}>Send</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.pillItem} onPress={() => setShowAddMoney(true)} activeOpacity={0.7}>
+                <View style={styles.actionBtnCircle}>
+                  <Plus size={20} color="#FFF" strokeWidth={3} />
+                </View>
+                <Text style={styles.actionBtnLabel}>Add</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.pillItem} onPress={() => navigation.navigate('RequestMoney')} activeOpacity={0.7}>
+                <View style={styles.actionBtnCircle}>
+                  <ArrowDownToLine size={18} color="#FFF" strokeWidth={2.5} />
+                </View>
+                <Text style={styles.actionBtnLabel}>Request</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Transaction History Banner */}
-
-          {/* Transaction History Banner */}
-          <TouchableOpacity
-            style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(255,90,0,0.05)', borderColor: 'rgba(255,90,0,0.2)' }]}
-            onPress={() => navigation.navigate('TransactionHistory')}
-            activeOpacity={0.8}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <FileText size={20} color="#FF5A00" />
-              <Text style={{ color: '#FF5A00', fontSize: responsiveFont(16), fontWeight: '700' }}>View Transaction History</Text>
+          {/* ── MAIN CONTENT ── */}
+          <View style={styles.contentSection}>
+            {/* Quick Services */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Quick Services</Text>
+              <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
             </View>
-            <ChevronRight size={20} color="#FF5A00" style={{ position: 'absolute', right: 20 }} />
-          </TouchableOpacity>
 
-          <View style={{ height: 150 }} />
-        </View>
+            <View style={styles.servicesGrid}>
+              {QUICK_SERVICES.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.serviceItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    if (item.label === 'Calculator' || item.id === '3') {
+                      toggleCalculator();
+                      return;
+                    }
+                    if (item.route === 'InsuranceStories') {
+                      setShowInsurance(true);
+                    } else if (item.route) {
+                      navigation.navigate(item.route);
+                    } else {
+                      Alert.alert('Coming Soon', `${item.label} feature is under development.`);
+                    }
+                  }}
+                >
+                  <View style={styles.serviceIconWrap}>
+                    <item.icon size={22} color={item.color} strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.serviceLabel}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+
+            {/* AI Insights */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>AI Insights</Text>
+              <TouchableOpacity><Text style={styles.viewAll}>View All ›</Text></TouchableOpacity>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
+              {dynamicInsights.map((insight) => (
+                <LinearGradient
+                  key={insight.id}
+                  colors={insight.bg}
+                  style={styles.insightCard}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.insightIconWrap}>
+                    <insight.icon size={18} color="#FFF" />
+                  </View>
+                  <Text style={styles.insightTitle}>{insight.title}</Text>
+                  <Text style={styles.insightValue}>{insight.value}</Text>
+                  <Text style={styles.insightSub}>{insight.sub}</Text>
+                  <TouchableOpacity style={styles.insightLinkRow} onPress={() => setActiveInsight(insight.type)}>
+                    <Text style={styles.insightLink}>View Details</Text>
+                    <ChevronRight size={14} color="rgba(255,255,255,0.7)" />
+                  </TouchableOpacity>
+                </LinearGradient>
+              ))}
+            </ScrollView>
+
+            {/* Accounts */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Accounts</Text>
+              <TouchableOpacity style={styles.addAccountBtn} onPress={() => navigation.navigate('BankAccounts')}>
+                <Text style={styles.addAccountText}>+ Add Account</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Transaction History Banner */}
+
+            {/* Transaction History Banner */}
+            <TouchableOpacity
+              style={[styles.accountCard, { marginTop: 24, justifyContent: 'center', backgroundColor: 'rgba(255,90,0,0.05)', borderColor: 'rgba(255,90,0,0.2)' }]}
+              onPress={() => navigation.navigate('TransactionHistory')}
+              activeOpacity={0.8}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <FileText size={20} color="#FF5A00" />
+                <Text style={{ color: '#FF5A00', fontSize: responsiveFont(16), fontWeight: '700' }}>View Transaction History</Text>
+              </View>
+              <ChevronRight size={20} color="#FF5A00" style={{ position: 'absolute', right: 20 }} />
+            </TouchableOpacity>
+
+            <View style={{ height: 150 }} />
+          </View>
         </View>
       </ScrollView>
 
@@ -531,7 +530,7 @@ export function VaultScreen() {
       </Modal>
 
       {/* ── ADD MONEY MODAL ── */}
-      <Modal visible={showAddMoney} transparent animationType="slide" onRequestClose={() => {}}>
+      <Modal visible={showAddMoney} transparent animationType="slide" onRequestClose={() => { }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.sheetModalOverlay}
@@ -567,9 +566,9 @@ export function VaultScreen() {
         visible={isPasswordModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => {}}
+        onRequestClose={() => { }}
       >
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.securityModalOverlay}
         >
@@ -680,17 +679,17 @@ const styles = StyleSheet.create({
   scanGlassRing: { padding: 4, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   scanBtn: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: Colors.neonLime, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 10 },
   scanLabel: { color: Colors.neonLime, fontSize: 10, fontWeight: '800', marginTop: 4, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 },
-  actionPillContainer: { 
-    flex: 1, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    height: 84, 
-    borderRadius: 42, 
-    marginLeft: 16, 
-    paddingHorizontal: 12, 
-    overflow: 'hidden', 
+  actionPillContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 84,
+    borderRadius: 42,
+    marginLeft: 16,
+    paddingHorizontal: 12,
+    overflow: 'hidden',
     backgroundColor: 'rgba(0,0,0,0.18)',
-    borderWidth: 1, 
+    borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
   },
   scanBtnLabel: { color: '#FF5A00', fontSize: responsiveFont(12), fontWeight: '900', marginTop: 10, letterSpacing: -0.2 },

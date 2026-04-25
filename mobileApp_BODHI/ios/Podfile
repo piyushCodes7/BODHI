@@ -5,12 +5,17 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 
 platform :ios, '14.0'
+use_modular_headers!
 
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 target 'BODHI' do
   config = use_native_modules!
+
+  pod 'GTMAppAuth', :modular_headers => true
+  pod 'GTMSessionFetcher', :modular_headers => true
+  pod 'AppAuth', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath]

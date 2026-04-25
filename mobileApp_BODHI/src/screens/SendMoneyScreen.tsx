@@ -178,6 +178,44 @@ export function SendMoneyScreen() {
     }
   };
 
+  // ── Initiate BODHI Wallet Send (opens U-PIN modal) ───────────────────────
+  const initiateBodhiSend = () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      return;
+    }
+    setUPinInput('');
+    setShowUpinModal(true);
+  };
+
+  // ── Verify U-PIN then send via BODHI Wallet ──────────────────────────────
+  const verifyUpinAndSend = async () => {
+    if (uPinInput.length !== 4) return;
+    setIsVerifyingUPin(true);
+    try {
+      const token = await AsyncStorage.getItem('bodhi_access_token');
+      const verifyRes = await fetch(`${BASE_URL}/auth/verify-upin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ u_pin: uPinInput }),
+      });
+
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        Alert.alert('U-PIN Error', err.detail || 'Incorrect U-PIN. Please try again.');
+        setUPinInput('');
+        return;
+      }
+
+      setShowUpinModal(false);
+      await handleSend();
+    } catch (e: any) {
+      Alert.alert('Verification Error', e.message || 'Could not verify U-PIN.');
+    } finally {
+      setIsVerifyingUPin(false);
+    }
+  };
+
   // ── Send money (Native UPI) ──────────────────────────────────────────────
   const handleNativeUPIPay = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -434,8 +472,9 @@ export function SendMoneyScreen() {
       {/* Payment Modal */}
       <Modal visible={showPayModal} transparent animationType="slide">
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalOverlay}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
           <View style={[styles.modalSheet, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', borderTopLeftRadius: 32, borderTopRightRadius: 32 }]}>
             {paySuccess ? (
@@ -454,7 +493,12 @@ export function SendMoneyScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
-              <>
+              <ScrollView
+                bounces={false}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 16 }}
+              >
                 <View style={[styles.modalHeader, { paddingTop: Platform.OS === 'ios' ? 10 : 0 }]}>
                   <Text style={styles.modalTitle}>Send Money</Text>
                   <TouchableOpacity onPress={() => setShowPayModal(false)}>
@@ -477,7 +521,6 @@ export function SendMoneyScreen() {
                     keyboardType="decimal-pad"
                     placeholder="0"
                     placeholderTextColor="rgba(255,255,255,0.2)"
-                    autoFocus
                   />
                 </View>
 
@@ -542,7 +585,7 @@ export function SendMoneyScreen() {
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
-              </>
+              </ScrollView>
             )}
           </View>
         </KeyboardAvoidingView>
