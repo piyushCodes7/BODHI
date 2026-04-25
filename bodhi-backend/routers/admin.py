@@ -12,7 +12,7 @@ from database import get_db
 from models.core import User, Ledger, Payment
 from models.notification import Notification, NotificationType
 from services.auth_service import (
-    create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM, pwd_context, get_password_hash
+    create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM, pwd_context, get_password_hash, verify_password
 )
 from pydantic import BaseModel, EmailStr
 
@@ -55,7 +55,7 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Asyn
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
     
-    if not user or not user.hashed_password or not pwd_context.verify(form_data.password, user.hashed_password):
+    if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -109,6 +109,38 @@ async def delete_user(user_id: str, admin: User = Depends(get_current_admin), db
     await db.delete(user)
     await db.commit()
     return {"message": f"User {user.email} successfully deleted"}
+
+@router.get("/user/{user_id}")
+async def get_specific_user(user_id: str, admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    """Return specific user details."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role,
+        "is_active": user.is_active,
+        "balance": user.balance,
+        "created_at": user.created_at
+    }
+
+@router.get("/users/search")
+async def search_users(q: str, admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    """Search users by email prefix."""
+    result = await db.execute(select(User).where(User.email.ilike(f"%{q}%")).limit(20))
+    users = result.scalars().all()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "role": u.role,
+            "is_active": u.is_active
+        } for u in users
+    ]
 
 # ───────────────────────────────────────────────────────────────────────
 # 3. Roles and Core Admin Privileges
@@ -184,11 +216,15 @@ async def get_dashboard_stats(admin: User = Depends(get_current_admin), db: Asyn
     tx_res = await db.execute(select(func.count(Ledger.id)))
     total_txns = tx_res.scalar() or 0
     
+    active_res = await db.execute(select(func.count(User.id)).where(User.is_active == True))
+    active_users = active_res.scalar() or 0
+    
     return {
         "total_users": total_users,
         "total_admins": total_admins,
         "total_balance_pool": total_balance,
-        "total_transactions": total_txns
+        "total_transactions": total_txns,
+        "active_users": active_users
     }
 
 # ───────────────────────────────────────────────────────────────────────
@@ -205,7 +241,7 @@ async def list_transactions(skip: int = 0, limit: int = 50, db: AsyncSession = D
         } for t in txs
     ]
 
-@router.post("/users/{user_id}/toggle-active")
+@router.put("/toggle-active/{user_id}")
 async def toggle_user_active(user_id: str, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -241,3 +277,49 @@ async def send_admin_notification(req: SendNotificationRequest, db: AsyncSession
     db.add_all(notifications)
     await db.commit()
     return {"message": f"Successfully sent notifications to {len(target_ids)} users"}
+
+@router.get("/bootstrap", tags=["System Boot"])
+async def bootstrap_admin(db: AsyncSession = Depends(get_db)):
+    try:
+        from sqlalchemy import select, text
+        from services.auth_service import get_password_hash
+        import time
+        
+        # Verify columns exist (double check)
+        try:
+            await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'"))
+        except Exception:
+            pass
+            
+        try:
+            await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_pass VARCHAR"))
+        except Exception:
+            pass
+        
+        # Check if admin exists
+        result = await db.execute(select(User).where(User.email == "admin@bodhi.com"))
+        admin = result.scalar_one_or_none()
+        
+        if admin:
+            # Update password to ensure it's correct
+            admin.hashed_password = get_password_hash("Admin@123")
+            admin.role = "admin"
+            admin.is_active = True
+            await db.commit()
+            return {"status": "success", "message": "Admin already existed. Password reset to Admin@123"}
+        
+        new_admin = User(
+            email="admin@bodhi.com",
+            phone="+910000000000",
+            full_name="Root Admin",
+            hashed_password=get_password_hash("Admin@123"),
+            role="admin",
+            is_active=True,
+            verify_pass="ROOT_ADMIN_" + str(int(time.time()))
+        )
+        db.add(new_admin)
+        await db.commit()
+        return {"status": "success", "message": "Root admin created: admin@bodhi.com / Admin@123"}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}

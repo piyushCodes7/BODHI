@@ -5,6 +5,7 @@ import * as OAuth from './src/hooks/useOAuthSignIn';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { CalculatorProvider } from './src/context/CalculatorContext';
 import { FloatingCalculator } from './src/components/FloatingCalculator';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Screens
 import { OnboardingScreen } from './src/screens/Onboarding/OnboardingScreen';
@@ -31,27 +32,27 @@ export default function App() {
   }, []);
 
   return (
-    <>
-      {/* Dynamically match the status bar. Splash and Onboarding are dark, App is light */}
-    <CalculatorProvider>
-      <StatusBar 
-        barStyle={(showSplash || showOnboarding) ? "light-content" : "dark-content"} 
-        translucent 
-        backgroundColor="transparent" 
-      />
-      
-      {showSplash ? (
-        // Step 1: Play the video. When done, it triggers setShowSplash(false)
-        <VideoSplashScreen onFinish={() => setShowSplash(false)} />
-      ) : showOnboarding ? (
-        // Step 2: Show Onboarding. When they click START, it triggers setShowOnboarding(false)
-        <OnboardingScreen onFinish={() => setShowOnboarding(false)} />
-      ) : (
-        // Step 3: Boot up the main application
-        <AppNavigator />
-      )}
-      <FloatingCalculator />
-    </CalculatorProvider>
-    </>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <CalculatorProvider>
+        <StatusBar 
+          barStyle={(showSplash || showOnboarding) ? "light-content" : "dark-content"} 
+          translucent 
+          backgroundColor="transparent" 
+        />
+        
+        {showSplash ? (
+          // Step 1: Play the video. When done, it triggers setShowSplash(false)
+          <VideoSplashScreen onFinish={() => setShowSplash(false)} />
+        ) : showOnboarding ? (
+          // Step 2: Show Onboarding. When they click START, it triggers setShowOnboarding(false)
+          <OnboardingScreen onFinish={() => setShowOnboarding(false)} />
+        ) : (
+          // Step 3: Boot up the main application
+          <AppNavigator />
+        )}
+        
+        {!showSplash && <FloatingCalculator />}
+      </CalculatorProvider>
+    </GestureHandlerRootView>
   );
 }

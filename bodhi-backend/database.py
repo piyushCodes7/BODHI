@@ -26,5 +26,8 @@ Base = declarative_base()
 
 # Dependency to get the database session in your routers
 async def get_db():
+    if AsyncSessionLocal is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail="Database uninitialized. Missing DATABASE_URL environment variable.")
     async with AsyncSessionLocal() as session:
         yield session

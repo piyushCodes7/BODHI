@@ -46,7 +46,8 @@ async def init_db():
             # Safe schema upgrade for 'role' string pattern
             from sqlalchemy import text
             try:
-                await conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user'"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'"))
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_pass VARCHAR(255)"))
             except Exception:
                 pass
                 
