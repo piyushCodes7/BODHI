@@ -255,6 +255,7 @@ export function ProfileScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
           {/* ─── Avatar Section ─── */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarWrapper}>
@@ -449,7 +450,7 @@ export function ProfileScreen() {
               onPress={() => navigation.navigate('BankAccounts')}
             >
               <View style={[styles.fieldIcon, { backgroundColor: 'rgba(51, 153, 255, 0.1)' }]}>
-                <Landmark size={20} color="#3399FF" />
+                <Landmark size={20} color="#3D4DFF" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.linkTitle}>Linked Bank Accounts</Text>
@@ -488,7 +489,7 @@ export function ProfileScreen() {
               onPress={() => navigation.navigate('SecuritySettings')}
             >
               <View style={[styles.fieldIcon, { backgroundColor: 'rgba(168, 85, 247, 0.1)' }]}>
-                <Fingerprint size={20} color="#A855F7" />
+                <Fingerprint size={20} color="#FF5A00" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.linkTitle}>Biometrics & Security</Text>
@@ -511,7 +512,7 @@ export function ProfileScreen() {
               onPress={() => navigation.navigate('TravelBooking')}
             >
               <View style={[styles.fieldIcon, { backgroundColor: 'rgba(255, 153, 0, 0.1)' }]}>
-                <Plane size={20} color="#FF9900" />
+                <Plane size={20} color="#FFB000" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.linkTitle}>Travel Preferences</Text>
@@ -545,7 +546,7 @@ export function ProfileScreen() {
               onPress={handleSavePress}
             >
               <LinearGradient
-                colors={editingField ? ['#FFE259', '#C8FF00'] : ['#333', '#222']}
+                colors={editingField ? ['#FFE600', '#FFE600'] : ['#333', '#222']}
                 style={styles.gradientBtn}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -560,6 +561,7 @@ export function ProfileScreen() {
             </TouchableOpacity>
 
 
+          </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -780,7 +782,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#05001F',
+    borderColor: '#000000',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

@@ -10,12 +10,12 @@ import CandlestickChart, { CandlestickData } from './CandlestickChart';
 const { width: W } = Dimensions.get("window");
 
 // ─── Theme Constants ───
-const LIME = "#C8FF00";
-const PURPLE = "#A855F7";
-const DARK_BG = "#07051A";
-const CARD_BG = "#0E0C24";
+const LIME = "#FFE600";
+const PURPLE = "#FF5A00";
+const DARK_BG = "#000000";
+const CARD_BG = "#0A0A0A";
 const CARD_BORDER = "rgba(255,255,255,0.06)";
-const RED = "#F43F5E";
+const RED = "#FF2D2D";
 
 // ─── Formatters ───
 const fmt = (n: number) => "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
@@ -233,8 +233,8 @@ export function PaperTradingScreen() {
             <Text style={styles.pageSub}>Real markets. Virtual capital.</Text>
           </View>
           <View style={[styles.marketBadge, !portfolio.market_status?.open && { borderColor: 'rgba(255,153,0,0.3)', backgroundColor: 'rgba(255,153,0,0.1)' }]}>
-            <View style={[styles.marketDot, !portfolio.market_status?.open && { backgroundColor: '#FF9900' }]} />
-            <Text style={[styles.marketText, !portfolio.market_status?.open && { color: '#FF9900' }]}>
+            <View style={[styles.marketDot, !portfolio.market_status?.open && { backgroundColor: '#FFB000' }]} />
+            <Text style={[styles.marketText, !portfolio.market_status?.open && { color: '#FFB000' }]}>
               {portfolio.market_status?.open ? "OPEN" : "CLOSED"}
             </Text>
           </View>
@@ -479,7 +479,7 @@ export function PaperTradingScreen() {
                 
                 {!(portfolio?.market_status?.open) && (
                   <View style={styles.amoWarningBox}>
-                    <Clock size={18} color="#FF9900" />
+                    <Clock size={18} color="#FFB000" />
                     <Text style={styles.amoWarningText}>
                       Market is closed. This will be placed as an After Market Order (AMO).
                     </Text>
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   statVal: { fontSize: responsiveFont(14), fontWeight: '800', color: '#FFF' },
 
   holdingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: CARD_BORDER },
-  holdingIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  holdingIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,90,0,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   holdingIconText: { color: PURPLE, fontWeight: '800', fontSize: responsiveFont(12) },
   hName: { fontSize: responsiveFont(14), fontWeight: '700', color: '#FFF', marginBottom: 2 },
   hMeta: { fontSize: responsiveFont(11), color: 'rgba(255,255,255,0.4)' },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   mActionText: { fontSize: responsiveFont(15), fontWeight: '800', letterSpacing: 1 },
 
   amoWarningBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 153, 0, 0.1)', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255, 153, 0, 0.3)', marginBottom: 20 },
-  amoWarningText: { flex: 1, fontSize: responsiveFont(12), color: '#FF9900', lineHeight: 18, marginLeft: 8 },
+  amoWarningText: { flex: 1, fontSize: responsiveFont(12), color: '#FFB000', lineHeight: 18, marginLeft: 8 },
 
   resetBtn: {
     flexDirection: 'row',

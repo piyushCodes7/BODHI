@@ -41,19 +41,19 @@ const { width: W } = Dimensions.get('window');
 // ── Design Tokens ────────────────────────────────────────────
 
 const C = {
-  bg:           '#07051A',
-  cardBg:       '#0E0C24',
-  neonLime:     '#C8FF00',
-  purple:       '#A855F7',
-  red:          '#F43F5E',
+  bg:           '#000000',
+  cardBg:       '#0A0A0A',
+  neonLime:     '#FFE600',
+  purple:       '#FF5A00',
+  red:          '#FF2D2D',
   white:        '#FFFFFF',
   whiteMid:     'rgba(255,255,255,0.65)',
   whiteDim:     'rgba(255,255,255,0.35)',
   border:       'rgba(255,255,255,0.06)',
-  limeBg:       'rgba(200,255,0,0.08)',
-  limeBorder:   'rgba(200,255,0,0.22)',
-  purpleBg:     'rgba(168,85,247,0.10)',
-  purpleBorder: 'rgba(168,85,247,0.25)',
+  limeBg:       'rgba(255,230,0,0.08)',
+  limeBorder:   'rgba(255,230,0,0.22)',
+  purpleBg:     'rgba(255,90,0,0.10)',
+  purpleBorder: 'rgba(255,90,0,0.25)',
 };
 
 // ── Types ────────────────────────────────────────────────────
@@ -421,7 +421,7 @@ export function SocialScreen({ navigation }: { navigation: any }) {
   return (
     <View style={styles.root}>
       <LinearGradient
-        colors={['#0A0322', '#07051A', '#07051A']}
+        colors={['#000000', '#000000', '#000000']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 0.8, y: 1 }}
@@ -461,7 +461,7 @@ export function SocialScreen({ navigation }: { navigation: any }) {
 
         {/* ── TOTAL SHARED WEALTH SUMMARY ── */}
         <LinearGradient
-          colors={[C.purple, '#6B21A8']}
+          colors={[C.purple, '#8B0000']}
           style={styles.wealthSummaryCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     height: 128,
     borderRadius: 64,
     borderWidth: 1,
-    borderColor: 'rgba(168,85,247,0.28)',
+    borderColor: 'rgba(255,90,0,0.28)',
   },
   orbInner: {
     position: 'absolute',
@@ -623,8 +623,8 @@ const styles = StyleSheet.create({
     height: 88,
     borderRadius: 44,
     borderWidth: 1,
-    borderColor: 'rgba(168,85,247,0.15)',
-    backgroundColor: 'rgba(168,85,247,0.04)',
+    borderColor: 'rgba(255,90,0,0.15)',
+    backgroundColor: 'rgba(255,90,0,0.04)',
   },
   orbIcons: {
     flexDirection: 'row',

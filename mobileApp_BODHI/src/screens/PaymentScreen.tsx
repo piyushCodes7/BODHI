@@ -186,6 +186,7 @@ export const PaymentScreen: React.FC<Props> = ({
   if (paySuccess) {
     return (
       <View style={styles.successContainer}>
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
         <View style={[styles.blob, styles.blob1]} />
         <View style={[styles.blob, styles.blob2]} />
         <Animated.View style={[styles.successCircle, { transform: [{ scale: successAnim }] }]}>
@@ -196,6 +197,7 @@ export const PaymentScreen: React.FC<Props> = ({
           ₹{parseFloat(amount).toLocaleString('en-IN')} → {selectedContact?.name ?? phoneInput}
         </Text>
         <Text style={styles.successNote}>TXN{Date.now().toString().slice(-8)}</Text>
+        </View>
       </View>
     );
   }
@@ -216,6 +218,7 @@ export const PaymentScreen: React.FC<Props> = ({
         </View>
 
         <ScrollView contentContainerStyle={styles.confirmBody}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
           <View style={styles.confirmAvatarWrap}>
             <View style={[styles.contactAvatar, { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: Colors.purple }]}>
               {selectedContact ? (
@@ -253,6 +256,7 @@ export const PaymentScreen: React.FC<Props> = ({
                 </Text>
               </View>
             ))}
+          </View>
           </View>
         </ScrollView>
 
@@ -298,6 +302,7 @@ export const PaymentScreen: React.FC<Props> = ({
         </View>
 
         <ScrollView contentContainerStyle={styles.sendBody} keyboardShouldPersistTaps="handled">
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
           <Text style={styles.enterAmtLabel}>ENTER AMOUNT</Text>
 
           <View style={styles.amountInputRow}>
@@ -336,6 +341,7 @@ export const PaymentScreen: React.FC<Props> = ({
           <View style={styles.balanceInfo}>
             <Text style={styles.balanceInfoText}>Available balance</Text>
             <Text style={styles.balanceInfoAmt}>₹4,82,930</Text>
+          </View>
           </View>
         </ScrollView>
 
@@ -467,6 +473,7 @@ export const PaymentScreen: React.FC<Props> = ({
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        <View style={{ maxWidth: isTablet ? (isLandscape() ? 1000 : 800) : '100%', alignSelf: 'center', width: '100%' }}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageTitle}>Payments</Text>
           <Text style={styles.pageSub}>INSTANT · ZERO FEE · SECURE</Text>
@@ -648,6 +655,7 @@ export const PaymentScreen: React.FC<Props> = ({
               </View>
             </TouchableOpacity>
           ))}
+        </View>
         </View>
       </ScrollView>
 

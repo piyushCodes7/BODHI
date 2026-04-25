@@ -95,11 +95,12 @@ SUBSCRIPTION_CATEGORIES = [
   },
   {
     "categoryId": "4",
-    "categoryName": "Gaming",
-    "icon": "Gamepad2",
+    "categoryName": "Finance & Education",
+    "icon": "BookOpen",
     "subscriptions": [
-      { "id": "xbox", "name": "Xbox Game Pass", "plansSummary": "PC • Console • Ult", "borderColor": "#107C10", "logoUrl": "https://www.google.com/s2/favicons?domain=xbox.com&sz=128", "availablePlans": [{ "name": "Ultimate", "price": "549", "url": "https://www.xbox.com/en-IN/xbox-game-pass" }] },
-      { "id": "psplus", "name": "PlayStation Plus", "plansSummary": "Ess • Ex • Del", "borderColor": "#003087", "logoUrl": "https://www.google.com/s2/favicons?domain=playstation.com&sz=128", "availablePlans": [{ "name": "Extra", "price": "749", "url": "https://www.playstation.com/en-in/ps-plus/" }] }
+      { "id": "groww", "name": "Groww", "plansSummary": "Mutual Funds • Stocks", "borderColor": "#00D09C", "logoUrl": "https://www.google.com/s2/favicons?domain=groww.in&sz=128", "availablePlans": [{ "name": "Free", "price": "0", "features": "Invest in MFs & Stocks", "url": "https://groww.in/" }] },
+      { "id": "unacademy", "name": "Unacademy", "plansSummary": "Plus • Iconic", "borderColor": "#08BD80", "logoUrl": "https://www.google.com/s2/favicons?domain=unacademy.com&sz=128", "availablePlans": [{ "name": "Plus", "price": "1250", "features": "All courses • Live classes", "url": "https://unacademy.com/subscription" }] },
+      { "id": "audible", "name": "Audible", "plansSummary": "Monthly", "borderColor": "#F8991D", "logoUrl": "https://www.google.com/s2/favicons?domain=audible.in&sz=128", "availablePlans": [{ "name": "Monthly", "price": "199", "features": "1 Audiobook/month", "url": "https://www.audible.in/ep/freetrial" }] }
     ]
   }
 ]

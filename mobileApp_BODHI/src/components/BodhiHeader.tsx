@@ -37,7 +37,7 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
   const displayName = username || 'BODHI User';
 
   // --- THE FIX: Dynamic text color based on the `dark` prop ---
-  const headerTextColor = dark ? '#FFFFFF' : '#0A0A14';
+  const headerTextColor = dark ? '#FFFFFF' : '#0A0A0A';
   const shadowColor = dark ? 'rgba(0,0,0,0.5)' : 'transparent';
 
   const handleLogout = () => {
@@ -51,9 +51,9 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
         {Platform.OS === 'ios' ? (
           <BlurView style={StyleSheet.absoluteFill} blurType={dark ? 'dark' : 'light'} blurAmount={20} />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)' }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(0,0,0,0.92)' : 'rgba(255,255,255,0.9)' }]} />
         )}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(12,14,18,0.65)' : 'rgba(255,255,255,0.2)' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: dark ? 'rgba(5,5,5,0.75)' : 'rgba(255,255,255,0.2)' }]} />
 
         <View style={styles.inner}>
           <View style={styles.sideColumn}>
@@ -63,7 +63,7 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.avatarRing} onPress={() => setProfileOpen(true)} activeOpacity={0.8}>
-                <View style={[styles.avatar, { backgroundColor: '#1e1040' }]}>
+                <View style={[styles.avatar, { backgroundColor: '#1A0800' }]}>
                   <Text style={styles.avatarInitials}>{initials}</Text>
                 </View>
                 <View style={styles.onlineDot} />
@@ -80,7 +80,7 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
 
           <View style={[styles.sideColumn, { alignItems: 'flex-end' }]}>
             <TouchableOpacity style={styles.iconBtn} onPress={onInsurancePress}>
-               <Shield size={26} color={Colors.neonLime} strokeWidth={2} />
+               <Shield size={26} color={'#FF5A00'} strokeWidth={2} />
             </TouchableOpacity>
           </View>
         </View>
@@ -104,7 +104,7 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
             </View>
 
             <View style={styles.userInfoCard}>
-              <View style={[styles.largeAvatar, { backgroundColor: '#1e1040' }]}>
+              <View style={[styles.largeAvatar, { backgroundColor: '#1A0800' }]}>
                 <Text style={styles.largeAvatarText}>{initials}</Text>
               </View>
               <View style={styles.userInfoText}>
@@ -121,7 +121,7 @@ export function BodhiHeader({ dark = false, onInsurancePress, showBack, onBack, 
             </View>
 
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-              <LogOut size={20} color="#FF2A5F" strokeWidth={2.5} />
+              <LogOut size={20} color="#FF2D2D" strokeWidth={2.5} />
               <Text style={styles.logoutText}>Log Out</Text>
             </TouchableOpacity>
           </View>
@@ -150,30 +150,30 @@ const styles = StyleSheet.create({
   centerLogo: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   logoText: { fontSize: responsiveFont(28), fontWeight: '900', letterSpacing: -0.5, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
   
-  avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: Colors.neonLime, padding: 2 },
+  avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: '#FF5A00', padding: 2 },
   avatar: { width: '100%', height: '100%', borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarInitials: { fontSize: responsiveFont(15), fontWeight: '700', color: Colors.neonLime },
-  onlineDot: { position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.neonLime, borderWidth: 2, borderColor: '#0A0A14' },
+  avatarInitials: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FFE600' },
+  onlineDot: { position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: '#34c759', borderWidth: 2, borderColor: '#050505' },
   iconBtn: { padding: 8 },
 
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#0A0A14', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: Spacing.xl, paddingTop: Spacing.xl, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  modalContent: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: Spacing.xl, paddingTop: Spacing.xl, borderTopWidth: 1, borderTopColor: 'rgba(255,90,0,0.15)' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xl },
   modalTitle: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFFFFF' },
   closeBtn: { padding: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20 },
   
-  userInfoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A24', padding: Spacing.lg, borderRadius: 20, marginBottom: Spacing.xl },
-  largeAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md, borderWidth: 2, borderColor: Colors.electricViolet },
+  userInfoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0F0F0F', padding: Spacing.lg, borderRadius: 20, marginBottom: Spacing.xl },
+  largeAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.md, borderWidth: 2, borderColor: '#FF5A00' },
   largeAvatarText: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFFFFF' },
   userInfoText: { flex: 1 },
   userName: { fontSize: responsiveFont(18), fontWeight: '700', color: '#FFFFFF' },
   userUpi: { fontSize: responsiveFont(14), color: '#A0A0B0', marginTop: 2 },
 
-  menuGroup: { backgroundColor: '#1A1A24', borderRadius: 20, overflow: 'hidden', marginBottom: Spacing.xl },
+  menuGroup: { backgroundColor: '#0F0F0F', borderRadius: 20, overflow: 'hidden', marginBottom: Spacing.xl },
   menuOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   menuOptionLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   menuOptionText: { fontSize: responsiveFont(16), fontWeight: '600', color: '#FFFFFF' },
 
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, backgroundColor: 'rgba(255, 42, 95, 0.1)', paddingVertical: Spacing.lg, borderRadius: 20, marginBottom: Spacing.lg },
-  logoutText: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FF2A5F' },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, backgroundColor: 'rgba(255, 45, 45, 0.1)', paddingVertical: Spacing.lg, borderRadius: 20, marginBottom: Spacing.lg },
+  logoutText: { fontSize: responsiveFont(16), fontWeight: '700', color: '#FF2D2D' },
 });

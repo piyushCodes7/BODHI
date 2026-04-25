@@ -16,19 +16,21 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { isTablet, isLandscape, responsiveFont, responsiveWidth, responsiveHeight } from '../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   Tv, Gamepad2, Briefcase, Music, BookOpen,
   ChevronRight, X, ChevronLeft, Search, Zap, Star,
-  DollarSign, Flame,
+  DollarSign, Flame, ArrowLeft,
 } from 'lucide-react-native';
+import { Colors, Gradients } from '../theme/tokens';
 import { SubscriptionsAPI } from '../api/client';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = 168;
 
-const FILTER_CHIPS = ['All', 'Entertainment', 'Productivity', 'Music', 'Gaming', 'Finance'];
+const FILTER_CHIPS = ['All', 'Entertainment', 'Productivity', 'Music', 'Finance'];
 
 const BADGES: Record<string, { label: string; color: string }> = {
   netflix:    { label: '🔥 Popular',   color: '#E50914' },
@@ -41,7 +43,7 @@ const BADGES: Record<string, { label: string; color: string }> = {
 };
 
 const getCategoryIcon = (iconName: string) => {
-  const props = { color: '#C6FF00', size: 18 };
+  const props = { color: '#FF5A00', size: 18 };
   switch (iconName) {
     case 'Tv':        return <Tv {...props} />;
     case 'Briefcase': return <Briefcase {...props} />;
@@ -53,6 +55,7 @@ const getCategoryIcon = (iconName: string) => {
 };
 
 export const SubscriptionHubScreen = () => {
+  const navigation = useNavigation<any>();
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading]       = useState(true);
   const [selectedService, setSelectedService] = useState<any>(null);
@@ -171,11 +174,11 @@ export const SubscriptionHubScreen = () => {
 
         {/* CTA */}
         <LinearGradient
-          colors={['#C6FF00', '#9AE600']}
+          colors={['#FF5A00', '#FFB000']}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           style={styles.ctaGradient}
         >
-          <Text style={styles.ctaText}>View Plans</Text>
+          <Text style={[styles.ctaText, { color: '#FFF' }]}>View Plans</Text>
         </LinearGradient>
       </TouchableOpacity>
     );
@@ -193,7 +196,7 @@ export const SubscriptionHubScreen = () => {
         </View>
         <TouchableOpacity style={styles.viewAllBtn}>
           <Text style={styles.viewAllText}>View All</Text>
-          <ChevronRight color="#7C3AED" size={15} />
+          <ChevronRight color="#FF5A00" size={15} />
         </TouchableOpacity>
       </View>
 
@@ -214,7 +217,7 @@ export const SubscriptionHubScreen = () => {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color="#C6FF00" size="large" />
+        <ActivityIndicator color="#FF5A00" size="large" />
         <Text style={{ color: '#555', marginTop: 12, fontSize: responsiveFont(13) }}>Loading marketplace…</Text>
       </View>
     );
@@ -226,11 +229,10 @@ export const SubscriptionHubScreen = () => {
   if (selectedService) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <StatusBar barStyle="light-content" />
 
-        {/* Background orbs */}
-        <View style={[styles.orb, { top: -60, left: -60, backgroundColor: `${selectedService.borderColor}18`, width: 220, height: 220 }]} />
-        <View style={[styles.orb, { bottom: 100, right: -80, backgroundColor: '#7C3AED18', width: 180, height: 180 }]} />
+
 
         {/* Header */}
         <View style={styles.planHeader}>
@@ -265,7 +267,7 @@ export const SubscriptionHubScreen = () => {
               <View style={{ flex: 1, paddingRight: 12 }}>
                 {index === 0 && (
                   <View style={styles.popularBadge}>
-                    <Star color="#C6FF00" size={10} fill="#C6FF00" />
+                    <Star color="#FFE600" size={10} fill="#FFE600" />
                     <Text style={styles.popularBadgeText}>Most Popular</Text>
                   </View>
                 )}
@@ -286,6 +288,7 @@ export const SubscriptionHubScreen = () => {
             </TouchableOpacity>
           )}
         />
+        </View>
       </SafeAreaView>
     );
   }
@@ -295,11 +298,10 @@ export const SubscriptionHubScreen = () => {
   // ─────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container}>
+      <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 1000 : 800) : '100%', alignSelf: 'center', width: '100%' }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Background ambient orbs */}
-      <View style={[styles.orb, { top: -100, right: -80, backgroundColor: '#7C3AED22', width: 260, height: 260 }]} />
-      <View style={[styles.orb, { top: 180, left: -100, backgroundColor: '#C6FF0010', width: 200, height: 200 }]} />
+
 
       <FlatList
         data={filteredCategories}
@@ -310,14 +312,19 @@ export const SubscriptionHubScreen = () => {
         ListHeaderComponent={
           <View>
             {/* ── HERO HEADER ── */}
+            {/* Back button */}
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.mainBackBtn}>
+              <ArrowLeft size={22} color="#FFF" />
+            </TouchableOpacity>
+
             <LinearGradient
-              colors={['#0D0820', '#05030A']}
+              colors={['#1A0000', '#050505']}
               style={styles.heroGradient}
             >
               <View style={styles.heroRow}>
                 <View style={{ flex: 1 }}>
                   <View style={styles.heroPill}>
-                    <Zap color="#C6FF00" size={11} fill="#C6FF00" />
+                    <Zap color="#FF5A00" size={11} fill="#FF5A00" />
                     <Text style={styles.heroPillText}>BODHI Marketplace</Text>
                   </View>
                   <Text style={styles.heroTitle}>Discover{'\n'}Plans</Text>
@@ -325,13 +332,13 @@ export const SubscriptionHubScreen = () => {
                 </View>
                 <View style={styles.heroGraphic}>
                   <LinearGradient
-                    colors={['#7C3AED33', '#C6FF0018']}
+                    colors={['#8B000055', '#FF5A0030']}
                     style={styles.heroGraphicInner}
                   >
-                    <Flame color="#C6FF00" size={30} />
+                    <Flame color="#FF5A00" size={30} />
                   </LinearGradient>
-                  <View style={[styles.orbDot, { top: -6, right: -6, backgroundColor: '#C6FF00' }]} />
-                  <View style={[styles.orbDot, { bottom: -4, left: -4, backgroundColor: '#7C3AED' }]} />
+                  <View style={[styles.orbDot, { top: -6, right: -6, backgroundColor: '#FF5A00' }]} />
+                  <View style={[styles.orbDot, { bottom: -4, left: -4, backgroundColor: '#8B0000' }]} />
                 </View>
               </View>
 
@@ -384,6 +391,7 @@ export const SubscriptionHubScreen = () => {
           </View>
         }
       />
+      </View>
 
       {/* ── VAULT CONFIRMATION MODAL ── */}
       <Modal visible={showConfirmModal} transparent animationType="slide">
@@ -400,15 +408,15 @@ export const SubscriptionHubScreen = () => {
               </TouchableOpacity>
             </View>
             <Text style={styles.modalBody}>
-              Add <Text style={{ color: '#C6FF00', fontWeight: '700' }}>{pendingSub?.name}</Text> to your Vault to monitor this recurring expense?
+              Add <Text style={{ color: '#FF5A00', fontWeight: '700' }}>{pendingSub?.name}</Text> to your Vault to monitor this recurring expense?
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={cancelLog}>
                 <Text style={styles.cancelBtnText}>Skip</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={confirmAndLogToVault} style={{ flex: 1.6 }}>
-                <LinearGradient colors={['#C6FF00', '#9AE600']} style={styles.confirmBtn}>
-                  <Text style={styles.confirmBtnText}>Add to Vault</Text>
+                <LinearGradient colors={['#FF5A00', '#FFB000']} style={styles.confirmBtn}>
+                  <Text style={[styles.confirmBtnText, { color: '#FFF' }]}>Add to Vault</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -423,7 +431,7 @@ export const SubscriptionHubScreen = () => {
 // STYLES
 // ─────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: '#05030A' },
+  container:   { flex: 1, backgroundColor: '#050505' },
   centered:    { justifyContent: 'center', alignItems: 'center' },
 
   // Ambient orbs
@@ -431,15 +439,21 @@ const styles = StyleSheet.create({
   orbDot: { position: 'absolute', width: 8, height: 8, borderRadius: 4 },
 
   // ── HERO ──
-  heroGradient: { paddingHorizontal: 22, paddingTop: 52, paddingBottom: 24 },
+  heroGradient: { paddingHorizontal: 22, paddingTop: 16, paddingBottom: 24 },
+  mainBackBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center',
+    marginLeft: 20, marginTop: 52, marginBottom: 4,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
   heroRow:      { flexDirection: 'row', alignItems: 'flex-start' },
   heroPill: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#C6FF0015', borderRadius: 20, borderWidth: 1,
-    borderColor: '#C6FF0033', paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: '#FF5A0015', borderRadius: 20, borderWidth: 1,
+    borderColor: '#FF5A0033', paddingHorizontal: 10, paddingVertical: 4,
     alignSelf: 'flex-start', marginBottom: 14,
   },
-  heroPillText: { color: '#C6FF00', fontSize: responsiveFont(10), fontWeight: '700', letterSpacing: 1 },
+  heroPillText: { color: '#FF5A00', fontSize: responsiveFont(10), fontWeight: '700', letterSpacing: 1 },
   heroTitle: { color: '#FFF', fontSize: responsiveFont(42), fontWeight: '800', lineHeight: 48, letterSpacing: -0.5 },
   heroSubtitle: { color: '#666', fontSize: responsiveFont(13), marginTop: 8, lineHeight: 19 },
   heroGraphic: {
@@ -448,21 +462,21 @@ const styles = StyleSheet.create({
   },
   heroGraphicInner: {
     width: 72, height: 72, borderRadius: 22, justifyContent: 'center',
-    alignItems: 'center', borderWidth: 1, borderColor: '#7C3AED44',
+    alignItems: 'center', borderWidth: 1, borderColor: '#8B000044',
   },
   statsRow: {
     flexDirection: 'row', marginTop: 24, gap: 0,
-    borderTopWidth: 1, borderTopColor: '#1A1A2E', paddingTop: 18,
+    borderTopWidth: 1, borderTopColor: '#1A0505', paddingTop: 18,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statVal:  { color: '#C6FF00', fontSize: responsiveFont(20), fontWeight: '800' },
+  statVal:  { color: '#FF5A00', fontSize: responsiveFont(20), fontWeight: '800' },
   statLabel:{ color: '#444', fontSize: responsiveFont(11), marginTop: 2 },
 
   // ── SEARCH ──
   searchWrapper: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#0F0D18', borderRadius: 18,
-    borderWidth: 1, borderColor: '#1E1B2E',
+    backgroundColor: '#0F0808', borderRadius: 18,
+    borderWidth: 1, borderColor: '#2E1B1B',
     marginHorizontal: 20, marginTop: 20, paddingHorizontal: 16, paddingVertical: 13,
   },
   searchInput: { flex: 1, color: '#FFF', fontSize: responsiveFont(14), padding: 0 },
@@ -471,12 +485,12 @@ const styles = StyleSheet.create({
   chipsRow: { paddingHorizontal: 20, paddingVertical: 16, gap: 8 },
   chip: {
     paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, backgroundColor: '#0F0D18',
-    borderWidth: 1, borderColor: '#1E1B2E',
+    borderRadius: 20, backgroundColor: '#0F0808',
+    borderWidth: 1, borderColor: '#2E1B1B',
   },
-  chipActive: { backgroundColor: '#C6FF0018', borderColor: '#C6FF0055' },
+  chipActive: { backgroundColor: '#FF5A0018', borderColor: '#FF5A0055' },
   chipText:       { color: '#555', fontSize: responsiveFont(13), fontWeight: '600' },
-  chipTextActive: { color: '#C6FF00' },
+  chipTextActive: { color: '#FF5A00' },
 
   // Section label
   sectionLabel: {
@@ -493,12 +507,12 @@ const styles = StyleSheet.create({
   categoryHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   catIconBadge: {
     width: 34, height: 34, borderRadius: 10,
-    backgroundColor: '#C6FF0012', borderWidth: 1, borderColor: '#C6FF0030',
+    backgroundColor: '#FF5A0012', borderWidth: 1, borderColor: '#FF5A0030',
     justifyContent: 'center', alignItems: 'center',
   },
   categoryTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '700' },
   viewAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  viewAllText:{ color: '#7C3AED', fontSize: responsiveFont(13), fontWeight: '600' },
+  viewAllText:{ color: '#FF5A00', fontSize: responsiveFont(13), fontWeight: '600' },
 
   // ── SUBSCRIPTION CARD ──
   card: {
@@ -530,7 +544,7 @@ const styles = StyleSheet.create({
   planText: { color: '#555', fontSize: responsiveFont(11), marginBottom: 10 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 12 },
   priceFrom: { color: '#444', fontSize: responsiveFont(10) },
-  priceNeon: { color: '#C6FF00', fontSize: responsiveFont(17), fontWeight: '800' },
+  priceNeon: { color: '#FF5A00', fontSize: responsiveFont(17), fontWeight: '800' },
   priceMo:   { color: '#444', fontSize: responsiveFont(10) },
   ctaGradient: { borderRadius: 12, paddingVertical: 10, alignItems: 'center' },
   ctaText: { color: '#000', fontWeight: '800', fontSize: responsiveFont(13) },
@@ -539,7 +553,7 @@ const styles = StyleSheet.create({
   planHeader: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
   backBtn: {
     width: 40, height: 40, borderRadius: 14,
-    backgroundColor: '#1A1628', justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+    backgroundColor: '#1A0A08', justifyContent: 'center', alignItems: 'center', marginBottom: 20,
   },
   planHeaderMid: { alignItems: 'center', paddingBottom: 16 },
   planLogoWrapper: {
@@ -556,28 +570,28 @@ const styles = StyleSheet.create({
   },
   popularBadge: {
     position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#C6FF0015', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
-    borderWidth: 1, borderColor: '#C6FF0040',
+    backgroundColor: '#FF5A0015', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 1, borderColor: '#FF5A0040',
   },
-  popularBadgeText: { color: '#C6FF00', fontSize: responsiveFont(10), fontWeight: '700' },
+  popularBadgeText: { color: '#FFE600', fontSize: responsiveFont(10), fontWeight: '700' },
   planCardName: { color: '#FFF', fontSize: responsiveFont(20), fontWeight: '800' },
   planCardFeatures: { color: '#555', fontSize: responsiveFont(13), marginTop: 4 },
   planCardRight: { alignItems: 'flex-end', gap: 4 },
   planPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
-  planPriceSym: { color: '#C6FF00', fontSize: responsiveFont(13), fontWeight: '700' },
-  planPriceVal: { color: '#C6FF00', fontSize: responsiveFont(26), fontWeight: '900' },
+  planPriceSym: { color: '#FF5A00', fontSize: responsiveFont(13), fontWeight: '700' },
+  planPriceVal: { color: '#FF5A00', fontSize: responsiveFont(26), fontWeight: '900' },
   planPriceMo:  { color: '#444', fontSize: responsiveFont(11) },
   selectBtn: {
-    backgroundColor: '#1A1628', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7,
-    borderWidth: 1, borderColor: '#2A2040',
+    backgroundColor: '#1A0A08', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: '#2A1510',
   },
-  selectBtnText: { color: '#C6FF00', fontWeight: '700', fontSize: responsiveFont(12) },
+  selectBtnText: { color: '#FF5A00', fontWeight: '700', fontSize: responsiveFont(12) },
 
   // ── MODAL ──
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: '#0F0D18', borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    padding: 24, paddingBottom: 48, borderTopWidth: 1, borderTopColor: '#1E1B2E',
+    backgroundColor: '#0F0808', borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    padding: 24, paddingBottom: 48, borderTopWidth: 1, borderTopColor: '#2E1B1B',
   },
   modalPill: {
     width: 40, height: 4, backgroundColor: '#2A2A3A', borderRadius: 2,
@@ -594,8 +608,8 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', gap: 12 },
   cancelBtn: {
     flex: 1, paddingVertical: 16, borderRadius: 16,
-    backgroundColor: '#1A1628', alignItems: 'center',
-    borderWidth: 1, borderColor: '#2A2040',
+    backgroundColor: '#1A0A08', alignItems: 'center',
+    borderWidth: 1, borderColor: '#2A1510',
   },
   cancelBtnText: { color: '#888', fontWeight: '700', fontSize: responsiveFont(15) },
   confirmBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },

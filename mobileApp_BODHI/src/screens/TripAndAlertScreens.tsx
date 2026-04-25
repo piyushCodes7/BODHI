@@ -11,6 +11,7 @@ import { Colors, Fonts, Radius, Spacing } from '../theme/tokens';
 export function ImmuneSystemAlertScreen({ navigation }: any) {
   return (
     <View style={aStyles.root}>
+      <View style={{ maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', flex: 1 }}>
       {/* Ambient glows */}
       <View style={aStyles.glowGreen} />
       <View style={aStyles.glowViolet} />
@@ -76,6 +77,7 @@ export function ImmuneSystemAlertScreen({ navigation }: any) {
       <Text style={aStyles.disclaimer}>
         Bodhi AI monitors your spending patterns in real-time to protect your long-term financial health.
       </Text>
+      </View>
     </View>
   );
 }
@@ -124,13 +126,13 @@ const aStyles = StyleSheet.create({
     fontSize: responsiveFont(22),
     fontWeight:  '900',
     fontStyle:   'italic',
-    color:       '#a78bfa',
+    color:       '#FF6A00',
   },
   avatarRing: {
     width:        40,
     height:       40,
     borderRadius: 20,
-    backgroundColor: '#1e2030',
+    backgroundColor: '#1A0A00',
     borderWidth:  2,
     borderColor:  Colors.electricViolet,
     alignItems:   'center',

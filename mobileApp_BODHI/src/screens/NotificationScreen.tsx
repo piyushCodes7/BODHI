@@ -77,7 +77,7 @@ export const NotificationScreen = () => {
     switch (type) {
       case 'SUCCESS': return <CheckCircle2 size={20} color={color} />;
       case 'WARNING': return <AlertTriangle size={20} color="#FFD700" />;
-      case 'ALERT': return <AlertTriangle size={20} color="#FF3366" />;
+      case 'ALERT': return <AlertTriangle size={20} color="#FF2D2D" />;
       case 'TRADE': return <Briefcase size={20} color={color} />;
       default: return <Info size={20} color={color} />;
     }
@@ -123,6 +123,7 @@ export const NotificationScreen = () => {
           <ActivityIndicator color={Colors.neonLime} size="large" />
         </View>
       ) : (
+      <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <FlatList
           data={notifications}
           renderItem={renderItem}
@@ -139,6 +140,7 @@ export const NotificationScreen = () => {
             </View>
           }
         />
+      </View>
       )}
     </View>
   );

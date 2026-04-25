@@ -278,6 +278,7 @@ export const TravelBookingScreen = () => {
         <StatusBar barStyle="light-content" />
         {renderHeader('BODHI Travel', 'Book your next journey')}
         <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
           <View style={styles.searchCard}>
             <Text style={styles.cardTitle}>Find Flights</Text>
             
@@ -371,6 +372,7 @@ export const TravelBookingScreen = () => {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          </View>
         </ScrollView>
       </View>
     );
@@ -380,6 +382,7 @@ export const TravelBookingScreen = () => {
     return (
       <View style={styles.root}>
         {renderHeader(`${fromAirport?.sky_id} → ${toAirport?.sky_id}`, `${travelDate} · ${pax} Pax`, () => setScreen('home'))}
+        <View style={{ flex: 1, maxWidth: isTablet ? (isLandscape() ? 900 : 700) : '100%', alignSelf: 'center', width: '100%' }}>
         <FlatList
           data={flights}
           keyExtractor={f => f.id}
@@ -413,6 +416,7 @@ export const TravelBookingScreen = () => {
             </TouchableOpacity>
           )}
         />
+        </View>
       </View>
     );
   }
@@ -422,6 +426,7 @@ export const TravelBookingScreen = () => {
       <View style={styles.root}>
         {renderHeader('Passenger Details', selectedFlight.airline, () => setScreen('results'))}
         <ScrollView style={styles.scrollView}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }}>
           <View style={styles.formCard}>
             <Text style={styles.cardTitle}>Traveller Information</Text>
             <TextInput style={styles.formInput} placeholder="Full Name" placeholderTextColor="rgba(255,255,255,0.3)" value={passengerName} onChangeText={setPassengerName} />
@@ -443,6 +448,7 @@ export const TravelBookingScreen = () => {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          </View>
         </ScrollView>
       </View>
     );
@@ -450,12 +456,12 @@ export const TravelBookingScreen = () => {
 
   return (
     <View style={styles.root}>
-      <View style={styles.confirmWrap}>
+      <View style={[styles.confirmWrap, { maxWidth: isTablet ? (isLandscape() ? 800 : 600) : '100%', alignSelf: 'center', width: '100%' }]}>
         <CheckCircle size={64} color={Colors.neonLime} />
         <Text style={styles.confirmTitle}>Ready to Book!</Text>
         <Text style={styles.confirmSub}>{selectedFlight?.airline} · {selectedFlight?.price}</Text>
         <TouchableOpacity style={styles.searchBtn} onPress={handleRedirect}>
-          <LinearGradient colors={['#702ae1', '#a400a4']} style={styles.btnGrad}>
+          <LinearGradient colors={['#FF5A00', '#a400a4']} style={styles.btnGrad}>
             <Text style={[styles.btnText, { color: '#FFF' }]}>Complete on Airline Site</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -466,7 +472,7 @@ export const TravelBookingScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05001F' },
+  root: { flex: 1, backgroundColor: '#000000' },
   header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 15 },
   backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyCenter: 'center', paddingTop: 10, paddingLeft: 10 },
   headerTitle: { color: '#FFF', fontSize: responsiveFont(18), fontWeight: '800' },

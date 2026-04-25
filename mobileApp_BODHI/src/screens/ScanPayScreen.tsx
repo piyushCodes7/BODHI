@@ -287,7 +287,7 @@ export function ScanPayScreen() {
           <Text style={styles.grantBtnText}>Grant Camera Access</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
-          <Text style={{ color: '#A855F7' }}>← Go Back</Text>
+          <Text style={{ color: '#FF5A00' }}>← Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -298,7 +298,7 @@ export function ScanPayScreen() {
       <View style={styles.centered}>
         <Text style={styles.permissionTitle}>No Camera Found</Text>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
-          <Text style={{ color: '#A855F7' }}>← Go Back</Text>
+          <Text style={{ color: '#FF5A00' }}>← Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -351,7 +351,7 @@ export function ScanPayScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%', borderTopLeftRadius: 32, borderTopRightRadius: 32 }]}>
             {paySuccess ? (
               <View style={styles.successContainer}>
                 <CheckCircle size={64} color="#34c759" />
@@ -361,7 +361,7 @@ export function ScanPayScreen() {
                   <Text style={styles.doneBtnText}>Return Home</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={resetAndScanAgain} style={{ marginTop: 12 }}>
-                  <Text style={{ color: '#A855F7', fontSize: responsiveFont(14) }}>Scan Another</Text>
+                  <Text style={{ color: '#FF5A00', fontSize: responsiveFont(14) }}>Scan Another</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -399,7 +399,7 @@ export function ScanPayScreen() {
                 />
 
                 {paymentError && (
-                  <Text style={{ color: '#FF3366', fontSize: 13, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
+                  <Text style={{ color: '#FF2D2D', fontSize: 13, fontWeight: '600', marginBottom: 16, textAlign: 'center' }}>
                     {paymentError}
                   </Text>
                 )}
@@ -412,7 +412,7 @@ export function ScanPayScreen() {
                       style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
                     >
                       <LinearGradient
-                        colors={['#4A00E0', '#8E2DE2']}
+                        colors={['#8B0000', '#FF5A00']}
                         style={styles.payBtn}
                         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                       >
@@ -436,7 +436,7 @@ export function ScanPayScreen() {
                     style={{ opacity: isProcessing || !amount ? 0.6 : 1 }}
                   >
                     <LinearGradient
-                      colors={isUpiQr ? ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)'] : ['#FFE259', '#C8FF00']}
+                      colors={isUpiQr ? ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.1)'] : ['#FFE600', '#FFE600']}
                       style={[styles.payBtn, isUpiQr && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }]}
                       start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                     >
@@ -500,7 +500,7 @@ const CORNER_THICKNESS = 4;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000' },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0a0b1e', padding: 24 },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505', padding: 24 },
   overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

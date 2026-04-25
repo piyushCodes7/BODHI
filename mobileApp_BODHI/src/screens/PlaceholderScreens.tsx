@@ -30,7 +30,7 @@ const PlaceholderShell: React.FC<PlaceholderProps> = ({
   const navigation = useNavigation();
   return (
     <LinearGradient 
-      colors={['#05001F', '#0D0149', '#05001F']} 
+      colors={['#000000', '#0A0000', '#000000']} 
       style={placeholderStyles.root}
     >
       <StatusBar barStyle="light-content" />
@@ -42,7 +42,7 @@ const PlaceholderShell: React.FC<PlaceholderProps> = ({
         <ArrowLeft size={24} color="#FFF" />
       </TouchableOpacity>
 
-      <View style={placeholderStyles.content}>
+      <View style={[placeholderStyles.content, { maxWidth: isTablet ? (isLandscape() ? 700 : 600) : '100%', alignSelf: 'center', width: '100%' }]}>
         <View style={placeholderStyles.iconContainer}>
           <Text style={placeholderStyles.icon}>{icon}</Text>
         </View>

@@ -155,7 +155,7 @@ export function MarketScreen() {
     <View style={styles.root}>
       {/* ── Background Gradient ── */}
       <LinearGradient
-        colors={['#05001F', '#0A0A14', '#0A0A14']}
+        colors={['#000000', '#0A0A0A', '#0A0A0A']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -164,6 +164,7 @@ export function MarketScreen() {
       {/* ─── STOCK PICKER MODAL ─── */}
       <Modal visible={showStockPicker} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modal}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 700) : '100%', alignSelf: 'center', width: '100%', flex: 1 }}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Choose Asset</Text>
             <TouchableOpacity onPress={() => setShowStockPicker(false)}>
@@ -178,7 +179,7 @@ export function MarketScreen() {
             onChangeText={setSearchQuery}
             autoFocus
           />
-          {searchLoading && <ActivityIndicator style={{ marginTop: 16 }} color="#A855F7" />}
+          {searchLoading && <ActivityIndicator style={{ marginTop: 16 }} color="#FF5A00" />}
           <FlatList
             data={searchResults}
             keyExtractor={i => i.symbol}
@@ -192,7 +193,7 @@ export function MarketScreen() {
                 }}
               >
                 <View style={styles.assetIconSmall}>
-                  <TrendingUp size={16} color="#A855F7" />
+                  <TrendingUp size={16} color="#FF5A00" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.searchRowName}>{item.name}</Text>
@@ -201,12 +202,14 @@ export function MarketScreen() {
               </TouchableOpacity>
             )}
           />
+          </View>
         </View>
       </Modal>
 
       {/* ─── EVENT PICKER MODAL ─── */}
       <Modal visible={showEventPicker} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modal}>
+          <View style={{ maxWidth: isTablet ? (isLandscape() ? 800 : 700) : '100%', alignSelf: 'center', width: '100%', flex: 1 }}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Pick a Crash Event</Text>
             <TouchableOpacity onPress={() => setShowEventPicker(false)}>
@@ -239,6 +242,7 @@ export function MarketScreen() {
               </TouchableOpacity>
             )}
           />
+          </View>
         </View>
       </Modal>
 
@@ -252,15 +256,15 @@ export function MarketScreen() {
         {/* ── HERO HEADER ── */}
         <View style={styles.headerSection}>
           <View style={styles.headerTextWrap}>
-            <Text style={styles.pageTitle}>Time <Text style={{color: '#A855F7'}}>Warp</Text></Text>
+            <Text style={styles.pageTitle}>Time <Text style={{color: '#FF5A00'}}>Warp</Text></Text>
             <Text style={styles.pageSubtitle}>Simulate the past. Predict the future.</Text>
           </View>
           
           {/* Glowing Hourglass Illustration */}
           <View style={styles.heroGlowBox}>
-            <View style={[styles.glowRing, { borderColor: 'rgba(168,85,247,0.3)', width: 120, height: 120, borderRadius: 60 }]} />
+            <View style={[styles.glowRing, { borderColor: 'rgba(255,90,0,0.3)', width: 120, height: 120, borderRadius: 60 }]} />
             <View style={[styles.glowRing, { borderColor: 'rgba(255,45,120,0.2)', width: 80, height: 80, borderRadius: 40 }]} />
-            <Hourglass size={44} color="#A855F7" style={{ zIndex: 2 }} />
+            <Hourglass size={44} color="#FF5A00" style={{ zIndex: 2 }} />
           </View>
         </View>
 
@@ -270,7 +274,7 @@ export function MarketScreen() {
           <View style={styles.glassRow}>
             <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => setShowStockPicker(true)}>
               <View style={styles.assetIconBox}>
-                <TrendingUp size={22} color="#A855F7" />
+                <TrendingUp size={22} color="#FF5A00" />
               </View>
               <View style={{ flex: 1, marginLeft: 16 }}>
                 <Text style={styles.assetName}>{selectedStock.name}</Text>
@@ -295,7 +299,7 @@ export function MarketScreen() {
               placeholderTextColor="rgba(255,255,255,0.4)"
             />
             <View style={styles.editIconBox}>
-              <Edit2 size={16} color="#A855F7" />
+              <Edit2 size={16} color="#FF5A00" />
             </View>
           </View>
         </View>
@@ -319,11 +323,11 @@ export function MarketScreen() {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>CRASH EVENT (OPTIONAL)</Text>
             {loadingEvents ? (
-              <ActivityIndicator color="#A855F7" />
+              <ActivityIndicator color="#FF5A00" />
             ) : (
               <TouchableOpacity style={styles.glassRow} onPress={() => setShowEventPicker(true)}>
                 <View style={styles.assetIconBox}>
-                  <TrendingDown size={22} color="#A855F7" />
+                  <TrendingDown size={22} color="#FF5A00" />
                 </View>
                 <View style={{ flex: 1, marginLeft: 16 }}>
                   <Text style={styles.assetName}>{selectedEvent?.name ?? 'Select crash event'}</Text>
@@ -339,7 +343,7 @@ export function MarketScreen() {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>START DATE (YYYY-MM-DD)</Text>
             <View style={styles.glassRow}>
-              <Calendar size={22} color="#A855F7" style={{ marginRight: 16 }} />
+              <Calendar size={22} color="#FF5A00" style={{ marginRight: 16 }} />
               <TextInput
                 value={customStartDate}
                 onChangeText={setCustomStartDate}
@@ -348,7 +352,7 @@ export function MarketScreen() {
                 placeholderTextColor="rgba(255,255,255,0.4)"
               />
               <View style={styles.editIconBox}>
-                <Edit2 size={16} color="#A855F7" />
+                <Edit2 size={16} color="#FF5A00" />
               </View>
             </View>
           </View>
@@ -377,7 +381,7 @@ export function MarketScreen() {
         {sim && (
           <View style={{ marginTop: 20 }}>
             <LinearGradient
-              colors={['#A855F7', '#7B2FBE', '#FF2A5F']}
+              colors={['#FF5A00', '#9B111E', '#FF2D2D']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               style={styles.impactCard}
             >
@@ -459,7 +463,7 @@ export function MarketScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#05001F' },
+  root: { flex: 1, backgroundColor: '#000000' },
   scroll: { paddingHorizontal: 20, paddingBottom: 100 },
   
   // ── HERO HEADER ──
@@ -477,7 +481,7 @@ const styles = StyleSheet.create({
   
   glassRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0A1A', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   
-  assetIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(168,85,247,0.1)', borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)', alignItems: 'center', justifyContent: 'center' },
+  assetIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,90,0,0.1)', borderWidth: 1, borderColor: 'rgba(255,90,0,0.3)', alignItems: 'center', justifyContent: 'center' },
   assetName: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FFF', marginBottom: 2 },
   assetTicker: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)' },
   
@@ -486,15 +490,15 @@ const styles = StyleSheet.create({
 
   currencyPrefix: { fontSize: responsiveFont(24), fontWeight: '700', color: '#FFF', marginRight: 12 },
   textInput: { flex: 1, fontSize: responsiveFont(24), fontWeight: '700', color: '#FFF' },
-  editIconBox: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
+  editIconBox: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,90,0,0.1)', alignItems: 'center', justifyContent: 'center' },
 
   toggleContainer: { flexDirection: 'row', backgroundColor: '#0B0A1A', borderRadius: 24, padding: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   toggleBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 20 },
-  toggleActive: { backgroundColor: 'rgba(168,85,247,0.2)', borderWidth: 1, borderColor: '#A855F7' },
+  toggleActive: { backgroundColor: 'rgba(255,90,0,0.2)', borderWidth: 1, borderColor: '#FF5A00' },
   toggleText: { fontSize: responsiveFont(14), fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
   toggleTextActive: { color: '#FFF', fontWeight: '700' },
 
-  changeBtnText: { fontSize: responsiveFont(13), fontWeight: '700', color: '#A855F7' },
+  changeBtnText: { fontSize: responsiveFont(13), fontWeight: '700', color: '#FF5A00' },
 
   // ── CALCULATE BUTTON ──
   buttonShadowWrapper: {
@@ -538,18 +542,18 @@ const styles = StyleSheet.create({
   alphaFill: { height: '100%', backgroundColor: Colors.neonLime, borderRadius: 3 },
 
   // ── MODALS ──
-  modal: { flex: 1, backgroundColor: '#05001F' },
+  modal: { flex: 1, backgroundColor: '#000000' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   modalTitle: { fontSize: responsiveFont(20), fontWeight: '800', color: '#FFF' },
-  modalClose: { fontSize: responsiveFont(15), fontWeight: '700', color: '#A855F7' },
+  modalClose: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FF5A00' },
   searchInput: { margin: 20, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, fontSize: responsiveFont(16), color: '#FFF', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  assetIconSmall: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(168,85,247,0.1)', alignItems: 'center', justifyContent: 'center' },
+  assetIconSmall: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,90,0,0.1)', alignItems: 'center', justifyContent: 'center' },
   searchRowName: { fontSize: responsiveFont(15), fontWeight: '700', color: '#FFF', marginBottom: 2 },
   searchRowMeta: { fontSize: responsiveFont(12), color: 'rgba(255,255,255,0.5)' },
   
   eventRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  eventRowSelected: { backgroundColor: 'rgba(168,85,247,0.1)', borderRadius: 20, paddingHorizontal: 16, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
+  eventRowSelected: { backgroundColor: 'rgba(255,90,0,0.1)', borderRadius: 20, paddingHorizontal: 16, borderWidth: 1, borderColor: 'rgba(255,90,0,0.3)' },
   eventEmoji: { fontSize: responsiveFont(28), marginTop: 2 },
   eventName: { fontSize: responsiveFont(16), fontWeight: '800', color: '#FFF', marginBottom: 4 },
   eventDesc: { fontSize: responsiveFont(13), color: 'rgba(255,255,255,0.6)', lineHeight: 20, marginBottom: 6 },

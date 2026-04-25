@@ -17,7 +17,6 @@
 		3EC08B58335F4AA29C0CA313 /* SpaceGrotesk-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C4E4390532C14C4887A762FF /* SpaceGrotesk-SemiBold.ttf */; };
 		41FA38964E754D56BDF7C72C /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6D0D519CD2D746AEBEE531C1 /* PlusJakartaSans-Bold.ttf */; };
 		42E2583BA3384CEDBB37130C /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3A25641C558D468D8E63DED0 /* Manrope-ExtraLight.ttf */; };
-		42F6885B2B4CE9AE6A4161F3 /* libPods-BODHI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B46A988C8D4161FF7D92007 /* libPods-BODHI.a */; };
 		44BA792EE2884897B5431550 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 30C767553C58423EBAC64239 /* PlusJakartaSans-Regular.ttf */; };
 		45BC7668B8E14A678665CB78 /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1FF5DE56A27949A1AF771957 /* PlusJakartaSans-Italic.ttf */; };
 		479676DDCDD241CDA33A19C9 /* PlusJakartaSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 95E923589A8441D89E26A609 /* PlusJakartaSans-ExtraLight.ttf */; };
@@ -39,10 +38,11 @@
 		AC65D4214E324147B8A9547B /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9B1751FD5E2144A484AB99ED /* PlusJakartaSans-MediumItalic.ttf */; };
 		B2576E7656044CBF9AF8D9C7 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 93F397154D2F4981B7FA04F8 /* Manrope-Light.ttf */; };
 		B3B7B0749E5E49FDA5701F9F /* PlusJakartaSans-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3CF869DB050C401882AC1D82 /* PlusJakartaSans-VariableFont_wght.ttf */; };
+		B66CE92B35E1CDA8F2A157A1 /* libPods-BODHI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 73A84EC8616BCFE0E3F05023 /* libPods-BODHI.a */; };
 		B674C2D97C984B6CBECF439C /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A9C63925DEA44CED8F824683 /* Manrope-Bold.ttf */; };
+		BE23557A49E6D28B241883F9 /* libPods-BODHI-BODHITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CAB71B1EE9091CE190F491 /* libPods-BODHI-BODHITests.a */; };
 		C34FBB58494A43B9AA0A8257 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 98D987828A4D4904BBDBAFBE /* Manrope-SemiBold.ttf */; };
 		C6F8B918C7FB4C9E84C6927B /* SpaceGrotesk-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2E85797163C46C8A1401266 /* SpaceGrotesk-Bold.ttf */; };
-		E5706B9CDDDB8A95D7895C5B /* libPods-BODHI-BODHITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 757D4F0147A0087DE4DB82ED /* libPods-BODHI-BODHITests.a */; };
 		EF050CDAD2784AF8978C6486 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A8658B4024FC4425B06B408F /* Manrope-Medium.ttf */; };
 /* End PBXBuildFile section */
 
@@ -68,7 +68,6 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = BODHI/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = BODHI/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = BODHI/main.m; sourceTree = "<group>"; };
-		1B46A988C8D4161FF7D92007 /* libPods-BODHI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BODHI.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FF5DE56A27949A1AF771957 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Italic.ttf"; path = "../assets/fonts/PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
 		22378B7019124C92965922CB /* PlusJakartaSans-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Italic-VariableFont_wght.ttf"; path = "../assets/fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		25186DEA7F174A3EBAFD0F84 /* SpaceGrotesk-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-Regular.ttf"; path = "../assets/fonts/SpaceGrotesk-Regular.ttf"; sourceTree = "<group>"; };
@@ -77,21 +76,21 @@
 		3CF869DB050C401882AC1D82 /* PlusJakartaSans-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-VariableFont_wght.ttf"; path = "../assets/fonts/PlusJakartaSans-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3D3556B689474EF38924C363 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		40D49F5533694CA4AA80F38E /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
-		4213AE71D5B604951B083893 /* Pods-BODHI-BODHITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI-BODHITests.release.xcconfig"; path = "Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests.release.xcconfig"; sourceTree = "<group>"; };
 		44F54154ABF140A980845482 /* PlusJakartaSans-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLightItalic.ttf"; path = "../assets/fonts/PlusJakartaSans-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		494A19BC52984EA8BD125E72 /* SpaceGrotesk-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-VariableFont_wght.ttf"; path = "../assets/fonts/SpaceGrotesk-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		529CDCFACC1C4292A638D415 /* Manrope-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-VariableFont_wght.ttf"; path = "../assets/fonts/Manrope-VariableFont_wght.ttf"; sourceTree = "<group>"; };
-		63FA8F9DDAAFEA826C43E217 /* Pods-BODHI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI.release.xcconfig"; path = "Target Support Files/Pods-BODHI/Pods-BODHI.release.xcconfig"; sourceTree = "<group>"; };
 		6692BEC852464FCAA0E482B2 /* PlusJakartaSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Light.ttf"; path = "../assets/fonts/PlusJakartaSans-Light.ttf"; sourceTree = "<group>"; };
 		6922B368847D41FD888B45C1 /* PlusJakartaSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/PlusJakartaSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		6D0D519CD2D746AEBEE531C1 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Bold.ttf"; path = "../assets/fonts/PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
-		70DA13CE7C971B564F011449 /* Pods-BODHI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI.debug.xcconfig"; path = "Target Support Files/Pods-BODHI/Pods-BODHI.debug.xcconfig"; sourceTree = "<group>"; };
-		757D4F0147A0087DE4DB82ED /* libPods-BODHI-BODHITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BODHI-BODHITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6E87DB4B5026EF4D0D89C7C8 /* Pods-BODHI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI.debug.xcconfig"; path = "Target Support Files/Pods-BODHI/Pods-BODHI.debug.xcconfig"; sourceTree = "<group>"; };
+		73A84EC8616BCFE0E3F05023 /* libPods-BODHI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BODHI.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7478E3C9D1EE8867351A9EF6 /* Pods-BODHI-BODHITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI-BODHITests.release.xcconfig"; path = "Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests.release.xcconfig"; sourceTree = "<group>"; };
 		7DF8774AF70140999E231FF3 /* SpaceGrotesk-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-Light.ttf"; path = "../assets/fonts/SpaceGrotesk-Light.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = BODHI/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		93F397154D2F4981B7FA04F8 /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
 		95E923589A8441D89E26A609 /* PlusJakartaSans-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLight.ttf"; path = "../assets/fonts/PlusJakartaSans-ExtraLight.ttf"; sourceTree = "<group>"; };
 		98D987828A4D4904BBDBAFBE /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
+		99E40BA7F7E9EC2A94C5DABF /* Pods-BODHI-BODHITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI-BODHITests.debug.xcconfig"; path = "Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests.debug.xcconfig"; sourceTree = "<group>"; };
 		9B1751FD5E2144A484AB99ED /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-MediumItalic.ttf"; path = "../assets/fonts/PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		A7576870B4044B17A4299DA3 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Medium.ttf"; path = "../assets/fonts/PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
 		A8658B4024FC4425B06B408F /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
@@ -99,12 +98,13 @@
 		ABB734BE2F8F7CC100FED679 /* BODHI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BODHI.entitlements; sourceTree = "<group>"; };
 		B2E85797163C46C8A1401266 /* SpaceGrotesk-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-Bold.ttf"; path = "../assets/fonts/SpaceGrotesk-Bold.ttf"; sourceTree = "<group>"; };
 		B7D65D3A61CA4EE0842A7CA8 /* SpaceGrotesk-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-Medium.ttf"; path = "../assets/fonts/SpaceGrotesk-Medium.ttf"; sourceTree = "<group>"; };
-		BD0C2064C3486FEA6BAA5688 /* Pods-BODHI-BODHITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI-BODHITests.debug.xcconfig"; path = "Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests.debug.xcconfig"; sourceTree = "<group>"; };
 		BDF1B3251D774FD2A451B442 /* PlusJakartaSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBoldItalic.ttf"; path = "../assets/fonts/PlusJakartaSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		C4E4390532C14C4887A762FF /* SpaceGrotesk-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SpaceGrotesk-SemiBold.ttf"; path = "../assets/fonts/SpaceGrotesk-SemiBold.ttf"; sourceTree = "<group>"; };
 		C9139FC30ADB44E2817F12CC /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBold.ttf"; path = "../assets/fonts/PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		D2E4C93A98624088A7811CEA /* PlusJakartaSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-BoldItalic.ttf"; path = "../assets/fonts/PlusJakartaSans-BoldItalic.ttf"; sourceTree = "<group>"; };
+		D52430C56882F17646A85A21 /* Pods-BODHI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BODHI.release.xcconfig"; path = "Target Support Files/Pods-BODHI/Pods-BODHI.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F7CAB71B1EE9091CE190F491 /* libPods-BODHI-BODHITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BODHI-BODHITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,7 +112,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5706B9CDDDB8A95D7895C5B /* libPods-BODHI-BODHITests.a in Frameworks */,
+				BE23557A49E6D28B241883F9 /* libPods-BODHI-BODHITests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,7 +120,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				42F6885B2B4CE9AE6A4161F3 /* libPods-BODHI.a in Frameworks */,
+				B66CE92B35E1CDA8F2A157A1 /* libPods-BODHI.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,8 +161,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1B46A988C8D4161FF7D92007 /* libPods-BODHI.a */,
-				757D4F0147A0087DE4DB82ED /* libPods-BODHI-BODHITests.a */,
+				73A84EC8616BCFE0E3F05023 /* libPods-BODHI.a */,
+				F7CAB71B1EE9091CE190F491 /* libPods-BODHI-BODHITests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -240,10 +240,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				70DA13CE7C971B564F011449 /* Pods-BODHI.debug.xcconfig */,
-				63FA8F9DDAAFEA826C43E217 /* Pods-BODHI.release.xcconfig */,
-				BD0C2064C3486FEA6BAA5688 /* Pods-BODHI-BODHITests.debug.xcconfig */,
-				4213AE71D5B604951B083893 /* Pods-BODHI-BODHITests.release.xcconfig */,
+				6E87DB4B5026EF4D0D89C7C8 /* Pods-BODHI.debug.xcconfig */,
+				D52430C56882F17646A85A21 /* Pods-BODHI.release.xcconfig */,
+				99E40BA7F7E9EC2A94C5DABF /* Pods-BODHI-BODHITests.debug.xcconfig */,
+				7478E3C9D1EE8867351A9EF6 /* Pods-BODHI-BODHITests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -255,12 +255,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "BODHITests" */;
 			buildPhases = (
-				1B8EF54DD495A4EC056E6C40 /* [CP] Check Pods Manifest.lock */,
+				5414991AB6B921BAD1C7E915 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				0685331F941B543468076247 /* [CP] Embed Pods Frameworks */,
-				68C6662A16E59A6564DAA960 /* [CP] Copy Pods Resources */,
+				67697063FF2D566260AA5CC3 /* [CP] Embed Pods Frameworks */,
+				B623C8BEE1AE4536822F89B0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -276,13 +276,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "BODHI" */;
 			buildPhases = (
-				1A72463A6B861B36ED44AEBE /* [CP] Check Pods Manifest.lock */,
+				6070EBC8A3C285811A327C94 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				73C0EED74AFB2635FF4176A4 /* [CP] Embed Pods Frameworks */,
-				6ECC90A2DE9F622940F32C2D /* [CP] Copy Pods Resources */,
+				F183105FF1D619AD2041EBD1 /* [CP] Embed Pods Frameworks */,
+				D67BB08DF8A3CF157181EE09 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -395,50 +395,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		0685331F941B543468076247 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1A72463A6B861B36ED44AEBE /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-BODHI-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1B8EF54DD495A4EC056E6C40 /* [CP] Check Pods Manifest.lock */ = {
+		5414991AB6B921BAD1C7E915 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -460,7 +417,46 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		68C6662A16E59A6564DAA960 /* [CP] Copy Pods Resources */ = {
+		6070EBC8A3C285811A327C94 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-BODHI-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		67697063FF2D566260AA5CC3 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B623C8BEE1AE4536822F89B0 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -468,20 +464,16 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BODHI-BODHITests/Pods-BODHI-BODHITests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6ECC90A2DE9F622940F32C2D /* [CP] Copy Pods Resources */ = {
+		D67BB08DF8A3CF157181EE09 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -489,20 +481,16 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI/Pods-BODHI-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI/Pods-BODHI-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BODHI/Pods-BODHI-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		73C0EED74AFB2635FF4176A4 /* [CP] Embed Pods Frameworks */ = {
+		F183105FF1D619AD2041EBD1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -510,13 +498,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI/Pods-BODHI-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BODHI/Pods-BODHI-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -556,7 +540,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BD0C2064C3486FEA6BAA5688 /* Pods-BODHI-BODHITests.debug.xcconfig */;
+			baseConfigurationReference = 99E40BA7F7E9EC2A94C5DABF /* Pods-BODHI-BODHITests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -585,7 +569,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4213AE71D5B604951B083893 /* Pods-BODHI-BODHITests.release.xcconfig */;
+			baseConfigurationReference = 7478E3C9D1EE8867351A9EF6 /* Pods-BODHI-BODHITests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -611,7 +595,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 70DA13CE7C971B564F011449 /* Pods-BODHI.debug.xcconfig */;
+			baseConfigurationReference = 6E87DB4B5026EF4D0D89C7C8 /* Pods-BODHI.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -631,7 +615,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.govindjindal.bodhiapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.govindjindal.bodhi;
 				PRODUCT_NAME = BODHI;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -641,7 +625,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 63FA8F9DDAAFEA826C43E217 /* Pods-BODHI.release.xcconfig */;
+			baseConfigurationReference = D52430C56882F17646A85A21 /* Pods-BODHI.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -660,7 +644,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.govindjindal.bodhiapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.govindjindal.bodhi;
 				PRODUCT_NAME = BODHI;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -716,6 +700,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -736,7 +731,10 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -786,6 +784,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -805,7 +814,10 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
